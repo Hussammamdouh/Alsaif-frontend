@@ -1,0 +1,363 @@
+/**
+ * AdminAnalyticsScreen
+ * Comprehensive analytics dashboard with user growth, engagement, and performance metrics
+ */
+
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  RefreshControl,
+  TouchableOpacity,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useAnalytics } from '../hooks';
+import {
+  StatCard,
+  DateRangePicker,
+  Chart,
+  FilterBar,
+  LoadingState,
+  EmptyState,
+  formatChartData,
+  formatPieChartData,
+} from '../components';
+import { CHART_COLORS } from '../admin.constants';
+
+export const AdminAnalyticsScreen: React.FC = () => {
+  // Date range state
+  const [startDate, setStartDate] = useState(
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  );
+  const [endDate, setEndDate] = useState(new Date());
+  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('day');
+
+  // Analytics hook
+  const {
+    userGrowth,
+    engagementMetrics,
+    contentPerformance,
+    subscriptionAnalytics,
+    conversionFunnel,
+    retentionCohorts,
+    featureUsage,
+    geoDistribution,
+    deviceAnalytics,
+    loading,
+    error,
+    refresh,
+  } = useAnalytics({
+    startDate,
+    endDate,
+    period,
+  });
+
+  const handleDateRangeChange = (newStartDate: Date, newEndDate: Date) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+  };
+
+  const periodOptions = [
+    { label: 'Daily', value: 'day' },
+    { label: 'Weekly', value: 'week' },
+    { label: 'Monthly', value: 'month' },
+  ];
+
+  if (loading && !userGrowth.length) {
+    return <LoadingState type="stats" count={6} />;
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        icon="alert-circle"
+        title="Error Loading Analytics"
+        message={error}
+        actionLabel="Try Again"
+        onActionPress={refresh}
+        iconColor="#ff3b30"
+      />
+    );
+  }
+
+  return (
+    <ScrollView
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Analytics Dashboard</Text>
+        <TouchableOpacity style={styles.exportButton} activeOpacity={0.7}>
+          <Ionicons name="download-outline" size={20} color="#007aff" />
+          <Text style={styles.exportButtonText}>Export</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Date Range Picker */}
+      <View style={styles.section}>
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onRangeChange={handleDateRangeChange}
+          label="Date Range"
+        />
+      </View>
+
+      {/* Period Filter */}
+      <FilterBar
+        options={periodOptions}
+        selectedValue={period}
+        onSelect={(value) => setPeriod(value as 'day' | 'week' | 'month')}
+        label="Period"
+      />
+
+      {/* Key Metrics */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Key Metrics</Text>
+        <View style={styles.statsGrid}>
+          {engagementMetrics && (
+            <>
+              <StatCard
+                title="Total Users"
+                value={engagementMetrics.totalUsers?.toLocaleString() || '0'}
+                icon="people"
+                color={CHART_COLORS.PRIMARY}
+              />
+              <StatCard
+                title="Active Users"
+                value={engagementMetrics.activeUsers?.toLocaleString() || '0'}
+                icon="pulse"
+                color={CHART_COLORS.SUCCESS}
+              />
+              <StatCard
+                title="New Users"
+                value={engagementMetrics.newUsers?.toLocaleString() || '0'}
+                icon="person-add"
+                color={CHART_COLORS.INFO}
+              />
+              <StatCard
+                title="Avg Session"
+                value={`${Math.round(engagementMetrics.avgSessionDuration || 0)}m`}
+                icon="time"
+                color={CHART_COLORS.WARNING}
+              />
+            </>
+          )}
+        </View>
+      </View>
+
+      {/* User Growth Chart */}
+      {userGrowth.length > 0 && (
+        <View style={styles.section}>
+          <Chart
+            type="line"
+            title="User Growth"
+            data={formatChartData(
+              userGrowth.map((d) => d._id),
+              [
+                { data: userGrowth.map((d) => d.newUsers), color: CHART_COLORS.PRIMARY },
+                { data: userGrowth.map((d) => d.activeUsers), color: CHART_COLORS.SUCCESS },
+              ]
+            )}
+            height={250}
+            bezier
+          />
+        </View>
+      )}
+
+      {/* Subscription Distribution */}
+      {subscriptionAnalytics && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Subscription Distribution</Text>
+          <View style={styles.statsGrid}>
+            <StatCard
+              title="Free Tier"
+              value={subscriptionAnalytics.byTier?.free || 0}
+              icon="gift"
+              color={CHART_COLORS.GRAY}
+            />
+            <StatCard
+              title="Basic"
+              value={subscriptionAnalytics.byTier?.basic || 0}
+              icon="ribbon"
+              color={CHART_COLORS.INFO}
+            />
+            <StatCard
+              title="Premium"
+              value={subscriptionAnalytics.byTier?.premium || 0}
+              icon="star"
+              color={CHART_COLORS.WARNING}
+            />
+            <StatCard
+              title="Pro"
+              value={subscriptionAnalytics.byTier?.pro || 0}
+              icon="trophy"
+              color={CHART_COLORS.DANGER}
+            />
+          </View>
+        </View>
+      )}
+
+      {/* Conversion Funnel */}
+      {conversionFunnel.length > 0 && (
+        <View style={styles.section}>
+          <Chart
+            type="bar"
+            title="Conversion Funnel"
+            data={formatChartData(
+              conversionFunnel.map((d) => d.stage),
+              [{ data: conversionFunnel.map((d) => d.count) }]
+            )}
+            height={250}
+          />
+        </View>
+      )}
+
+      {/* Top Content */}
+      {contentPerformance.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Top Performing Content</Text>
+          {contentPerformance.slice(0, 5).map((content, index) => (
+            <View key={index} style={styles.contentItem}>
+              <View style={styles.contentRank}>
+                <Text style={styles.contentRankText}>{index + 1}</Text>
+              </View>
+              <View style={styles.contentInfo}>
+                <Text style={styles.contentTitle} numberOfLines={1}>
+                  {content.title}
+                </Text>
+                <Text style={styles.contentStats}>
+                  {content.views} views • {content.likes} likes
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#c7c7cc" />
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Device Analytics */}
+      {deviceAnalytics && (
+        <View style={styles.section}>
+          <Chart
+            type="pie"
+            title="Device Distribution"
+            data={formatPieChartData([
+              { name: 'iOS', value: deviceAnalytics.ios || 0 },
+              { name: 'Android', value: deviceAnalytics.android || 0 },
+              { name: 'Web', value: deviceAnalytics.web || 0 },
+            ])}
+            height={250}
+          />
+        </View>
+      )}
+
+      {/* Feature Usage */}
+      {featureUsage.length > 0 && (
+        <View style={styles.section}>
+          <Chart
+            type="bar"
+            title="Feature Usage"
+            data={formatChartData(
+              featureUsage.map((f) => f.feature),
+              [{ data: featureUsage.map((f) => f.usageCount) }]
+            )}
+            height={250}
+          />
+        </View>
+      )}
+
+      {/* Bottom spacing */}
+      <View style={{ height: 32 }} />
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f2f2f7',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e5ea',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000',
+  },
+  exportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  exportButtonText: {
+    fontSize: 16,
+    color: '#007aff',
+    fontWeight: '600',
+  },
+  section: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 12,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  contentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  contentRank: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#007aff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  contentRankText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  contentInfo: {
+    flex: 1,
+  },
+  contentTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  contentStats: {
+    fontSize: 13,
+    color: '#8e8e93',
+  },
+});
