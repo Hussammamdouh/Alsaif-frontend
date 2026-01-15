@@ -154,51 +154,51 @@ export const NOTIFICATION_COLORS: Record<string, string> = {
 
 export const NOTIFICATION_TITLES: Record<string, string> = {
   // Subscription
-  'subscription:created': 'Subscription Active',
-  'subscription:upgraded': 'Plan Upgraded',
-  'subscription:downgraded': 'Plan Changed',
-  'subscription:renewed': 'Subscription Renewed',
-  'subscription:cancelled': 'Subscription Cancelled',
-  'subscription:expired': 'Subscription Expired',
-  'subscription:expiring-soon': 'Subscription Expiring Soon',
-  'subscription:payment-failed': 'Payment Failed',
-  'subscription:trial-started': 'Trial Started',
-  'subscription:trial-ending-soon': 'Trial Ending Soon',
-  'subscription:trial-ended': 'Trial Ended',
+  'subscription:created': 'notifications.event.subscription:created',
+  'subscription:upgraded': 'notifications.event.subscription:upgraded',
+  'subscription:downgraded': 'notifications.event.subscription:downgraded',
+  'subscription:renewed': 'notifications.event.subscription:renewed',
+  'subscription:cancelled': 'notifications.event.subscription:cancelled',
+  'subscription:expired': 'notifications.event.subscription:expired',
+  'subscription:expiring-soon': 'notifications.event.subscription:expiring-soon',
+  'subscription:payment-failed': 'notifications.event.subscription:payment-failed',
+  'subscription:trial-started': 'notifications.event.subscription:trial-started',
+  'subscription:trial-ending-soon': 'notifications.event.subscription:trial-ending-soon',
+  'subscription:trial-ended': 'notifications.event.subscription:trial-ended',
 
   // Content
-  'insight:published': 'New Insight Available',
-  'insight:premium-published': 'Premium Insight Available',
-  'insight:featured': 'Featured Content',
-  'insight:trending': 'Trending Now',
-  'insight:saved': 'Content Saved',
+  'insight:published': 'notifications.event.insight:published',
+  'insight:premium-published': 'notifications.event.insight:premium-published',
+  'insight:featured': 'notifications.event.insight:featured',
+  'insight:trending': 'notifications.event.insight:trending',
+  'insight:saved': 'notifications.event.insight:saved',
 
   // Engagement
-  'engagement:insight-liked': 'Someone liked your insight',
-  'engagement:insight-commented': 'New comment',
-  'engagement:user-followed': 'New follower',
-  'engagement:user-mentioned': 'You were mentioned',
-  'engagement:comment-replied': 'Reply to your comment',
+  'engagement:insight-liked': 'notifications.event.engagement:insight-liked',
+  'engagement:insight-commented': 'notifications.event.engagement:insight-commented',
+  'engagement:user-followed': 'notifications.event.engagement:user-followed',
+  'engagement:user-mentioned': 'notifications.event.engagement:user-mentioned',
+  'engagement:comment-replied': 'notifications.event.engagement:comment-replied',
 
   // Premium
-  'premium:content-available': 'Exclusive Content',
-  'premium:early-access': 'Early Access',
-  'premium:special-offer': 'Special Offer',
-  'premium:webinar': 'Webinar Invitation',
+  'premium:content-available': 'notifications.event.premium:content-available',
+  'premium:early-access': 'notifications.event.premium:early-access',
+  'premium:special-offer': 'notifications.event.premium:special-offer',
+  'premium:webinar': 'notifications.event.premium:webinar',
 
   // System
-  'system:welcome': 'Welcome to Vertex Capital',
-  'system:security-alert': 'Security Alert',
-  'system:account-activity': 'Account Activity',
-  'system:policy-update': 'Policy Update',
-  'system:maintenance': 'Scheduled Maintenance',
-  'system:app-update': 'Update Available',
+  'system:welcome': 'notifications.event.system:welcome',
+  'system:security-alert': 'notifications.event.system:security-alert',
+  'system:account-activity': 'notifications.event.system:account-activity',
+  'system:policy-update': 'notifications.event.system:policy-update',
+  'system:maintenance': 'notifications.event.system:maintenance',
+  'system:app-update': 'notifications.event.system:app-update',
 
   // Marketing
-  'marketing:promotion': 'Special Promotion',
-  'marketing:newsletter': 'Newsletter',
-  'marketing:survey': 'Your Feedback Needed',
-  'marketing:announcement': 'Announcement',
+  'marketing:promotion': 'notifications.event.marketing:promotion',
+  'marketing:newsletter': 'notifications.event.marketing:newsletter',
+  'marketing:survey': 'notifications.event.marketing:survey',
+  'marketing:announcement': 'notifications.event.marketing:announcement',
 };
 
 export const NOTIFICATION_CATEGORIES = {

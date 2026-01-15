@@ -75,8 +75,8 @@ export const useNotifications = () => {
         setState(prev => ({
           ...prev,
           notifications: append
-            ? [...prev.notifications, ...data.notifications]
-            : data.notifications,
+            ? [...prev.notifications, ...(Array.isArray(data.notifications) ? data.notifications : [])]
+            : (Array.isArray(data.notifications) ? data.notifications : []),
           hasMore: data.hasMore,
           page,
           isFetching: false,

@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Image, Animated, Easing } from 'react-native';
+import { View, Text, Image, Animated, Easing, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -37,23 +37,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
 
-  /**
-   * Start animations on mount
-   */
   useEffect(() => {
+    const useNativeDriver = Platform.OS !== 'web';
+
     // Logo animation - scale and fade in
     Animated.parallel([
       Animated.spring(logoScale, {
         toValue: 1,
         tension: 50,
         friction: 7,
-        useNativeDriver: true,
+        useNativeDriver,
       }),
       Animated.timing(logoOpacity, {
         toValue: 1,
         duration: 600,
         easing: Easing.ease,
-        useNativeDriver: true,
+        useNativeDriver,
       }),
     ]).start();
 
@@ -64,14 +63,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
         duration: 800,
         delay: 400,
         easing: Easing.ease,
-        useNativeDriver: true,
+        useNativeDriver,
       }),
       Animated.timing(titleTranslateY, {
         toValue: 0,
         duration: 800,
         delay: 400,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver,
       }),
     ]).start();
 
@@ -81,7 +80,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
       duration: 600,
       delay: 800,
       easing: Easing.ease,
-      useNativeDriver: true,
+      useNativeDriver,
     }).start();
 
     // Loader fade in
@@ -90,7 +89,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
       duration: 600,
       delay: 1000,
       easing: Easing.ease,
-      useNativeDriver: true,
+      useNativeDriver,
     }).start();
 
     // Continuous pulse animation for logo
@@ -100,13 +99,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
           toValue: 1.05,
           duration: 1500,
           easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
           duration: 1500,
           easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver,
         }),
       ])
     ).start();
@@ -120,13 +119,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
             duration: 400,
             delay,
             easing: Easing.out(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver,
           }),
           Animated.timing(dot, {
             toValue: 0,
             duration: 400,
             easing: Easing.in(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver,
           }),
         ])
       );
@@ -137,7 +136,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
       animateDot(dot2, 150).start();
       animateDot(dot3, 300).start();
     }, 1200);
-  }, []);
+  }, [dot1, dot2, dot3, logoOpacity, logoScale, loaderOpacity, pulseAnim, taglineOpacity, titleOpacity, titleTranslateY]);
 
   /**
    * Auto-navigate after splash duration

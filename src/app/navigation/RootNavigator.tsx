@@ -36,6 +36,7 @@ import {
   AdminBannersScreen,
 } from '../../features/admin';
 import { TermsScreen } from '../../features/legal/TermsScreen';
+import { NotificationsScreen } from '../../features/notifications';
 import { RootStackParamList, AuthStackParamList, MainStackParamList } from './types';
 import { useAuth } from '../auth';
 import { AdminGuard, SuperadminGuard } from './AdminGuard';
@@ -229,6 +230,7 @@ export const RootNavigator: React.FC = () => {
 
                   <MainStack.Screen name="InsightDetail" component={InsightDetailsScreen} />
                   <MainStack.Screen name="InsightRequests" component={UserRequestHistoryScreen} />
+                  <MainStack.Screen name="Notifications" component={NotificationsScreen} />
 
                   {/* Settings Screen */}
                   <MainStack.Screen name="Settings">

@@ -1,14 +1,9 @@
-/**
- * Notifications Styles
- * Styling for notifications feature
- */
-
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f7',
+    backgroundColor: theme.background.primary,
   },
 
   // Header
@@ -19,21 +14,22 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.background.primary,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5ea',
+    borderBottomColor: theme.border.main,
   },
   headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#000',
+    color: theme.text.primary,
+    letterSpacing: 0.5,
   },
   unreadBadge: {
-    backgroundColor: '#ff3b30',
+    backgroundColor: theme.accent.error,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -50,21 +46,23 @@ export const styles = StyleSheet.create({
   markAllReadButton: {
     paddingVertical: 6,
     paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: theme.background.tertiary,
   },
   markAllReadButtonText: {
-    fontSize: 16,
-    color: '#007aff',
+    fontSize: 14,
+    color: theme.primary.main,
     fontWeight: '600',
   },
   markAllReadButtonTextDisabled: {
-    color: '#c7c7cc',
+    color: theme.text.disabled,
   },
 
   // Category Filter
   categoryFilterContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.background.primary,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5ea',
+    borderBottomColor: theme.border.main,
   },
   categoryFilterContent: {
     paddingHorizontal: 20,
@@ -72,50 +70,51 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   categoryFilterButton: {
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 16,
-    backgroundColor: '#f2f2f7',
+    borderRadius: 20,
+    backgroundColor: theme.background.tertiary,
     marginRight: 8,
   },
   categoryFilterButtonActive: {
-    backgroundColor: '#007aff',
+    backgroundColor: theme.primary.main,
   },
   categoryFilterText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#000',
+    color: theme.text.secondary,
   },
   categoryFilterTextActive: {
     color: '#fff',
+    fontWeight: '700',
   },
 
   // Section Header
   sectionHeader: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: '#f2f2f7',
+    backgroundColor: theme.background.secondary,
   },
   sectionHeaderText: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#8e8e93',
+    color: theme.text.disabled,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
 
   // Notification Item
   notificationItem: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.background.primary,
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5ea',
+    borderBottomColor: theme.border.main,
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   notificationItemUnread: {
-    backgroundColor: '#f0f8ff',
+    backgroundColor: theme.isDark ? 'rgba(0, 122, 255, 0.1)' : 'rgba(0, 122, 255, 0.05)',
   },
   notificationContent: {
     flex: 1,
@@ -123,12 +122,17 @@ export const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   notificationIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   notificationTextContainer: {
     flex: 1,
@@ -140,38 +144,41 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   notificationTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#000',
+    color: theme.text.primary,
     flex: 1,
     marginRight: 8,
+    lineHeight: 20,
   },
   notificationTitleUnread: {
     fontWeight: '700',
   },
   notificationTime: {
-    fontSize: 12,
-    color: '#8e8e93',
+    fontSize: 11,
+    color: theme.text.disabled,
+    fontWeight: '500',
   },
   notificationBody: {
     fontSize: 14,
-    color: '#3c3c43',
+    color: theme.text.secondary,
     lineHeight: 20,
   },
   notificationBodyUnread: {
-    color: '#000',
+    color: theme.text.primary,
   },
   notificationImage: {
     width: '100%',
-    height: 160,
-    borderRadius: 8,
+    height: 180,
+    borderRadius: 12,
     marginTop: 12,
+    backgroundColor: theme.background.tertiary,
   },
   unreadIndicator: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#007aff',
+    backgroundColor: theme.primary.main,
     marginLeft: 8,
     marginTop: 6,
   },
@@ -179,61 +186,66 @@ export const styles = StyleSheet.create({
   // CTA Buttons
   ctaButtonsContainer: {
     flexDirection: 'row',
-    marginTop: 12,
-    gap: 8,
+    marginTop: 16,
+    gap: 10,
   },
   ctaButton: {
-    paddingVertical: 8,
+    flex: 1,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#f2f2f7',
-    borderWidth: 1,
-    borderColor: '#e5e5ea',
+    borderRadius: 10,
+    backgroundColor: theme.background.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaButtonPrimary: {
-    backgroundColor: '#007aff',
-    borderColor: '#007aff',
+    backgroundColor: theme.primary.main,
   },
   ctaButtonDanger: {
-    backgroundColor: '#ff3b30',
-    borderColor: '#ff3b30',
+    backgroundColor: theme.accent.error,
   },
   ctaButtonText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#000',
+    color: theme.text.primary,
   },
   ctaButtonTextPrimary: {
     color: '#fff',
+    fontWeight: '700',
   },
   ctaButtonTextDanger: {
     color: '#fff',
+    fontWeight: '700',
   },
 
   // Priority Badge
   priorityBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#ff9500',
+    top: -4,
+    right: -4,
+    backgroundColor: theme.accent.warning,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: theme.background.primary,
   },
   priorityBadgeUrgent: {
-    backgroundColor: '#ff3b30',
+    backgroundColor: theme.accent.error,
   },
   priorityBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '800',
     color: '#fff',
-    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 
   // Dismiss Button
   dismissButton: {
-    padding: 4,
+    padding: 6,
     marginLeft: 8,
+    borderRadius: 14,
+    backgroundColor: theme.background.secondary,
   },
 
   // Empty State
@@ -242,20 +254,27 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
+    backgroundColor: theme.background.primary,
   },
-  emptyContentContainer: {
-    flexGrow: 1,
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.background.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
   emptyStateTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#000',
-    marginTop: 20,
-    marginBottom: 8,
+    color: theme.text.primary,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   emptyStateText: {
-    fontSize: 16,
-    color: '#8e8e93',
+    fontSize: 15,
+    color: theme.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -266,36 +285,42 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
+    backgroundColor: theme.background.primary,
   },
   errorStateTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#ff3b30',
+    color: theme.accent.error,
     marginTop: 20,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   errorStateText: {
-    fontSize: 16,
-    color: '#8e8e93',
+    fontSize: 15,
+    color: theme.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 24,
+    marginBottom: 32,
   },
   retryButton: {
-    backgroundColor: '#007aff',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
+    backgroundColor: theme.primary.main,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    elevation: 4,
+    shadowColor: theme.primary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   retryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#fff',
   },
 
   // Loading Footer
   loadingFooter: {
-    paddingVertical: 20,
+    paddingVertical: 30,
     alignItems: 'center',
   },
 });

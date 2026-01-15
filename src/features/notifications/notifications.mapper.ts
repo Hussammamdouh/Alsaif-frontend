@@ -50,7 +50,11 @@ export const isNotificationUnread = (notification: Notification): boolean => {
 /**
  * Format notification timestamp
  */
-export const formatNotificationTime = (timestamp: string): string => {
+export const formatNotificationTime = (
+  timestamp: string,
+  t: (key: string, params?: Record<string, string | number>) => string,
+  language: string = 'en'
+): string => {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -59,20 +63,20 @@ export const formatNotificationTime = (timestamp: string): string => {
   const diffDays = Math.floor(diffMs / 86400000);
 
   if (diffMins < 1) {
-    return 'Just now';
+    return t('notifications.time.justNow');
   } else if (diffMins < 60) {
-    return `${diffMins}m ago`;
+    return t('notifications.time.minsAgo', { count: diffMins });
   } else if (diffHours < 24) {
-    return `${diffHours}h ago`;
+    return t('notifications.time.hoursAgo', { count: diffHours });
   } else if (diffDays < 7) {
-    return `${diffDays}d ago`;
+    return t('notifications.time.daysAgo', { count: diffDays });
   } else {
     // Format as date
     const options: Intl.DateTimeFormatOptions = {
       month: 'short',
       day: 'numeric',
     };
-    return date.toLocaleDateString('en-US', options);
+    return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', options);
   }
 };
 
@@ -126,6 +130,7 @@ export const getNotificationCategory = (type: string): string => {
  * Group notifications by date
  */
 export const groupNotificationsByDate = (notifications: Notification[]) => {
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -147,7 +152,7 @@ export const groupNotificationsByDate = (notifications: Notification[]) => {
     older: [],
   };
 
-  notifications.forEach(notification => {
+  safeNotifications.forEach(notification => {
     const notifDate = new Date(notification.createdAt);
     notifDate.setHours(0, 0, 0, 0);
 
@@ -172,19 +177,21 @@ export const filterNotificationsByCategory = (
   notifications: Notification[],
   category: string
 ): Notification[] => {
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
   if (category === 'all') {
-    return notifications;
+    return safeNotifications;
   }
-  return notifications.filter(n => getNotificationCategory(n.type) === category);
+  return safeNotifications.filter(n => getNotificationCategory(n.type) === category);
 };
 
 /**
  * Sort notifications by priority and date
  */
 export const sortNotifications = (notifications: Notification[]): Notification[] => {
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
   const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
 
-  return [...notifications].sort((a, b) => {
+  return [...safeNotifications].sort((a, b) => {
     // First sort by read status (unread first)
     const aUnread = isNotificationUnread(a);
     const bUnread = isNotificationUnread(b);

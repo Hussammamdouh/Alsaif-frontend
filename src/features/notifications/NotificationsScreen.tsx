@@ -15,10 +15,14 @@ import {
   ActivityIndicator,
   Image,
   Linking,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNotifications } from './notifications.hooks';
+import { useTheme } from '../../app/providers/ThemeProvider';
+import { useLocalization } from '../../app/providers/LocalizationProvider';
 import {
   getNotificationIcon,
   getNotificationColor,
@@ -32,7 +36,7 @@ import {
   sortNotifications,
 } from './notifications.mapper';
 import { Notification } from './notifications.types';
-import { styles } from './notifications.styles';
+import { createStyles } from './notifications.styles';
 import { NOTIFICATION_CATEGORIES } from './notifications.constants';
 
 const NotificationsScreen: React.FC = () => {
@@ -51,6 +55,9 @@ const NotificationsScreen: React.FC = () => {
     dismiss,
   } = useNotifications();
 
+  const { theme, isDark } = useTheme();
+  const { t, language } = useLocalization();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -80,12 +87,12 @@ const NotificationsScreen: React.FC = () => {
             }
           } catch (error) {
             console.error('Navigation failed:', error);
-            Alert.alert('Error', 'Could not open the requested page');
+            Alert.alert(t('common.error'), t('error.navigationFailed') || 'Could not open the requested page');
           }
         }
       }
     },
-    [markAsRead, trackClick, router]
+    [markAsRead, trackClick, router, t]
   );
 
   /**
@@ -94,19 +101,19 @@ const NotificationsScreen: React.FC = () => {
   const handleDismiss = useCallback(
     (notificationId: string) => {
       Alert.alert(
-        'Dismiss Notification',
-        'Are you sure you want to dismiss this notification?',
+        t('notifications.dismiss'),
+        t('notifications.dismissConfirm') || 'Are you sure you want to dismiss this notification?',
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Dismiss',
+            text: t('notifications.dismiss'),
             style: 'destructive',
             onPress: () => dismiss(notificationId),
           },
         ]
       );
     },
-    [dismiss]
+    [dismiss, t]
   );
 
   /**
@@ -114,25 +121,26 @@ const NotificationsScreen: React.FC = () => {
    */
   const handleMarkAllAsRead = useCallback(() => {
     if (unreadCount === 0) {
-      Alert.alert('No Unread Notifications', 'All notifications are already read.');
+      Alert.alert(t('notifications.noUnread'), t('notifications.allReadMessage') || 'All notifications are already read.');
       return;
     }
 
     Alert.alert(
-      'Mark All as Read',
-      `Mark all ${unreadCount} notification${unreadCount > 1 ? 's' : ''} as read?`,
+      t('notifications.markAllRead'),
+      t('notifications.markAllReadConfirm', { count: unreadCount }) || `Mark all ${unreadCount} notifications as read?`,
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Mark All Read', onPress: markAllAsRead },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('notifications.markAllRead'), onPress: markAllAsRead },
       ]
     );
-  }, [unreadCount, markAllAsRead]);
+  }, [unreadCount, markAllAsRead, t]);
 
   /**
    * Filter notifications by selected category
    */
   const filteredNotifications = useMemo(() => {
-    const filtered = filterNotificationsByCategory(notifications, selectedCategory);
+    const safeNotifications = Array.isArray(notifications) ? notifications : [];
+    const filtered = filterNotificationsByCategory(safeNotifications, selectedCategory);
     return sortNotifications(filtered);
   }, [notifications, selectedCategory]);
 
@@ -152,7 +160,7 @@ const NotificationsScreen: React.FC = () => {
       const icon = getNotificationIcon(notification.type);
       const color = getNotificationColor(notification.type);
       const title = getNotificationTitle(notification.type, notification);
-      const time = formatNotificationTime(notification.createdAt);
+      const time = formatNotificationTime(notification.createdAt, t, language);
 
       return (
         <TouchableOpacity
@@ -165,6 +173,20 @@ const NotificationsScreen: React.FC = () => {
             {/* Icon */}
             <View style={[styles.notificationIcon, { backgroundColor: color }]}>
               <Icon name={icon} size={24} color="#fff" />
+
+              {/* Priority Badge */}
+              {(notification.priority === 'high' || notification.priority === 'urgent') && (
+                <View
+                  style={[
+                    styles.priorityBadge,
+                    notification.priority === 'urgent' && styles.priorityBadgeUrgent,
+                  ]}
+                >
+                  <Text style={styles.priorityBadgeText}>
+                    {notification.priority[0].toUpperCase()}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Text Content */}
@@ -177,7 +199,7 @@ const NotificationsScreen: React.FC = () => {
                   ]}
                   numberOfLines={1}
                 >
-                  {title}
+                  {t(title)}
                 </Text>
                 <Text style={styles.notificationTime}>{time}</Text>
               </View>
@@ -189,7 +211,7 @@ const NotificationsScreen: React.FC = () => {
                 ]}
                 numberOfLines={2}
               >
-                {notification.body}
+                {t(notification.body)}
               </Text>
 
               {/* Rich Content - Image */}
@@ -205,7 +227,7 @@ const NotificationsScreen: React.FC = () => {
               {notification.richContent?.ctaButtons &&
                 notification.richContent.ctaButtons.length > 0 && (
                   <View style={styles.ctaButtonsContainer}>
-                    {notification.richContent.ctaButtons.map((button, index) => (
+                    {notification.richContent.ctaButtons.map((button: any, index: number) => (
                       <TouchableOpacity
                         key={index}
                         style={[
@@ -239,20 +261,6 @@ const NotificationsScreen: React.FC = () => {
                     ))}
                   </View>
                 )}
-
-              {/* Priority Badge */}
-              {(notification.priority === 'high' || notification.priority === 'urgent') && (
-                <View
-                  style={[
-                    styles.priorityBadge,
-                    notification.priority === 'urgent' && styles.priorityBadgeUrgent,
-                  ]}
-                >
-                  <Text style={styles.priorityBadgeText}>
-                    {notification.priority.toUpperCase()}
-                  </Text>
-                </View>
-              )}
             </View>
 
             {/* Unread Indicator */}
@@ -265,12 +273,12 @@ const NotificationsScreen: React.FC = () => {
             onPress={() => handleDismiss(notification.id)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="close-circle" size={20} color="#8e8e93" />
+            <Icon name="close" size={16} color={theme.text.disabled} />
           </TouchableOpacity>
         </TouchableOpacity>
       );
     },
-    [handleNotificationPress, handleDismiss]
+    [handleNotificationPress, handleDismiss, styles, theme]
   );
 
   /**
@@ -278,63 +286,72 @@ const NotificationsScreen: React.FC = () => {
    */
   const renderCategoryFilter = () => {
     const categories = [
-      { key: 'all', label: 'All' },
-      { key: NOTIFICATION_CATEGORIES.SUBSCRIPTION, label: 'Subscription' },
-      { key: NOTIFICATION_CATEGORIES.CONTENT, label: 'Content' },
-      { key: NOTIFICATION_CATEGORIES.ENGAGEMENT, label: 'Engagement' },
-      { key: NOTIFICATION_CATEGORIES.PREMIUM, label: 'Premium' },
-      { key: NOTIFICATION_CATEGORIES.SYSTEM, label: 'System' },
+      { key: 'all', label: t('notifications.category.all') },
+      { key: NOTIFICATION_CATEGORIES.SUBSCRIPTION, label: t('notifications.category.subscription') },
+      { key: NOTIFICATION_CATEGORIES.CONTENT, label: t('notifications.category.content') },
+      { key: NOTIFICATION_CATEGORIES.ENGAGEMENT, label: t('notifications.category.engagement') },
+      { key: NOTIFICATION_CATEGORIES.PREMIUM, label: t('notifications.category.premium') },
+      { key: NOTIFICATION_CATEGORIES.SYSTEM, label: t('notifications.category.system') },
     ];
 
     return (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryFilterContainer}
-        contentContainerStyle={styles.categoryFilterContent}
-      >
-        {categories.map(category => (
-          <TouchableOpacity
-            key={category.key}
-            style={[
-              styles.categoryFilterButton,
-              selectedCategory === category.key && styles.categoryFilterButtonActive,
-            ]}
-            onPress={() => setSelectedCategory(category.key)}
-          >
-            <Text
+      <View style={styles.categoryFilterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryFilterContent}
+        >
+          {categories.map(category => (
+            <TouchableOpacity
+              key={category.key}
               style={[
-                styles.categoryFilterText,
-                selectedCategory === category.key && styles.categoryFilterTextActive,
+                styles.categoryFilterButton,
+                selectedCategory === category.key && styles.categoryFilterButtonActive,
               ]}
+              onPress={() => setSelectedCategory(category.key)}
             >
-              {category.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.categoryFilterText,
+                  selectedCategory === category.key && styles.categoryFilterTextActive,
+                ]}
+              >
+                {category.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
     );
   };
 
   /**
    * Render section header
    */
-  const renderSectionHeader = (title: string) => (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionHeaderText}>{title}</Text>
-    </View>
-  );
+  const renderSectionHeader = (titleKey: string) => {
+    let title = titleKey;
+    if (titleKey === 'Today') title = t('notifications.group.today');
+    else if (titleKey === 'Yesterday') title = t('notifications.group.yesterday');
+    else if (titleKey === 'This Week') title = t('notifications.group.thisWeek');
+    else if (titleKey === 'Older') title = t('notifications.group.older');
+
+    return (
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionHeaderText}>{title}</Text>
+      </View>
+    );
+  };
 
   /**
    * Render empty state
    */
   const renderEmptyState = () => (
     <View style={styles.emptyStateContainer}>
-      <Icon name="notifications-off-outline" size={80} color="#c7c7cc" />
-      <Text style={styles.emptyStateTitle}>No Notifications</Text>
-      <Text style={styles.emptyStateText}>
-        You're all caught up! We'll notify you when something new happens.
-      </Text>
+      <View style={styles.emptyIconContainer}>
+        <Icon name="notifications-outline" size={50} color={theme.text.disabled} />
+      </View>
+      <Text style={styles.emptyStateTitle}>{t('notifications.emptyTitle')}</Text>
+      <Text style={styles.emptyStateText}>{t('notifications.emptySubtitle')}</Text>
     </View>
   );
 
@@ -343,14 +360,14 @@ const NotificationsScreen: React.FC = () => {
    */
   const renderErrorState = () => (
     <View style={styles.errorStateContainer}>
-      <Icon name="alert-circle-outline" size={80} color="#ff3b30" />
-      <Text style={styles.errorStateTitle}>Error Loading Notifications</Text>
-      <Text style={styles.errorStateText}>{error}</Text>
+      <Icon name="alert-circle-outline" size={70} color={theme.accent.error} />
+      <Text style={styles.errorStateTitle}>{t('notifications.errorTitle')}</Text>
+      <Text style={styles.errorStateText}>{error || t('notifications.errorSubtitle')}</Text>
       <TouchableOpacity
         style={styles.retryButton}
         onPress={refreshNotifications}
       >
-        <Text style={styles.retryButtonText}>Retry</Text>
+        <Text style={styles.retryButtonText}>{t('notifications.retry')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -363,7 +380,7 @@ const NotificationsScreen: React.FC = () => {
 
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="small" color="#007aff" />
+        <ActivityIndicator size="small" color={theme.primary.main} />
       </View>
     );
   };
@@ -377,17 +394,49 @@ const NotificationsScreen: React.FC = () => {
     }
   }, [hasMore, isFetching, loadMoreNotifications]);
 
+  const listData = useMemo(() => {
+    const data: any[] = [];
+    if (groupedNotifications.today.length > 0) {
+      data.push({ type: 'header', title: 'Today' });
+      data.push(...groupedNotifications.today);
+    }
+    if (groupedNotifications.yesterday.length > 0) {
+      data.push({ type: 'header', title: 'Yesterday' });
+      data.push(...groupedNotifications.yesterday);
+    }
+    if (groupedNotifications.thisWeek.length > 0) {
+      data.push({ type: 'header', title: 'This Week' });
+      data.push(...groupedNotifications.thisWeek);
+    }
+    if (groupedNotifications.older.length > 0) {
+      data.push({ type: 'header', title: 'Older' });
+      data.push(...groupedNotifications.older);
+    }
+    return data;
+  }, [groupedNotifications]);
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+      style={styles.container}
+      edges={['top']}
+    >
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Notifications</Text>
-          {unreadCount > 0 && (
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ marginRight: 12 }}
+          >
+            <Icon name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
+          {unreadCount > 0 ? (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         {notifications.length > 0 && (
@@ -402,7 +451,7 @@ const NotificationsScreen: React.FC = () => {
                 (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
               ]}
             >
-              Mark All Read
+              {t('notifications.markAllRead')}
             </Text>
           </TouchableOpacity>
         )}
@@ -418,23 +467,7 @@ const NotificationsScreen: React.FC = () => {
         renderEmptyState()
       ) : (
         <FlatList
-          data={[
-            ...(groupedNotifications.today.length > 0
-              ? [{ type: 'header', title: 'Today' }, ...groupedNotifications.today]
-              : []),
-            ...(groupedNotifications.yesterday.length > 0
-              ? [
-                { type: 'header', title: 'Yesterday' },
-                ...groupedNotifications.yesterday,
-              ]
-              : []),
-            ...(groupedNotifications.thisWeek.length > 0
-              ? [{ type: 'header', title: 'This Week' }, ...groupedNotifications.thisWeek]
-              : []),
-            ...(groupedNotifications.older.length > 0
-              ? [{ type: 'header', title: 'Older' }, ...groupedNotifications.older]
-              : []),
-          ]}
+          data={listData}
           renderItem={({ item }: any) => {
             if (item.type === 'header') {
               return renderSectionHeader(item.title);
@@ -448,18 +481,18 @@ const NotificationsScreen: React.FC = () => {
             <RefreshControl
               refreshing={isFetching && notifications.length === 0}
               onRefresh={refreshNotifications}
-              tintColor="#007aff"
+              tintColor={theme.primary.main}
             />
           }
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderLoadingFooter}
           contentContainerStyle={
-            notifications.length === 0 ? styles.emptyContentContainer : undefined
+            notifications.length === 0 ? { flex: 1, justifyContent: 'center' } : undefined
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

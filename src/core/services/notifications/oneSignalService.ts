@@ -48,16 +48,29 @@ export const initializeOneSignal = async (userId?: string): Promise<void> => {
         } else if (initError.message?.includes('Can only be used on')) {
           console.error('ONESIGNAL DOMAIN MISMATCH: Please check your OneSignal Dashboard Settings.');
           console.error('If testing locally, ensure "Localhost Support" is enabled in OneSignal Web Push settings.');
-          // Suppress error in console to prevent crash but log clearly
+          // Stop here if domain mismatch, login will fail anyway
+          return;
         } else {
           throw initError;
         }
       }
 
-      if (userId) {
-        await OneSignalWeb.login(userId);
+      if (userId && isWebInitialized) {
+        try {
+          // Small delay to ensure SDK internal objects are stable
+          // This helps prevent 'Cannot read properties of undefined (reading "tt")'
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await OneSignalWeb.login(userId);
+          console.log('OneSignal Web login successful for:', userId);
+        } catch (loginError: any) {
+          if (loginError.message?.includes('reading \'tt\'')) {
+            console.warn('OneSignal Web: SDK internal state not ready for login (tt error). This is common during domain mismatch.');
+          } else {
+            console.warn('OneSignal Web login failed:', loginError.message);
+          }
+        }
       }
-      console.log('OneSignal Web initialized successfully');
+      console.log('OneSignal Web initialization sequence finished');
       return;
     }
 
@@ -93,7 +106,18 @@ export const setOneSignalUserId = async (userId: string): Promise<void> => {
   try {
     if (Platform.OS === 'web') {
       const { default: OneSignalWeb } = await import('react-onesignal');
-      await OneSignalWeb.login(userId);
+      try {
+        // Small delay to ensure SDK internal objects are stable
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await OneSignalWeb.login(userId);
+        console.log('OneSignal Web login successful for:', userId);
+      } catch (loginError: any) {
+        if (loginError.message?.includes('reading \'tt\'')) {
+          console.warn('OneSignal Web: SDK internal state not ready for login (tt error).');
+        } else {
+          console.warn('OneSignal Web login failed:', loginError.message);
+        }
+      }
       return;
     }
 
@@ -142,8 +166,12 @@ export const removeOneSignalUserId = async (): Promise<void> => {
  */
 export const getOneSignalPlayerId = async (): Promise<string | null> => {
   try {
-    const deviceState = await OneSignal.User.getOnesignalId();
-    return deviceState || null;
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      return (OneSignalWeb.User as any).onesignalId || null;
+    }
+    const playerId = (OneSignal.User as any).onesignalId;
+    return playerId || null;
   } catch (error) {
     console.error('Failed to get OneSignal player ID:', error);
     return null;
@@ -155,7 +183,11 @@ export const getOneSignalPlayerId = async (): Promise<string | null> => {
  */
 export const getOneSignalPushToken = async (): Promise<string | null> => {
   try {
-    const pushToken = OneSignal.User.pushSubscription.token;
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      return (OneSignalWeb.User as any).pushSubscription?.token || null;
+    }
+    const pushToken = (OneSignal.User as any).pushSubscription?.token;
     return pushToken || null;
   } catch (error) {
     console.error('Failed to get OneSignal push token:', error);
@@ -176,16 +208,24 @@ export const registerOneSignalDevice = async (userId: string): Promise<void> => 
       return;
     }
 
-    const deviceId = await DeviceInfo.getUniqueId();
-    const deviceModel = await DeviceInfo.getModel();
-    const systemVersion = await DeviceInfo.getSystemVersion();
-    const appVersion = await DeviceInfo.getVersion();
+    let deviceId = 'web-device';
+    let deviceModel = 'Web Browser';
+    let systemVersion = 'N/A';
+    let appVersion = '1.0.0';
+
+    if (Platform.OS !== 'web') {
+      const { default: DeviceInfo } = await import('react-native-device-info');
+      deviceId = await DeviceInfo.getUniqueId();
+      deviceModel = await DeviceInfo.getModel();
+      systemVersion = await DeviceInfo.getSystemVersion();
+      appVersion = await DeviceInfo.getVersion();
+    }
 
     // Register with backend
     await registerPushToken({
       token: pushToken,
       deviceId: playerId, // Use OneSignal player ID
-      platform: Platform.OS as 'ios' | 'android',
+      platform: Platform.OS === 'web' ? 'web' : (Platform.OS as any),
       deviceInfo: {
         model: deviceModel,
         osVersion: systemVersion,
@@ -222,6 +262,11 @@ export const setOneSignalTags = async (tags: Record<string, string>): Promise<vo
  */
 export const removeOneSignalTags = async (tagKeys: string[]): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      await OneSignalWeb.User.removeTags(tagKeys);
+      return;
+    }
     OneSignal.User.removeTags(tagKeys);
     console.log('OneSignal tags removed:', tagKeys);
   } catch (error) {
@@ -234,6 +279,11 @@ export const removeOneSignalTags = async (tagKeys: string[]): Promise<void> => {
  */
 export const setOneSignalEmail = async (email: string): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      (OneSignalWeb.User as any).addEmail(email);
+      return;
+    }
     OneSignal.User.addEmail(email);
     console.log('OneSignal email set:', email);
   } catch (error) {
@@ -246,6 +296,11 @@ export const setOneSignalEmail = async (email: string): Promise<void> => {
  */
 export const removeOneSignalEmail = async (email: string): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      (OneSignalWeb.User as any).removeEmail(email);
+      return;
+    }
     OneSignal.User.removeEmail(email);
     console.log('OneSignal email removed');
   } catch (error) {
@@ -258,6 +313,11 @@ export const removeOneSignalEmail = async (email: string): Promise<void> => {
  */
 export const setOneSignalSMS = async (phoneNumber: string): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      await (OneSignalWeb.User as any).addSms(phoneNumber);
+      return;
+    }
     OneSignal.User.addSms(phoneNumber);
     console.log('OneSignal SMS set:', phoneNumber);
   } catch (error) {
@@ -273,6 +333,30 @@ export const setupOneSignalListeners = (handlers: {
   onNotificationOpened?: (openedEvent: any) => void;
 }): (() => void) => {
   const { onNotificationReceived, onNotificationOpened } = handlers;
+
+  if (Platform.OS === 'web') {
+    // Web implementation using react-onesignal
+    import('react-onesignal').then(({ default: OneSignalWeb }) => {
+      OneSignalWeb.Notifications.addEventListener('foregroundWillDisplay', (event: any) => {
+        console.log('OneSignal Web notification will display:', event);
+        if (onNotificationReceived) onNotificationReceived(event.notification);
+      });
+
+      OneSignalWeb.Notifications.addEventListener('click', (event: any) => {
+        console.log('OneSignal Web notification clicked:', event);
+        if (onNotificationOpened) {
+          onNotificationOpened({
+            notification: event.notification,
+            action: event.result,
+          });
+        }
+      });
+    });
+
+    return () => {
+      // Cleanup for web is handled by SDK internally or not needed as much
+    };
+  }
 
   // Foreground notification received listener
   const foregroundListener = OneSignal.Notifications.addEventListener(
@@ -314,18 +398,18 @@ export const setupOneSignalListeners = (handlers: {
     }
   );
 
-  // Subscription change listener
-  const subscriptionListener = OneSignal.User.pushSubscription.addEventListener(
+  // Subscription change listener (Native only, web handles via SDK/sw)
+  const subscriptionListener = (Platform.OS as string) !== 'web' ? (OneSignal.User as any).pushSubscription.addEventListener(
     'change',
     (subscription: any) => {
       console.log('OneSignal subscription changed:', subscription);
     }
-  );
+  ) : null;
 
   // Return cleanup function
   return () => {
     // Only native listeners need removal this way
-    if (Platform.OS !== 'web') {
+    if ((Platform.OS as string) !== 'web') {
       try {
         (foregroundListener as any)?.remove?.();
         (clickListener as any)?.remove?.();
@@ -343,6 +427,10 @@ export const setupOneSignalListeners = (handlers: {
  */
 export const areNotificationsEnabled = async (): Promise<boolean> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      return OneSignalWeb.Notifications.permission;
+    }
     const permission = await OneSignal.Notifications.getPermissionAsync();
     return permission;
   } catch (error) {
@@ -356,6 +444,10 @@ export const areNotificationsEnabled = async (): Promise<boolean> => {
  */
 export const promptForPushPermission = async (): Promise<boolean> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      return await OneSignalWeb.Notifications.requestPermission();
+    }
     const permission = await OneSignal.Notifications.requestPermission(true);
     return permission;
   } catch (error) {
@@ -367,16 +459,26 @@ export const promptForPushPermission = async (): Promise<boolean> => {
 /**
  * Disable push notifications
  */
-export const disablePushNotifications = (): void => {
-  OneSignal.User.pushSubscription.optOut();
+export const disablePushNotifications = async (): Promise<void> => {
+  if (Platform.OS === 'web') {
+    const { default: OneSignalWeb } = await import('react-onesignal');
+    await (OneSignalWeb.User as any).pushSubscription.optOut();
+    return;
+  }
+  (OneSignal.User as any).pushSubscription.optOut();
   console.log('Push notifications disabled');
 };
 
 /**
  * Enable push notifications
  */
-export const enablePushNotifications = (): void => {
-  OneSignal.User.pushSubscription.optIn();
+export const enablePushNotifications = async (): Promise<void> => {
+  if (Platform.OS === 'web') {
+    const { default: OneSignalWeb } = await import('react-onesignal');
+    await (OneSignalWeb.User as any).pushSubscription.optIn();
+    return;
+  }
+  (OneSignal.User as any).pushSubscription.optIn();
   console.log('Push notifications enabled');
 };
 
@@ -394,14 +496,22 @@ export const setNotificationCategories = (categories: any[]): void => {
  * Clear all OneSignal notifications
  */
 export const clearAllOneSignalNotifications = (): void => {
-  OneSignal.Notifications.clearAll();
-  console.log('All OneSignal notifications cleared');
+  if ((Platform.OS as string) !== 'web') {
+    OneSignal.Notifications.clearAll();
+    console.log('All OneSignal notifications cleared');
+  }
 };
 
 /**
  * Set language (for localized notifications)
  */
 export const setOneSignalLanguage = (languageCode: string): void => {
+  if (Platform.OS === 'web') {
+    import('react-onesignal').then(({ default: OneSignalWeb }) => {
+      OneSignalWeb.User.setLanguage(languageCode);
+    });
+    return;
+  }
   OneSignal.User.setLanguage(languageCode);
   console.log('OneSignal language set:', languageCode);
 };
@@ -410,6 +520,12 @@ export const setOneSignalLanguage = (languageCode: string): void => {
  * Trigger in-app message
  */
 export const triggerInAppMessage = (triggerId: string): void => {
+  if (Platform.OS === 'web') {
+    import('react-onesignal').then(({ default: OneSignalWeb }) => {
+      (OneSignalWeb as any).InAppMessages.addTrigger(triggerId, 'true');
+    });
+    return;
+  }
   OneSignal.InAppMessages.addTrigger(triggerId, 'true');
   console.log('In-app message triggered:', triggerId);
 };
@@ -418,6 +534,12 @@ export const triggerInAppMessage = (triggerId: string): void => {
  * Pause in-app messages
  */
 export const pauseInAppMessages = (): void => {
+  if (Platform.OS === 'web') {
+    import('react-onesignal').then(({ default: OneSignalWeb }) => {
+      (OneSignalWeb as any).InAppMessages.setPaused(true);
+    });
+    return;
+  }
   OneSignal.InAppMessages.setPaused(true);
   console.log('In-app messages paused');
 };
@@ -426,6 +548,12 @@ export const pauseInAppMessages = (): void => {
  * Resume in-app messages
  */
 export const resumeInAppMessages = (): void => {
+  if (Platform.OS === 'web') {
+    import('react-onesignal').then(({ default: OneSignalWeb }) => {
+      (OneSignalWeb as any).InAppMessages.setPaused(false);
+    });
+    return;
+  }
   OneSignal.InAppMessages.setPaused(false);
   console.log('In-app messages resumed');
 };
@@ -453,11 +581,12 @@ export const sendOneSignalOutcome = async (
   value?: number
 ): Promise<void> => {
   try {
-    if (value !== undefined) {
-      OneSignal.Session.addOutcome(outcomeName);
-    } else {
-      OneSignal.Session.addOutcome(outcomeName);
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      (OneSignalWeb as any).Session.addOutcome(outcomeName, value);
+      return;
     }
+    (OneSignal.Session as any).addOutcome(outcomeName, value);
     console.log('OneSignal outcome sent:', outcomeName, value);
   } catch (error) {
     console.error('Failed to send outcome:', error);

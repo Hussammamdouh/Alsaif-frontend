@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { theme as staticTheme } from '../../core/theme';
@@ -53,6 +53,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    // @ts-ignore - boxShadow is supported on web but not in RN StyleSheet types
+    boxShadow: Platform.OS === 'web' ? '0px 2px 3.84px rgba(0,0,0,0.25)' : undefined,
   },
   content: {
     flexDirection: 'row',

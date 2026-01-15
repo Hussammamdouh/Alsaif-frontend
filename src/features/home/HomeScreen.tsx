@@ -23,6 +23,7 @@ import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription/useSubscriptionAccess';
 import { useIsAdmin } from '../../app/auth/auth.hooks';
 import { BannerCarousel } from './components/BannerCarousel';
+import { useUnreadBadge } from '../notifications';
 
 type TabType = 'free' | 'premium';
 
@@ -32,6 +33,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const { hasPremiumAccess } = useSubscriptionAccess();
   const isAdmin = useIsAdmin();
+  const { count: unreadNotifications } = useUnreadBadge();
   const [activeTab, setActiveTab] = useState<TabType>('free');
   const [showRequestModal, setShowRequestModal] = useState(false);
 
@@ -69,24 +71,38 @@ export const HomeScreen: React.FC = React.memo(() => {
         <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
           {t('insights.title')}
         </Text>
-        {hasPremiumAccess && (
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity
-              style={[styles.addRequestButton, { backgroundColor: theme.background.tertiary }]}
-              onPress={() => navigation.navigate('InsightRequests')}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="list" size={20} color={theme.text.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.addRequestButton, { backgroundColor: theme.primary.main }]}
-              onPress={handleAddRequest}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        )}
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <TouchableOpacity
+            style={[styles.addRequestButton, { backgroundColor: theme.background.tertiary }]}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="notifications-outline" size={20} color={theme.text.primary} />
+            {unreadNotifications > 0 ? (
+              <View style={[styles.badge, { backgroundColor: theme.accent.error }]}>
+                <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
+              </View>
+            ) : null}
+          </TouchableOpacity>
+          {hasPremiumAccess && (
+            <>
+              <TouchableOpacity
+                style={[styles.addRequestButton, { backgroundColor: theme.background.tertiary }]}
+                onPress={() => navigation.navigate('InsightRequests')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="list" size={20} color={theme.text.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.addRequestButton, { backgroundColor: theme.primary.main }]}
+                onPress={handleAddRequest}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
       </View>
 
       {/* Top Tabs - Sticky */}
@@ -189,6 +205,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   headerTitle: {
     fontSize: 24,
