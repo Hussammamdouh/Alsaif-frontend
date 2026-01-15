@@ -14,7 +14,9 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Linking,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNotifications } from './notifications.hooks';
 import {
@@ -49,6 +51,8 @@ const NotificationsScreen: React.FC = () => {
     dismiss,
   } = useNotifications();
 
+  const router = useRouter();
+
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   /**
@@ -68,13 +72,20 @@ const NotificationsScreen: React.FC = () => {
       if (hasNotificationAction(notification)) {
         const actionUrl = getNotificationActionUrl(notification);
         if (actionUrl) {
-          // TODO: Implement deep linking navigation
-          console.log('Navigate to:', actionUrl);
-          Alert.alert('Navigation', `Would navigate to: ${actionUrl}`);
+          try {
+            if (actionUrl.startsWith('http')) {
+              await Linking.openURL(actionUrl);
+            } else {
+              router.push(actionUrl as any);
+            }
+          } catch (error) {
+            console.error('Navigation failed:', error);
+            Alert.alert('Error', 'Could not open the requested page');
+          }
         }
       }
     },
-    [markAsRead, trackClick]
+    [markAsRead, trackClick, router]
   );
 
   /**
@@ -202,9 +213,17 @@ const NotificationsScreen: React.FC = () => {
                           button.style === 'primary' && styles.ctaButtonPrimary,
                           button.style === 'danger' && styles.ctaButtonDanger,
                         ]}
-                        onPress={() => {
-                          console.log('CTA clicked:', button.url);
-                          Alert.alert('CTA', `Navigate to: ${button.url}`);
+                        onPress={async () => {
+                          try {
+                            if (button.url.startsWith('http')) {
+                              await Linking.openURL(button.url);
+                            } else {
+                              router.push(button.url as any);
+                            }
+                            await trackClick(notification.id);
+                          } catch (error) {
+                            console.error('CTA Navigation failed:', error);
+                          }
                         }}
                       >
                         <Text
@@ -405,9 +424,9 @@ const NotificationsScreen: React.FC = () => {
               : []),
             ...(groupedNotifications.yesterday.length > 0
               ? [
-                  { type: 'header', title: 'Yesterday' },
-                  ...groupedNotifications.yesterday,
-                ]
+                { type: 'header', title: 'Yesterday' },
+                ...groupedNotifications.yesterday,
+              ]
               : []),
             ...(groupedNotifications.thisWeek.length > 0
               ? [{ type: 'header', title: 'This Week' }, ...groupedNotifications.thisWeek]

@@ -146,15 +146,15 @@ export const useNotifications = () => {
         notifications: prev.notifications.map(n =>
           n.id === notificationId
             ? {
-                ...n,
-                channels: {
-                  ...n.channels,
-                  inApp: {
-                    ...n.channels.inApp,
-                    readAt: new Date().toISOString(),
-                  },
+              ...n,
+              channels: {
+                ...n.channels,
+                inApp: {
+                  ...n.channels.inApp,
+                  readAt: new Date().toISOString(),
                 },
-              }
+              },
+            }
             : n
         ),
         unreadCount: Math.max(0, prev.unreadCount - 1),
@@ -225,13 +225,13 @@ export const useNotifications = () => {
         notifications: prev.notifications.map(n =>
           n.id === notificationId
             ? {
-                ...n,
-                analytics: {
-                  ...n.analytics,
-                  clicked: true,
-                  clickedAt: new Date().toISOString(),
-                },
-              }
+              ...n,
+              analytics: {
+                ...n.analytics,
+                clicked: true,
+                clickedAt: new Date().toISOString(),
+              },
+            }
             : n
         ),
       }));
@@ -260,10 +260,10 @@ export const useNotifications = () => {
         unreadCount: Math.max(
           0,
           prev.unreadCount -
-            (prev.notifications.find(n => n.id === notificationId)?.channels.inApp
-              .readAt
-              ? 0
-              : 1)
+          (prev.notifications.find(n => n.id === notificationId)?.channels.inApp
+            .readAt
+            ? 0
+            : 1)
         ),
         isUpdating: false,
       }));
@@ -411,12 +411,12 @@ export const usePushNotifications = () => {
   /**
    * Unregister push token
    */
-  const unregisterToken = useCallback(async (deviceId: string) => {
+  const unregisterToken = useCallback(async (token: string) => {
     setIsRegistering(true);
     setError(null);
 
     try {
-      await unregisterPushToken(deviceId);
+      await unregisterPushToken(token);
       setIsRegistering(false);
     } catch (err: any) {
       setError(err.message || 'Failed to unregister push token');

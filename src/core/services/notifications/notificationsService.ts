@@ -34,13 +34,21 @@ export const getNotifications = async (params?: {
   if (params?.unreadOnly) queryParams.append('unreadOnly', 'true');
 
   const url = `/api/notifications/history${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-  const response = await apiClient.get<GetNotificationsResponse>(url);
+  const response = await apiClient.get<any>(url);
 
   if (!response.success || !response.data) {
     throw new Error(response.message || 'Failed to fetch notifications');
   }
 
-  return response.data;
+  // Map backend structure to frontend expectation
+  const { notifications, pagination } = response.data;
+  return {
+    notifications,
+    total: pagination.total,
+    page: pagination.page,
+    limit: pagination.limit,
+    hasMore: pagination.page < pagination.pages,
+  };
 };
 
 /**
@@ -158,9 +166,10 @@ export const registerPushToken = async (
 /**
  * Unregister push notification token
  */
-export const unregisterPushToken = async (deviceId: string): Promise<void> => {
+export const unregisterPushToken = async (token: string): Promise<void> => {
   const response = await apiClient.delete<RegisterPushTokenResponse>(
-    `/api/notifications/push-token/${deviceId}`
+    '/api/notifications/push-token',
+    { data: { token } }
   );
 
   if (!response.success) {

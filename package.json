@@ -24,6 +24,7 @@
     "babel-preset-expo": "^54.0.9",
     "expo": "~54.0.31",
     "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.20",
     "expo-linear-gradient": "^15.0.8",
     "expo-linking": "~8.0.11",
     "expo-router": "~6.0.21",
@@ -43,6 +44,7 @@
     "react-native-svg": "15.12.1",
     "react-native-vector-icons": "^10.3.0",
     "react-native-web": "^0.21.0",
+    "react-onesignal": "^3.4.6",
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {

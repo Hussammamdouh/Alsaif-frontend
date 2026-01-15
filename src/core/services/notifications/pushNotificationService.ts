@@ -14,6 +14,8 @@ import { getNotificationIcon, getNotificationColor } from '../../../features/not
  * Request notification permissions
  */
 export const requestNotificationPermission = async (): Promise<boolean> => {
+  if (Platform.OS === 'web') return true; // Handled by OneSignal on web
+
   try {
     if (Platform.OS === 'ios') {
       const authStatus = await messaging().requestPermission();
@@ -49,6 +51,8 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
  * Get FCM token
  */
 export const getFCMToken = async (): Promise<string | null> => {
+  if (Platform.OS === 'web') return null;
+
   try {
     const token = await messaging().getToken();
     console.log('FCM Token:', token);
@@ -63,6 +67,8 @@ export const getFCMToken = async (): Promise<string | null> => {
  * Register device for push notifications
  */
 export const registerDeviceForPushNotifications = async (): Promise<boolean> => {
+  if (Platform.OS === 'web') return true; // Handled by OneSignal on web
+
   try {
     // Request permission
     const hasPermission = await requestNotificationPermission();
@@ -145,6 +151,8 @@ export const createNotificationChannel = async (
  * Initialize default notification channels (Android)
  */
 export const initializeNotificationChannels = async (): Promise<void> => {
+  if (Platform.OS === 'web') return;
+
   if (Platform.OS === 'android') {
     await createNotificationChannel(
       'default',
@@ -279,6 +287,8 @@ export const setupPushNotificationListeners = (handlers: {
   onNotificationOpened?: (data: any) => void;
   onTokenRefresh?: (token: string) => void;
 }): (() => void) => {
+  if (Platform.OS === 'web') return () => { };
+
   const {
     onNotificationReceived,
     onNotificationOpened,

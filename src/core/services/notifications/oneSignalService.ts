@@ -3,19 +3,65 @@
  * Handles OneSignal push notification integration for rich, customized notifications
  */
 
-import OneSignal from 'react-native-onesignal';
+import { OneSignal } from 'react-native-onesignal';
 import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { registerPushToken } from './notificationsService';
 
 // OneSignal App ID - Replace with your actual OneSignal App ID
-const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID || '__ONESIGNAL_APP_ID__';
+const ONESIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID || '__ONESIGNAL_APP_ID__';
+
+// Track initialization status to prevent multiple init calls
+let isWebInitialized = false;
 
 /**
  * Initialize OneSignal
  */
 export const initializeOneSignal = async (userId?: string): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      if (isWebInitialized) {
+        console.log('OneSignal Web already initialized');
+        if (userId) await setOneSignalUserId(userId);
+        return;
+      }
+
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      console.log('Current Browser Origin:', window.location.origin);
+
+      try {
+        console.log('Attempting OneSignal Web Init with ID:', ONESIGNAL_APP_ID);
+        await OneSignalWeb.init({
+          appId: ONESIGNAL_APP_ID,
+          allowLocalhostAsSecureOrigin: true,
+          // Hide the default bell icon
+          notifyButton: {
+            enable: false,
+          } as any,
+        });
+        isWebInitialized = true;
+      } catch (initError: any) {
+        console.error('OneSignal Web Init Catch:', initError.message);
+        if (initError.message?.includes('already initialized')) {
+          isWebInitialized = true;
+          console.log('OneSignal Web detected previous initialization');
+        } else if (initError.message?.includes('Can only be used on')) {
+          console.error('ONESIGNAL DOMAIN MISMATCH: Please check your OneSignal Dashboard Settings.');
+          console.error('If testing locally, ensure "Localhost Support" is enabled in OneSignal Web Push settings.');
+          // Suppress error in console to prevent crash but log clearly
+        } else {
+          throw initError;
+        }
+      }
+
+      if (userId) {
+        await OneSignalWeb.login(userId);
+      }
+      console.log('OneSignal Web initialized successfully');
+      return;
+    }
+
+    // Mobile (Native) Initialization
     // Remove this method to stop OneSignal Debugging
     OneSignal.Debug.setLogLevel(6);
 
@@ -45,6 +91,12 @@ export const initializeOneSignal = async (userId?: string): Promise<void> => {
  */
 export const setOneSignalUserId = async (userId: string): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      await OneSignalWeb.login(userId);
+      return;
+    }
+
     OneSignal.login(userId);
     console.log('OneSignal user ID set:', userId);
 
@@ -61,6 +113,23 @@ export const setOneSignalUserId = async (userId: string): Promise<void> => {
  */
 export const removeOneSignalUserId = async (): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      if (!isWebInitialized) {
+        console.warn('OneSignal Web not initialized, skipping logout');
+        return;
+      }
+      const { default: OneSignalWeb } = await import('react-onesignal');
+
+      // Ensure we are logged in or have a state session before logging out
+      // OneSignal Web sometimes throws if calling logout when already logged out or uninitialized
+      try {
+        await OneSignalWeb.logout();
+      } catch (logoutError) {
+        console.warn('OneSignal Web logout suppressed error:', logoutError);
+      }
+      return;
+    }
+
     OneSignal.logout();
     console.log('OneSignal user logged out');
   } catch (error) {
@@ -86,7 +155,7 @@ export const getOneSignalPlayerId = async (): Promise<string | null> => {
  */
 export const getOneSignalPushToken = async (): Promise<string | null> => {
   try {
-    const pushToken = await OneSignal.User.pushSubscription.getToken();
+    const pushToken = OneSignal.User.pushSubscription.token;
     return pushToken || null;
   } catch (error) {
     console.error('Failed to get OneSignal push token:', error);
@@ -135,6 +204,12 @@ export const registerOneSignalDevice = async (userId: string): Promise<void> => 
  */
 export const setOneSignalTags = async (tags: Record<string, string>): Promise<void> => {
   try {
+    if (Platform.OS === 'web') {
+      const { default: OneSignalWeb } = await import('react-onesignal');
+      await OneSignalWeb.User.addTags(tags);
+      return;
+    }
+
     OneSignal.User.addTags(tags);
     console.log('OneSignal tags set:', tags);
   } catch (error) {
@@ -202,7 +277,7 @@ export const setupOneSignalListeners = (handlers: {
   // Foreground notification received listener
   const foregroundListener = OneSignal.Notifications.addEventListener(
     'foregroundWillDisplay',
-    (event) => {
+    (event: any) => {
       console.log('OneSignal notification will display:', event);
 
       if (onNotificationReceived) {
@@ -219,7 +294,7 @@ export const setupOneSignalListeners = (handlers: {
   // Notification clicked/opened listener
   const clickListener = OneSignal.Notifications.addEventListener(
     'click',
-    (event) => {
+    (event: any) => {
       console.log('OneSignal notification clicked:', event);
 
       if (onNotificationOpened) {
@@ -234,7 +309,7 @@ export const setupOneSignalListeners = (handlers: {
   // Permission change listener
   const permissionListener = OneSignal.Notifications.addEventListener(
     'permissionChange',
-    (permission) => {
+    (permission: any) => {
       console.log('OneSignal permission changed:', permission);
     }
   );
@@ -242,17 +317,24 @@ export const setupOneSignalListeners = (handlers: {
   // Subscription change listener
   const subscriptionListener = OneSignal.User.pushSubscription.addEventListener(
     'change',
-    (subscription) => {
+    (subscription: any) => {
       console.log('OneSignal subscription changed:', subscription);
     }
   );
 
   // Return cleanup function
   return () => {
-    foregroundListener.remove();
-    clickListener.remove();
-    permissionListener.remove();
-    subscriptionListener.remove();
+    // Only native listeners need removal this way
+    if (Platform.OS !== 'web') {
+      try {
+        (foregroundListener as any)?.remove?.();
+        (clickListener as any)?.remove?.();
+        (permissionListener as any)?.remove?.();
+        (subscriptionListener as any)?.remove?.();
+      } catch (e) {
+        console.warn('Listener removal error:', e);
+      }
+    }
   };
 };
 
