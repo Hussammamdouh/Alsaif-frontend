@@ -6,6 +6,7 @@
 
 // Dark Theme Colors
 export const darkColors = {
+  mode: 'dark',
   // Primary Brand Colors
   primary: {
     main: '#438730', // Dark green
@@ -92,6 +93,7 @@ export const darkColors = {
 
 // Light Theme Colors
 export const lightColors = {
+  mode: 'light',
   // Primary Brand Colors
   primary: {
     main: '#438730', // Dark green

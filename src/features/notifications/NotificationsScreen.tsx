@@ -17,7 +17,9 @@ import {
   Linking,
   StatusBar,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../../app/navigation/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNotifications } from './notifications.hooks';
@@ -58,9 +60,18 @@ const NotificationsScreen: React.FC = () => {
   const { theme, isDark } = useTheme();
   const { t, language } = useLocalization();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const router = useRouter();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  const route = useRoute<RouteProp<MainStackParamList, 'Notifications'>>();
+  const initialCategory = route.params?.category || 'all';
 
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+
+  // Update selected category if route params change
+  React.useEffect(() => {
+    if (route.params?.category) {
+      setSelectedCategory(route.params.category);
+    }
+  }, [route.params?.category]);
 
   /**
    * Handle notification press
@@ -83,7 +94,7 @@ const NotificationsScreen: React.FC = () => {
             if (actionUrl.startsWith('http')) {
               await Linking.openURL(actionUrl);
             } else {
-              router.push(actionUrl as any);
+              navigation.navigate(actionUrl as any);
             }
           } catch (error) {
             console.error('Navigation failed:', error);
@@ -92,7 +103,7 @@ const NotificationsScreen: React.FC = () => {
         }
       }
     },
-    [markAsRead, trackClick, router, t]
+    [markAsRead, trackClick, navigation, t]
   );
 
   /**
@@ -240,7 +251,7 @@ const NotificationsScreen: React.FC = () => {
                             if (button.url.startsWith('http')) {
                               await Linking.openURL(button.url);
                             } else {
-                              router.push(button.url as any);
+                              navigation.navigate(button.url as any);
                             }
                             await trackClick(notification.id);
                           } catch (error) {
@@ -278,7 +289,7 @@ const NotificationsScreen: React.FC = () => {
         </TouchableOpacity>
       );
     },
-    [handleNotificationPress, handleDismiss, styles, theme]
+    [handleNotificationPress, handleDismiss, styles, theme, navigation]
   );
 
   /**
@@ -426,7 +437,7 @@ const NotificationsScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.headerTitleContainer}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => navigation.goBack()}
             style={{ marginRight: 12 }}
           >
             <Icon name="arrow-back" size={24} color={theme.text.primary} />

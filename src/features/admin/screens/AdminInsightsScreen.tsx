@@ -48,7 +48,7 @@ export const AdminInsightsScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<any>();
   const { theme, isDark } = useTheme();
-  const { t } = useLocalization();
+  const { t, isRTL } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
 
@@ -420,8 +420,8 @@ export const AdminInsightsScreen: React.FC = () => {
         <View style={localStyles.modalContainer}>
           <View style={localStyles.modalContent}>
             {/* Modal Header */}
-            <View style={localStyles.modalHeader}>
-              <Text style={localStyles.modalTitle}>{title}</Text>
+            <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{title}</Text>
               <TouchableOpacity
                 style={localStyles.modalCloseButton}
                 onPress={() => {
@@ -429,7 +429,7 @@ export const AdminInsightsScreen: React.FC = () => {
                   setSelectedInsight(null);
                 }}
               >
-                <Ionicons name="close" size={24} color={theme.text.tertiary} />
+                <Ionicons name="close" size={24} color={theme.text.secondary} />
               </TouchableOpacity>
             </View>
 
@@ -440,7 +440,7 @@ export const AdminInsightsScreen: React.FC = () => {
               </View>
             ) : null}
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
               {/* Basic Information Section */}
               <View style={localStyles.formSection}>
                 <View style={localStyles.formGroup}>
@@ -457,7 +457,7 @@ export const AdminInsightsScreen: React.FC = () => {
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.insightContent')} *</Text>
                   <TextInput
-                    style={[localStyles.formInput, localStyles.textArea]}
+                    style={[localStyles.formInput, localStyles.textArea, { textAlign: isRTL ? 'right' : 'left' }]}
                     placeholder={t('admin.insightContentPlaceholder')}
                     placeholderTextColor={theme.text.tertiary}
                     value={formContent}
@@ -470,7 +470,7 @@ export const AdminInsightsScreen: React.FC = () => {
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.insightExcerpt')}</Text>
                   <TextInput
-                    style={[localStyles.formInput, localStyles.textArea]}
+                    style={[localStyles.formInput, localStyles.textArea, { textAlign: isRTL ? 'right' : 'left' }]}
                     placeholder={t('admin.insightExcerptPlaceholder')}
                     placeholderTextColor={theme.text.tertiary}
                     value={formExcerpt}
@@ -910,15 +910,15 @@ export const AdminInsightsScreen: React.FC = () => {
           <View style={localStyles.modalOverlay}>
             <View style={localStyles.modalContainer}>
               <View style={localStyles.modalContent}>
-                <View style={localStyles.modalHeader}>
-                  <Text style={localStyles.modalTitle}>{t('admin.moderateRequest')}</Text>
+                <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.moderateRequest')}</Text>
                   <TouchableOpacity onPress={() => setShowModerateModal(false)}>
                     <Ionicons name="close" size={24} color={theme.text.primary} />
                   </TouchableOpacity>
                 </View>
 
                 {selectedRequest && (
-                  <ScrollView style={{ padding: 16 }}>
+                  <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, flexGrow: 1 }} showsVerticalScrollIndicator={false}>
                     <Text style={[localStyles.label, { marginBottom: 4 }]}>{t('admin.insightTitle')}</Text>
                     <Text style={[localStyles.modalSubtitle, { marginBottom: 16 }]}>{selectedRequest.title}</Text>
 
@@ -1278,10 +1278,11 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     maxHeight: '90%',
   },
   modalContent: {
-    backgroundColor: theme.surface?.main || theme.background.primary,
+    backgroundColor: theme.ui.card,
     borderRadius: 16,
     padding: 24,
     minHeight: 200,
+    flexShrink: 1, // Allow content to shrink and scroll
   },
   modalHeader: {
     flexDirection: 'row',

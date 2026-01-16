@@ -11,7 +11,8 @@ import {
   Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { insightsStyles as styles } from './insights.styles';
+import { createInsightsStyles } from './insights.styles';
+import { useTheme } from '../../app/providers/ThemeProvider';
 import { InsightCommentItem } from './CommentItem';
 import { useReplies } from './insights.hooks';
 import { COLORS, LIMITS } from './insights.constants';
@@ -33,6 +34,8 @@ export const InsightCommentThread: React.FC<InsightCommentThreadProps> = ({
   onUpdate,
   onDelete,
 }) => {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => createInsightsStyles(theme), [theme]);
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
 
   const {
@@ -98,7 +101,7 @@ export const InsightCommentThread: React.FC<InsightCommentThreadProps> = ({
         <View style={styles.repliesContainer}>
           {loading && replies.length === 0 ? (
             <View style={[styles.loadingContainer, { paddingVertical: 20 }]}>
-              <ActivityIndicator size="small" color="#6366f1" />
+              <ActivityIndicator size="small" color={theme.primary.main} />
             </View>
           ) : (
             <>
@@ -121,11 +124,11 @@ export const InsightCommentThread: React.FC<InsightCommentThreadProps> = ({
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator size="small" color="#007aff" />
+                    <ActivityIndicator size="small" color={theme.primary.main} />
                   ) : (
                     <>
-                      <Ionicons name="chevron-down" size={16} color="#007aff" />
-                      <Text style={styles.viewRepliesText}>Load more replies</Text>
+                      <Ionicons name="chevron-down" size={16} color={theme.primary.main} />
+                      <Text style={[styles.viewRepliesText, { color: theme.primary.main }]}>Load more replies</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -157,6 +160,8 @@ const InsightCommentThreadReply: React.FC<InsightCommentThreadReplyProps> = ({
   onUpdate,
   onDelete,
 }) => {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => createInsightsStyles(theme), [theme]);
   const {
     replies,
     loading,
@@ -239,11 +244,11 @@ const InsightCommentThreadReply: React.FC<InsightCommentThreadReplyProps> = ({
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator size="small" color="#007aff" />
+                    <ActivityIndicator size="small" color={theme.primary.main} />
                   ) : (
                     <>
-                      <Ionicons name="chevron-down" size={16} color="#007aff" />
-                      <Text style={styles.viewRepliesText}>Load more replies</Text>
+                      <Ionicons name="chevron-down" size={16} color={theme.primary.main} />
+                      <Text style={[styles.viewRepliesText, { color: theme.primary.main }]}>Load more replies</Text>
                     </>
                   )}
                 </TouchableOpacity>

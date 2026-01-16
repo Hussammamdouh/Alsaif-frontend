@@ -49,7 +49,7 @@ export type MainStackParamList = {
   ChatRoom: { conversationId: string };
   InsightDetail: { insightId: string; title?: string };
   InsightRequests: undefined;
-  Notifications: undefined;
+  Notifications: { category?: string };
 
   // User Subscription Screens
   Subscription: undefined;

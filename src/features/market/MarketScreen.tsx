@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Image, Dimensions, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
 import { useTheme } from '../../app/providers/ThemeProvider';
@@ -11,6 +11,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 export const MarketScreen = () => {
     const { theme, toggleTheme, isDark } = useTheme();
     const { t } = useLocalization();
+    const styles = useMemo(() => getStyles(theme), [theme]);
 
     const [selectedExchange, setSelectedExchange] = useState<'DFM' | 'ADX' | null>(null);
     const [loading, setLoading] = useState(false);
@@ -52,12 +53,9 @@ export const MarketScreen = () => {
     // Render Items
     const renderHeader = () => (
         <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.text.primary }]}>
+            <Text style={styles.headerTitle}>
                 {t('market.title')}
             </Text>
-            <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-                <Icon name={isDark ? "sunny-outline" : "moon-outline"} size={24} color={theme.text.primary} />
-            </TouchableOpacity>
         </View>
     );
 
@@ -182,11 +180,11 @@ export const MarketScreen = () => {
 
         return (
             <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
-                <View style={styles.detailHeader}>
+                <View style={[styles.header, { borderBottomWidth: 0 }]}>
                     <TouchableOpacity onPress={() => setSelectedSymbol(null)} style={styles.backButton}>
                         <Icon name="arrow-back" size={24} color={theme.text.primary} />
                     </TouchableOpacity>
-                    <Text style={[styles.title, { color: theme.text.primary }]}>{selectedSymbol.shortName}</Text>
+                    <Text style={styles.headerTitle}>{selectedSymbol.shortName}</Text>
                     <View style={{ width: 24 }} />
                 </View>
 
@@ -201,13 +199,13 @@ export const MarketScreen = () => {
                     <View style={styles.divider} />
 
                     <View style={styles.statRow}>
-                        <Stat label={t('market.open')} value={formatStatValue(selectedSymbol.open || selectedSymbol.price)} theme={theme} />
-                        <Stat label={t('market.high')} value={formatStatValue(selectedSymbol.high || selectedSymbol.price)} theme={theme} />
-                        <Stat label={t('market.low')} value={formatStatValue(selectedSymbol.low || selectedSymbol.price)} theme={theme} />
+                        <Stat label={t('market.open')} value={formatStatValue(selectedSymbol.open || selectedSymbol.price)} theme={theme} styles={styles} />
+                        <Stat label={t('market.high')} value={formatStatValue(selectedSymbol.high || selectedSymbol.price)} theme={theme} styles={styles} />
+                        <Stat label={t('market.low')} value={formatStatValue(selectedSymbol.low || selectedSymbol.price)} theme={theme} styles={styles} />
                     </View>
                     <View style={styles.statRow}>
-                        <Stat label={t('market.prevClose')} value={formatStatValue(selectedSymbol.prevClose || (selectedSymbol.price - selectedSymbol.change))} theme={theme} />
-                        <Stat label={t('market.volume')} value={formatStatValue(selectedSymbol.volume, true)} theme={theme} />
+                        <Stat label={t('market.prevClose')} value={formatStatValue(selectedSymbol.prevClose || (selectedSymbol.price - selectedSymbol.change))} theme={theme} styles={styles} />
+                        <Stat label={t('market.volume')} value={formatStatValue(selectedSymbol.volume, true)} theme={theme} styles={styles} />
                     </View>
 
                     {/* Dynamic Chart */}
@@ -337,24 +335,29 @@ const formatStatValue = (value: number, isVolume: boolean = false): string => {
     return value.toFixed(2);
 };
 
-const Stat = ({ label, value, theme }: any) => (
+const Stat = ({ label, value, theme, styles }: any) => (
     <View style={styles.statItem}>
         <Text style={[styles.statLabel, { color: theme.text.secondary }]}>{label}</Text>
         <Text style={[styles.statValue, { color: theme.text.primary }]}>{value}</Text>
     </View>
 );
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
     container: { flex: 1 },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'ios' ? 60 : 40,
+        paddingBottom: 16,
     },
-    title: { fontSize: 24, fontWeight: 'bold' },
-    themeButton: { padding: 8 },
+    headerTitle: {
+        fontSize: 28,
+        fontWeight: '900',
+        color: theme.text.primary,
+        letterSpacing: -0.5,
+    },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     promptTitle: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
     promptSubtitle: { fontSize: 16, textAlign: 'center', marginBottom: 32 },

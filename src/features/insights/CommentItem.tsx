@@ -15,7 +15,8 @@ import {
   TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { insightsStyles as styles } from './insights.styles';
+import { createInsightsStyles } from './insights.styles';
+import { useTheme } from '../../app/providers/ThemeProvider';
 import {
   useLikeInsightComment,
   useDeleteInsightComment,
@@ -57,6 +58,8 @@ export const InsightCommentItem: React.FC<InsightCommentItemProps> = ({
   const [editContent, setEditContent] = useState(comment.content);
   const [localLiked, setLocalLiked] = useState(comment.hasLiked || false);
   const [localLikes, setLocalLikes] = useState(comment.likes);
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => createInsightsStyles(theme), [theme]);
   const { t } = useLocalization();
 
   const { toggleLike, loading: likingInsightComment } = useLikeInsightComment();
@@ -247,14 +250,14 @@ export const InsightCommentItem: React.FC<InsightCommentItemProps> = ({
           {isEditing ? (
             <View>
               <TextInput
-                style={[styles.commentContent, { borderWidth: 1, borderColor: '#e0e0e0', padding: 8, borderRadius: 8, color: COLORS.text.primary }]}
+                style={[styles.commentContent, { borderWidth: 1, borderColor: theme.border.main, padding: 8, borderRadius: 8, color: theme.text.primary }]}
                 onChangeText={setEditContent}
                 value={editContent}
                 multiline
               />
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                 <TouchableOpacity
-                  style={[styles.sendButton, { width: 'auto', paddingHorizontal: 16 }]}
+                  style={[styles.commentSendButton, { width: 'auto', paddingHorizontal: 16 }]}
                   onPress={handleSaveEdit}
                   disabled={updatingInsightComment}
                 >
@@ -263,7 +266,7 @@ export const InsightCommentItem: React.FC<InsightCommentItemProps> = ({
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.sendButton, styles.sendButtonDisabled, { width: 'auto', paddingHorizontal: 16 }]}
+                  style={[styles.commentSendButton, styles.sendButtonDisabled, { width: 'auto', paddingHorizontal: 16 }]}
                   onPress={handleCancelEdit}
                   disabled={updatingInsightComment}
                 >
@@ -330,9 +333,9 @@ export const InsightCommentItem: React.FC<InsightCommentItemProps> = ({
               <Ionicons
                 name={repliesExpanded ? 'chevron-up' : 'chevron-down'}
                 size={16}
-                color="#007aff"
+                color={theme.primary.main}
               />
-              <Text style={styles.viewRepliesText}>
+              <Text style={[styles.viewRepliesText, { color: theme.primary.main }]}>
                 {repliesExpanded ? 'Hide' : 'View'} {comment.replyCount}{' '}
                 {comment.replyCount === 1 ? 'reply' : 'replies'}
               </Text>

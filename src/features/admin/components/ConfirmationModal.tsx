@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme, useLocalization } from '../../../app/providers';
 
 interface ConfirmationModalProps {
   visible: boolean;
@@ -43,6 +44,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   loading = false,
   customContent,
 }) => {
+  const { theme, isDark } = useTheme();
+  const { t } = useLocalization();
   const [isProcessing, setIsProcessing] = React.useState(false);
 
   const handleConfirm = async () => {
@@ -67,7 +70,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.ui.card }]}>
           {icon && (
             <View
               style={[
@@ -76,39 +79,44 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   backgroundColor: iconColor
                     ? `${iconColor}20`
                     : destructive
-                      ? '#ff3b3020'
-                      : '#007aff20',
+                      ? `${theme.error.main}20`
+                      : `${theme.primary.main}20`,
                 },
               ]}
             >
               <Ionicons
                 name={icon as any}
                 size={32}
-                color={iconColor || (destructive ? '#ff3b30' : '#007aff')}
+                color={iconColor || (destructive ? theme.error.main : theme.primary.main)}
               />
             </View>
           )}
 
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
+          <Text style={[styles.title, { color: theme.text.primary }]}>{title}</Text>
+          <Text style={[styles.message, { color: theme.text.secondary }]}>{message}</Text>
 
           {customContent}
 
           <View style={styles.buttonsContainer}>
             <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
+              style={[
+                styles.button,
+                styles.cancelButton,
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }
+              ]}
               onPress={onClose}
               activeOpacity={0.7}
               disabled={isLoading}
             >
-              <Text style={styles.cancelButtonText}>{cancelText}</Text>
+              <Text style={[styles.cancelButtonText, { color: theme.text.primary }]}>{cancelText}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.button,
                 styles.confirmButton,
-                destructive && styles.destructiveButton,
+                { backgroundColor: theme.primary.main },
+                destructive && { backgroundColor: theme.error.main },
                 isLoading && styles.buttonDisabled,
               ]}
               onPress={handleConfirm}
@@ -116,11 +124,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" size="small" />
+                <ActivityIndicator color={theme.primary.contrast} size="small" />
               ) : (
                 <Text
                   style={[
                     styles.confirmButtonText,
+                    { color: theme.primary.contrast },
                     destructive && styles.destructiveButtonText,
                   ]}
                 >
@@ -144,7 +153,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   container: {
-    backgroundColor: '#fff',
     borderRadius: 14,
     padding: 24,
     width: '100%',
@@ -167,13 +175,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000',
     textAlign: 'center',
     marginBottom: 8,
   },
   message: {
     fontSize: 15,
-    color: '#8e8e93',
     textAlign: 'center',
     lineHeight: 21,
     marginBottom: 24,
@@ -192,15 +198,12 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   cancelButton: {
-    backgroundColor: '#f2f2f7',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
   },
   confirmButton: {
-    backgroundColor: '#007aff',
   },
   confirmButtonText: {
     fontSize: 16,
@@ -208,7 +211,6 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   destructiveButton: {
-    backgroundColor: '#ff3b30',
   },
   destructiveButtonText: {
     color: '#fff',

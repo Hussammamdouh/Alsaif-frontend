@@ -23,6 +23,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../../../app/navigation/types';
 
 import { useTheme, useLocalization } from '../../../app/providers';
 import { styles } from './chatList.styles';
@@ -276,8 +279,9 @@ FooterLoading.displayName = 'FooterLoading';
  */
 export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
   ({ onNavigateToChat, onNavigateToNewChat }) => {
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
+    const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
     const [isNewChatModalVisible, setIsNewChatModalVisible] = useState(false);
 
@@ -586,23 +590,23 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
             <Animated.View
               style={[
                 styles.header,
-                { backgroundColor: 'transparent' },
                 {
                   opacity: headerOpacity,
                   transform: [{ translateY: headerTranslateY }],
                 },
               ]}
             >
-              {/* Title and Notification */}
+              {/* Title and Notification Button Row */}
               <View style={[styles.headerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Text style={[styles.title, { color: theme.text.primary }]}>{t('chatList.title')}</Text>
 
-                <View style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={styles.headerActions}>
                   <TouchableOpacity
-                    style={styles.notificationButton}
+                    style={[styles.notificationButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
                     activeOpacity={0.7}
+                    onPress={() => (navigation as any).navigate('Notifications', { category: 'engagement' })}
                   >
-                    <Icon name="notifications-outline" size={24} color={theme.text.primary} />
+                    <Icon name="notifications-outline" size={22} color={theme.text.primary} />
                     <View style={[styles.notificationBadge, { backgroundColor: theme.accent.error }]} />
                   </TouchableOpacity>
                 </View>
@@ -634,9 +638,6 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
-                <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.background.primary }]} activeOpacity={0.7}>
-                  <Icon name="options-outline" size={20} color={theme.text.secondary} />
-                </TouchableOpacity>
               </Animated.View>
 
               {/* Filter Chips */}

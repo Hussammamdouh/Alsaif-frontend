@@ -21,9 +21,9 @@ export const styles = StyleSheet.create({
 
   // Header
   header: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
     backgroundColor: 'transparent',
   },
 
@@ -35,9 +35,8 @@ export const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 32,
-    fontWeight: fontWeights.bold as any,
-    color: '#4F46E5', // Primary blue from design
+    fontSize: 28,
+    fontWeight: '900',
     letterSpacing: -0.5,
   },
 
@@ -48,13 +47,14 @@ export const styles = StyleSheet.create({
   },
 
   notificationButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
-    marginLeft: 12,
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
 
   notificationBadge: {
@@ -71,7 +71,7 @@ export const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'transparent', // Handled by theme.ui.card in component
     borderRadius: 12,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
@@ -96,7 +96,7 @@ export const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: fontSizes.base,
-    color: '#1F2937',
+    color: 'inherit', // Handled by inline style
     padding: 0,
     margin: 0,
   },
@@ -109,7 +109,7 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: spacing.sm,
@@ -126,7 +126,7 @@ export const styles = StyleSheet.create({
     paddingVertical: spacing.sm - 2,
     borderRadius: 20,
     marginRight: spacing.sm,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'transparent', // Handled by inline style
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -170,7 +170,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent', // Handled by theme.ui.card
   },
 
   conversationRowPressed: {
@@ -327,7 +327,7 @@ export const styles = StyleSheet.create({
   // Separator
   separator: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)', // Subtle separator
     marginLeft: 88, // Align with content (56 avatar + 16 margin + 16 padding)
   },
 

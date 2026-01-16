@@ -14,6 +14,7 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme, useLocalization } from '../../../app/providers';
 
 export interface ActionSheetOption {
   label: string;
@@ -38,6 +39,8 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
   title,
   message,
 }) => {
+  const { theme, isDark } = useTheme();
+  const { t, isRTL } = useLocalization();
   const slideAnim = React.useRef(new Animated.Value(300)).current;
 
   React.useEffect(() => {
@@ -95,9 +98,11 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
                     key={index}
                     style={[
                       styles.option,
+                      { backgroundColor: theme.ui.card },
                       index === 0 && (title || message) && styles.optionFirst,
                       index === options.length - 1 && styles.optionLast,
                       option.disabled && styles.optionDisabled,
+                      { flexDirection: isRTL ? 'row-reverse' : 'row' }
                     ]}
                     onPress={() => handleOptionPress(option)}
                     activeOpacity={0.7}
@@ -109,19 +114,20 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
                         size={22}
                         color={
                           option.disabled
-                            ? '#c7c7cc'
+                            ? theme.text.tertiary
                             : option.destructive
-                            ? '#ff3b30'
-                            : '#007aff'
+                              ? theme.error.main
+                              : theme.primary.main
                         }
-                        style={styles.optionIcon}
+                        style={[styles.optionIcon, { [isRTL ? 'marginLeft' : 'marginRight']: 12, marginRight: isRTL ? 0 : 12 }]}
                       />
                     )}
                     <Text
                       style={[
                         styles.optionText,
-                        option.destructive && styles.optionTextDestructive,
-                        option.disabled && styles.optionTextDisabled,
+                        { color: theme.primary.main, textAlign: isRTL ? 'right' : 'left' },
+                        option.destructive && { color: theme.error.main },
+                        option.disabled && { color: theme.text.tertiary },
                       ]}
                     >
                       {option.label}
@@ -131,11 +137,11 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
               </View>
 
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={[styles.cancelButton, { backgroundColor: theme.ui.card }]}
                 onPress={onClose}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={[styles.cancelButtonText, { color: theme.primary.main }]}>{t('common.cancel') || 'Cancel'}</Text>
               </TouchableOpacity>
             </Animated.View>
           </TouchableWithoutFeedback>
@@ -152,47 +158,37 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   container: {
-    backgroundColor: '#f2f2f7',
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
     paddingBottom: 34,
     paddingHorizontal: 8,
   },
   header: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 14,
     borderTopRightRadius: 14,
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#c6c6c8',
   },
   title: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#8e8e93',
     textAlign: 'center',
     marginBottom: 4,
   },
   message: {
     fontSize: 13,
-    color: '#8e8e93',
     textAlign: 'center',
     lineHeight: 18,
   },
   optionsContainer: {
-    backgroundColor: '#fff',
     borderRadius: 14,
     marginTop: 8,
     overflow: 'hidden',
   },
   option: {
-    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#c6c6c8',
   },
   optionFirst: {
     borderTopLeftRadius: 14,
@@ -207,21 +203,17 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   optionIcon: {
-    marginRight: 12,
   },
   optionText: {
+    flex: 1,
     fontSize: 17,
-    color: '#007aff',
     fontWeight: '400',
   },
   optionTextDestructive: {
-    color: '#ff3b30',
   },
   optionTextDisabled: {
-    color: '#8e8e93',
   },
   cancelButton: {
-    backgroundColor: '#fff',
     borderRadius: 14,
     paddingVertical: 16,
     marginTop: 8,
@@ -229,7 +221,6 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 17,
-    color: '#007aff',
     fontWeight: '600',
   },
 });

@@ -68,9 +68,9 @@ export const SORT_CONFIG: Record<InsightSortBy, { label: string }> = {
 
 // Colors
 export const COLORS = {
-  free: '#34c759',
-  premium: '#6366f1',
-  liked: '#ff3b30',
+  free: '#438730', // Brand Green
+  premium: '#FBBF24', // Amber/Gold
+  liked: '#ef4444', // Red
   unliked: '#8e8e93',
   comment: '#007aff',
   bookmark: '#ff9500',

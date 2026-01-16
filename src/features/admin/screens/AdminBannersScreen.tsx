@@ -35,7 +35,6 @@ import {
     ActionSheet,
     ConfirmationModal,
 } from '../components';
-import { ThemeLanguageToggle } from '../../../shared/components/ThemeLanguageToggle';
 
 export const AdminBannersScreen: React.FC = () => {
     const navigation = useNavigation();
@@ -321,8 +320,7 @@ export const AdminBannersScreen: React.FC = () => {
                                     {selectedBanner ? t('admin.editBanner') : t('admin.createBanner')}
                                 </Text>
                                 <View style={localStyles.modalHeaderActions}>
-                                    <ThemeLanguageToggle />
-                                    <TouchableOpacity onPress={() => setShowFormModal(false)} style={{ marginLeft: 12 }}>
+                                    <TouchableOpacity onPress={() => setShowFormModal(false)}>
                                         <Ionicons name="close" size={24} color={theme.text.primary} />
                                     </TouchableOpacity>
                                 </View>

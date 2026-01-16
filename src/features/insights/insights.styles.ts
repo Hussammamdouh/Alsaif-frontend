@@ -3,14 +3,13 @@
  * StyleSheet for all insights-related screens and components
  */
 
-import { StyleSheet, Platform } from 'react-native';
-import { COLORS } from './insights.constants';
+import { StyleSheet, Platform, I18nManager } from 'react-native';
 
-export const insightsStyles = StyleSheet.create({
+export const createInsightsStyles = (theme: any) => StyleSheet.create({
   // ==================== LIST SCREEN ====================
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: theme.background.primary,
   },
 
   header: {
@@ -20,15 +19,15 @@ export const insightsStyles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 16,
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: theme.background.primary,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border.light,
+    borderBottomColor: theme.border.light,
   },
 
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: theme.text.primary,
   },
 
   headerActions: {
@@ -42,14 +41,14 @@ export const insightsStyles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: theme.background.secondary,
   },
 
   // Filter Tabs
   filterContainer: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: theme.background.primary,
   },
 
   filterScroll: {
@@ -61,17 +60,17 @@ export const insightsStyles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: theme.background.secondary,
   },
 
   filterTabActive: {
-    backgroundColor: '#007aff',
+    backgroundColor: theme.primary.main,
   },
 
   filterTabText: {
     fontSize: 15,
     fontWeight: '600',
-    color: COLORS.text.secondary,
+    color: theme.text.secondary,
   },
 
   filterTabTextActive: {
@@ -91,7 +90,7 @@ export const insightsStyles = StyleSheet.create({
 
   // ==================== INSIGHT CARD ====================
   insightCard: {
-    backgroundColor: COLORS.background.card,
+    backgroundColor: theme.ui?.card || theme.background.secondary,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -118,7 +117,7 @@ export const insightsStyles = StyleSheet.create({
   symbolBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f2f2f7',
+    backgroundColor: theme.background.tertiary,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -135,7 +134,7 @@ export const insightsStyles = StyleSheet.create({
   symbolText: {
     fontSize: 14,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: theme.text.primary,
   },
 
   typeBadge: {
@@ -146,15 +145,15 @@ export const insightsStyles = StyleSheet.create({
   },
 
   typeBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '900',
     color: '#fff',
     letterSpacing: 0.5,
   },
 
   timestamp: {
     fontSize: 13,
-    color: COLORS.text.secondary,
+    color: theme.text.secondary,
   },
 
   moreButton: {
@@ -164,14 +163,14 @@ export const insightsStyles = StyleSheet.create({
   insightTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: theme.text.primary,
     lineHeight: 24,
     marginBottom: 8,
   },
 
   insightExcerpt: {
     fontSize: 15,
-    color: COLORS.text.secondary,
+    color: theme.text.secondary,
     lineHeight: 22,
     marginBottom: 12,
   },
@@ -181,7 +180,7 @@ export const insightsStyles = StyleSheet.create({
     height: 180,
     borderRadius: 12,
     marginBottom: 12,
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: theme.background.secondary,
   },
 
   insightFooter: {
@@ -205,7 +204,7 @@ export const insightsStyles = StyleSheet.create({
   engagementCount: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.text.secondary,
+    color: theme.text.secondary,
   },
 
   bookmarkButton: {
@@ -215,14 +214,26 @@ export const insightsStyles = StyleSheet.create({
   // ==================== DETAIL SCREEN ====================
   detailContainer: {
     flex: 1,
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: theme.background.primary,
   },
 
   detailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 16,
-    backgroundColor: COLORS.background.primary,
+    zIndex: 10,
+  },
+
+  headerTitleDetail: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: theme.text.primary,
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 16,
   },
 
   backButton: {
@@ -231,7 +242,20 @@ export const insightsStyles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderWidth: 1,
+    borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+  },
+
+  shareButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderWidth: 1,
+    borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
   },
 
   detailContent: {
@@ -239,39 +263,33 @@ export const insightsStyles = StyleSheet.create({
   },
 
   detailScrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 140,
   },
 
   detailTitleSection: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingTop: 10,
+    marginBottom: 24,
   },
 
-  detailCategory: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
-  },
-
-  categoryBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  categoryText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#fff',
+  detailBodyContainer: {
+    marginHorizontal: 16,
+    borderRadius: 24,
+    backgroundColor: 'transparent',
+    padding: 2,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
   },
 
   detailTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.text.primary,
-    lineHeight: 36,
+    fontSize: 26,
+    fontWeight: '800',
+    color: theme.text.primary,
+    lineHeight: 34,
     marginBottom: 16,
+    letterSpacing: -0.5,
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
   },
 
   detailMeta: {
@@ -283,37 +301,44 @@ export const insightsStyles = StyleSheet.create({
   authorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    gap: 12,
   },
 
   authorAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.background.secondary,
-    marginRight: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: theme.border.main,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.background.secondary,
   },
 
   authorName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text.primary,
+    fontSize: 17,
+    fontWeight: '700',
+    color: theme.text.primary,
+    marginBottom: 2,
   },
 
   detailTimestamp: {
     fontSize: 13,
-    color: COLORS.text.secondary,
+    color: theme.text.tertiary,
+    fontWeight: '500',
   },
 
   readTime: {
     fontSize: 13,
-    color: COLORS.text.secondary,
+    color: theme.text.tertiary,
+    fontWeight: '500',
   },
 
   detailImageContainer: {
     width: '100%',
-    height: 240,
-    backgroundColor: COLORS.background.secondary,
+    height: 280,
+    marginBottom: 30,
+    backgroundColor: theme.background.secondary,
   },
 
   detailImage: {
@@ -322,14 +347,15 @@ export const insightsStyles = StyleSheet.create({
   },
 
   detailBody: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    padding: 24,
   },
 
   detailText: {
-    fontSize: 17,
-    lineHeight: 28,
-    color: COLORS.text.primary,
+    fontSize: 15,
+    color: theme.text.secondary,
+    lineHeight: 24,
+    fontWeight: '400',
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
   },
 
   detailEngagement: {
@@ -338,72 +364,88 @@ export const insightsStyles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.border.light,
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    marginHorizontal: 16,
+    marginVertical: 24,
+    overflow: 'hidden',
   },
 
   detailEngagementButtons: {
     flexDirection: 'row',
-    gap: 24,
+    alignItems: 'center',
+    gap: 28,
   },
 
   detailEngagementButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
 
   detailEngagementText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text.secondary,
+    fontWeight: '700',
+    color: theme.text.secondary,
   },
 
   // ==================== COMMENTS SECTION ====================
   commentsSection: {
-    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
 
   commentsSectionHeader: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 28,
   },
 
   commentsSectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text.primary,
+    fontSize: 22,
+    fontWeight: '900',
+    color: theme.text.primary,
   },
 
-  commentsCount: {
+  commentsCountBadge: {
+    backgroundColor: theme.primary.main + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+
+  commentsCountText: {
     fontSize: 14,
-    color: COLORS.text.secondary,
-    marginTop: 4,
+    fontWeight: '800',
+    color: theme.primary.main,
   },
 
   commentsList: {
-    paddingHorizontal: 20,
+    gap: 32,
   },
 
   // Comment Item
   commentItem: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
 
   commentHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    gap: 16,
   },
 
   commentAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.background.secondary,
-    marginRight: 12,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1.5,
+    borderColor: theme.border.main,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.background.secondary,
   },
 
   commentMain: {
@@ -413,57 +455,57 @@ export const insightsStyles = StyleSheet.create({
   commentAuthorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    justifyContent: 'space-between',
+    marginBottom: 6,
   },
 
   commentAuthor: {
     fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text.primary,
-    marginRight: 8,
+    fontWeight: '700',
+    color: theme.text.primary,
   },
 
   commentTimestamp: {
-    fontSize: 13,
-    color: COLORS.text.secondary,
+    fontSize: 12,
+    color: theme.text.tertiary,
+    fontWeight: '500',
   },
 
   commentContent: {
     fontSize: 15,
+    color: theme.text.secondary,
     lineHeight: 22,
-    color: COLORS.text.primary,
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
   commentDeleted: {
-    fontSize: 15,
+    fontSize: 14,
     fontStyle: 'italic',
-    color: COLORS.text.tertiary,
-    marginBottom: 8,
+    color: theme.text.tertiary,
   },
 
   commentEdited: {
     fontSize: 12,
-    color: COLORS.text.tertiary,
+    color: theme.text.tertiary,
     marginBottom: 8,
   },
 
   commentActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 24,
   },
 
   commentActionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
 
   commentActionText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.text.secondary,
+    fontWeight: '700',
+    color: theme.text.tertiary,
   },
 
   // Nested Replies
@@ -479,68 +521,82 @@ export const insightsStyles = StyleSheet.create({
   viewRepliesButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
     gap: 6,
   },
 
   viewRepliesText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#007aff',
+    fontWeight: '700',
+    color: theme.primary.main,
   },
 
   // Comment Input
   commentInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: COLORS.background.primary,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingTop: 16,
+    backgroundColor: theme.background.primary,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border.light,
+    borderColor: theme.border.main,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
   },
 
   commentInputAvatar: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: theme.background.secondary,
     marginRight: 12,
   },
 
   commentInputWrapper: {
-    flex: 1,
-    backgroundColor: COLORS.background.secondary,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    maxHeight: 100,
+    minHeight: 56,
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)',
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: theme.border.main,
   },
 
   commentInput: {
-    fontSize: 15,
-    color: COLORS.text.primary,
-    minHeight: 36,
+    flex: 1,
+    fontSize: 16,
+    color: theme.text.primary,
+    minHeight: 40,
+    paddingVertical: 10,
   },
 
-  commentInputActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginLeft: 8,
+  commentInputPlaceholder: {
+    fontSize: 16,
+    color: theme.text.primary,
+    fontWeight: '500',
   },
 
-  sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#007aff',
-    alignItems: 'center',
+  commentSendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.primary.main,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 6,
   },
 
   sendButtonDisabled: {
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: theme.background.secondary,
+    opacity: 0.5,
   },
 
   // ==================== EMPTY STATES ====================
@@ -559,16 +615,31 @@ export const insightsStyles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: theme.text.primary,
     textAlign: 'center',
     marginBottom: 8,
   },
 
   emptyText: {
     fontSize: 15,
-    color: COLORS.text.secondary,
+    color: theme.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
+  },
+
+  emptyCommentsContainer: {
+    paddingVertical: 60,
+    alignItems: 'center',
+    gap: 16,
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+    borderRadius: 24,
+    marginHorizontal: 10,
+  },
+
+  emptyCommentsText: {
+    fontSize: 15,
+    color: theme.text.tertiary,
+    fontWeight: '600',
   },
 
   // ==================== LOADING STATES ====================
@@ -581,13 +652,32 @@ export const insightsStyles = StyleSheet.create({
 
   loadingText: {
     fontSize: 15,
-    color: COLORS.text.secondary,
-    marginTop: 12,
+    color: theme.text.tertiary,
+    marginTop: 16,
+    fontWeight: '600',
   },
 
   loadMoreContainer: {
     paddingVertical: 20,
     alignItems: 'center',
+  },
+
+  loadMoreButton: {
+    paddingVertical: 16,
+    marginVertical: 10,
+    alignItems: 'center',
+    borderRadius: 16,
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+  },
+
+  loadMoreText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.primary.main,
+  },
+
+  loaderContainer: {
+    paddingVertical: 32,
   },
 
   // ==================== ERROR STATES ====================
@@ -596,26 +686,26 @@ export const insightsStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
+    gap: 20,
   },
 
   errorText: {
-    fontSize: 15,
-    color: COLORS.text.secondary,
+    fontSize: 16,
+    color: theme.text.secondary,
     textAlign: 'center',
-    marginBottom: 16,
   },
 
   retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#007aff',
+    paddingHorizontal: 36,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: theme.primary.main,
   },
 
   retryButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFF',
   },
 
   // ==================== MODALS ====================
@@ -626,7 +716,7 @@ export const insightsStyles = StyleSheet.create({
   },
 
   modalContainer: {
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: theme.background.primary,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 20,
@@ -640,13 +730,13 @@ export const insightsStyles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border.light,
+    borderBottomColor: theme.border.light,
   },
 
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: theme.text.primary,
   },
 
   modalCloseButton: {
@@ -663,7 +753,7 @@ export const insightsStyles = StyleSheet.create({
 
   modalOptionText: {
     fontSize: 16,
-    color: COLORS.text.primary,
+    color: theme.text.primary,
   },
 
   modalOptionDanger: {
@@ -677,7 +767,7 @@ export const insightsStyles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
@@ -690,14 +780,14 @@ export const insightsStyles = StyleSheet.create({
   lockedTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: COLORS.text.primary,
+    color: theme.text.primary,
     textAlign: 'center',
     marginBottom: 8,
   },
 
   lockedMessage: {
     fontSize: 15,
-    color: COLORS.text.secondary,
+    color: theme.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -707,12 +797,51 @@ export const insightsStyles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.primary.main,
   },
 
   upgradeButtonText: {
     fontSize: 17,
     fontWeight: '700',
     color: '#fff',
+  },
+
+  glassContent: {
+    marginHorizontal: 16,
+    borderRadius: 28,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : theme.border.main,
+    marginBottom: 32,
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#FFF',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+  },
+
+  replyIndicator: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: theme.border.main,
+  },
+
+  replyIndicatorText: {
+    fontSize: 13,
+    color: theme.text.secondary,
+    fontWeight: '500',
+  },
+
+  replyAuthorName: {
+    fontWeight: '700',
+    color: theme.primary.main,
   },
 });
