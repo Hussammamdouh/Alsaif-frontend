@@ -47,8 +47,10 @@ interface RequestConfig {
  * Refresh Subscribers & Callbacks
  */
 let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
 let refreshSubscribers: Array<(token: string) => void> = [];
 let onUnauthorizedCallback: (() => void) | null = null;
+let onTokenRefreshedCallback: ((tokens: { accessToken: string; refreshToken: string; expiresIn: number }) => void) | null = null;
 
 /**
  * Register Unauthorized Callback
@@ -56,6 +58,15 @@ let onUnauthorizedCallback: (() => void) | null = null;
  */
 export const setOnUnauthorizedCallback = (callback: () => void) => {
   onUnauthorizedCallback = callback;
+};
+
+/**
+ * Register Token Refreshed Callback
+ */
+export const setOnTokenRefreshedCallback = (
+  callback: (tokens: { accessToken: string; refreshToken: string; expiresIn: number }) => void
+) => {
+  onTokenRefreshedCallback = callback;
 };
 
 /**
@@ -91,66 +102,87 @@ const triggerUnauthorized = async () => {
  * Refresh Access Token
  * Refreshes expired access token using refresh token
  */
-const refreshAccessToken = async (): Promise<string> => {
-  try {
-    const session = await loadAuthSession();
+export const refreshAccessToken = async (): Promise<string> => {
+  // If a refresh is already in progress, return the existing promise
+  if (refreshPromise) {
+    return refreshPromise;
+  }
 
-    if (!session || !session.tokens.refreshToken) {
-      console.warn('[ApiClient] No refresh token available - cannot refresh');
-      throw new Error('No refresh token available');
-    }
+  refreshPromise = (async () => {
+    try {
+      const session = await loadAuthSession();
 
-    console.log('[ApiClient] Attempting to refresh access token');
-
-    // Call backend refresh endpoint
-    const response = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        refreshToken: session.tokens.refreshToken,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[ApiClient] Token refresh failed:', response.status, errorText);
-
-      // If unauthorized, clear session and redirect to login
-      if (response.status === 401) {
-        await triggerUnauthorized();
+      if (!session || !session.tokens.refreshToken) {
+        console.warn('[ApiClient] No refresh token available - cannot refresh');
+        throw new Error('No refresh token available');
       }
 
-      throw new Error('Token refresh failed');
+      console.log('[ApiClient] Attempting to refresh access token');
+
+      // Call backend refresh endpoint
+      const response = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refreshToken: session.tokens.refreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[ApiClient] Token refresh failed:', response.status, errorText);
+
+        // If unauthorized, clear session and redirect to login
+        if (response.status === 401) {
+          await triggerUnauthorized();
+        }
+
+        throw new Error('Token refresh failed');
+      }
+
+      const result = await response.json();
+
+      // Backend returns: { success: true, message: "...", data: { accessToken, refreshToken } }
+      const data = result.data;
+
+      // Update session with new tokens
+      const now = Date.now();
+      const expirationInSeconds = 900; // 15 minutes
+      const updatedSession: AuthSession = {
+        ...session,
+        tokens: {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken || session.tokens.refreshToken,
+          expiresIn: expirationInSeconds,
+        },
+        expiresAt: now + expirationInSeconds * 1000,
+      };
+
+      // Save updated session
+      await saveAuthSession(updatedSession);
+
+      // Notify external listeners (e.g. AuthProvider) for state sync
+      if (onTokenRefreshedCallback) {
+        onTokenRefreshedCallback({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken || session.tokens.refreshToken,
+          expiresIn: expirationInSeconds,
+        });
+      }
+
+      console.log('[ApiClient] Token refresh successful');
+      return data.accessToken;
+    } catch (error) {
+      console.error('[ApiClient] Token refresh failed ERROR:', error);
+      throw error;
+    } finally {
+      refreshPromise = null;
     }
+  })();
 
-    const result = await response.json();
-
-    // Backend returns: { success: true, message: "...", data: { accessToken, refreshToken } }
-    const data = result.data;
-
-    // Update session with new tokens
-    const now = Date.now();
-    const updatedSession: AuthSession = {
-      ...session,
-      tokens: {
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken || session.tokens.refreshToken,
-        expiresIn: 900, // 15 minutes (900 seconds) - matches backend JWT expiration
-      },
-      expiresAt: now + 900 * 1000,
-    };
-
-    // Save updated session
-    await saveAuthSession(updatedSession);
-
-    console.log('[ApiClient] Token refresh successful');
-    return data.accessToken;
-  } catch (error) {
-    console.error('[ApiClient] Token refresh failed:', error);
-    throw error;
-  }
+  return refreshPromise;
 };
 
 /**

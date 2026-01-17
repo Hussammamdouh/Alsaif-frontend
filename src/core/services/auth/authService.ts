@@ -3,8 +3,9 @@
  * Handles all auth-related API calls
  */
 
-import { apiClient } from '../api/apiClient';
+import { apiClient, refreshAccessToken as unifiedRefresh } from '../api/apiClient';
 import type { LoginCredentials, LoginResponse, AuthError } from './auth.types';
+import { loadAuthSession } from '../../../app/auth/auth.storage';
 
 /**
  * Backend API Response Format
@@ -28,14 +29,6 @@ interface BackendAuthResponse {
     isActive: boolean;
   };
   token: string; // For backward compatibility
-  accessToken: string;
-  refreshToken: string;
-}
-
-/**
- * Backend Refresh Token Response
- */
-interface BackendRefreshResponse {
   accessToken: string;
   refreshToken: string;
 }
@@ -110,18 +103,20 @@ export const refreshToken = async (
   token: string
 ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> => {
   try {
-    const response = await apiClient.post<BackendResponse<BackendRefreshResponse>>(
-      '/api/auth/refresh-token',
-      { refreshToken: token },
-      false // requiresAuth = false for refresh
-    );
+    // Calling the unified refresh function which handles atomic requests and state sync
+    const accessToken = await unifiedRefresh();
 
-    const { accessToken, refreshToken: newRefreshToken } = response.data;
+    // After a successful refresh, the new tokens are already saved in storage
+    const session = await loadAuthSession();
+
+    if (!session) {
+      throw new Error('Session lost after refresh');
+    }
 
     return {
-      accessToken,
-      refreshToken: newRefreshToken,
-      expiresIn: 900, // 15 minutes (900 seconds)
+      accessToken: session.tokens.accessToken,
+      refreshToken: session.tokens.refreshToken,
+      expiresIn: session.tokens.expiresIn,
     };
   } catch (error: any) {
     const authError: AuthError = {

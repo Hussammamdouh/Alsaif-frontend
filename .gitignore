@@ -42,3 +42,8 @@ yarn-error.*
 /ios
 /android
 /.vscode
+
+# Secrets
+*-adminsdk-*.json
+service-account-*.json
+*.secret.json

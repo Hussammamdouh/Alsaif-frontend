@@ -52,9 +52,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       AuthActions.logout(dispatch);
     });
 
+    // Register callback for background token refresh synchronization
+    const { setOnTokenRefreshedCallback } = require('../../core/services/api/apiClient');
+    setOnTokenRefreshedCallback((tokens: any) => {
+      console.log('[AuthProvider] Syncing state with background token refresh');
+      dispatch({
+        type: require('./auth.types').AuthActionType.UPDATE_SESSION,
+        payload: { tokens },
+      });
+    });
+
     return () => {
-      // Clear callback on unmount
+      // Clear callbacks on unmount
       setOnUnauthorizedCallback(() => { });
+      const { setOnTokenRefreshedCallback } = require('../../core/services/api/apiClient');
+      setOnTokenRefreshedCallback(() => { });
     };
   }, []);
 
