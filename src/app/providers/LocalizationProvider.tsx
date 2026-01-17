@@ -30,8 +30,8 @@ const translations = {
     // Login Screen
     'login.title': 'Login',
     'login.subtitle': 'Secure access portal for authorized\npersonnel only.',
-    'login.email': 'Email Address',
-    'login.emailPlaceholder': 'you@Alsaif-analysis.com',
+    'login.email': 'Email or Phone Number',
+    'login.emailPlaceholder': 'you@example.com or +1234567890',
     'login.password': 'Password',
     'login.passwordPlaceholder': 'Enter your password',
     'login.forgotPassword': 'Forgot Password?',
@@ -43,6 +43,8 @@ const translations = {
     'login.encryption': 'Protected by 256-bit SSL encryption.\nv4.2.0 (Build 2024.10)',
     'login.noAccount': "Don't have an account? ",
     'login.signUp': 'Sign Up',
+    'login.identifier': 'Email or Phone Number',
+    'login.identifierPlaceholder': 'email@example.com or +1...',
 
     // Register Screen
     'register.title': 'Create Your Account',
@@ -51,12 +53,16 @@ const translations = {
     'register.fullNamePlaceholder': 'e.g. John Doe',
     'register.email': 'Email Address',
     'register.emailPlaceholder': 'name@example.com',
+    'register.phoneNumber': 'Phone Number',
+    'register.phoneNumberPlaceholder': '+1 234 567 890',
     'register.password': 'Password',
     'register.passwordPlaceholder': 'Enter your password',
     'register.confirmPassword': 'Confirm Password',
     'register.confirmPasswordPlaceholder': 'Re-enter your password',
     'register.nationality': 'Nationality',
     'register.nationalityPlaceholder': 'Enter your nationality',
+    'register.country': 'Country',
+    'register.countryPlaceholder': 'Select your country',
     'register.passwordStrength': 'Password strength:',
     'register.weak': 'Weak',
     'register.medium': 'Medium',
@@ -66,6 +72,8 @@ const translations = {
     'register.and': ' and ',
     'register.privacyPolicy': 'Privacy Policy',
     'register.signUpButton': 'Sign Up',
+    'register.acceptTermsTitle': 'Terms and Conditions',
+    'register.acceptTermsButton': 'Accept and Continue',
     'register.alreadyHaveAccount': 'Already have an account? ',
     'register.logIn': 'Log in',
 
@@ -220,6 +228,7 @@ const translations = {
     'common.on': 'on',
     'common.loadMore': 'Load More',
     'common.seeAll': 'See All',
+    'common.search': 'Search...',
 
     // Time
     'time.justNow': 'Just now',
@@ -969,6 +978,20 @@ const translations = {
     'legal.terms.sec9Content': 'These terms are governed and interpreted according to the laws of the United Arab Emirates, and the state courts have jurisdiction over any dispute arising from them.',
     'legal.terms.sec10Title': '10. Consent',
     'legal.terms.sec10Content': 'By using the application or creating an account, you acknowledge that you have read, understood, and fully agreed to these terms.',
+
+    // Privacy Policy
+    'legal.privacy.title': 'Privacy Policy',
+    'legal.privacy.header': 'How We Protect Your Data',
+    'legal.privacy.sec1Title': '1. Data Collection',
+    'legal.privacy.sec1Content': 'We collect information you provide directly to us when you create an account, such as your name, email address, and phone number.',
+    'legal.privacy.sec2Title': '2. Use of Information',
+    'legal.privacy.sec2Content': 'We use the information we collect to provide, maintain, and improve our services, and to communicate with you about updates and offers.',
+    'legal.privacy.sec3Title': '3. Data Security',
+    'legal.privacy.sec3Content': 'We take reasonable measures to help protect information about you from loss, theft, misuse, and unauthorized access.',
+    'legal.privacy.sec4Title': '4. Data Sharing',
+    'legal.privacy.sec4Content': 'We do not share your personal data with third parties except as required by law or to provide our core services.',
+    'legal.privacy.sec5Title': '5. Your Choices',
+    'legal.privacy.sec5Content': 'You may update your account information at any time by logging into your account settings.',
   },
   ar: {
     // Splash Screen
@@ -990,6 +1013,8 @@ const translations = {
     'login.encryption': 'محمي بتشفير SSL 256 بت.\nالإصدار 4.2.0 (البناء 2024.10)',
     'login.noAccount': 'ليس لديك حساب؟ ',
     'login.signUp': 'سجل الآن',
+    'login.identifier': 'البريد الإلكتروني أو رقم الهاتف',
+    'login.identifierPlaceholder': 'email@example.com أو +1...',
 
     // Register Screen
     'register.title': 'أنشئ حسابك',
@@ -998,12 +1023,16 @@ const translations = {
     'register.fullNamePlaceholder': 'مثال: أحمد محمد',
     'register.email': 'عنوان البريد الإلكتروني',
     'register.emailPlaceholder': 'name@example.com',
+    'register.phoneNumber': 'رقم الهاتف',
+    'register.phoneNumberPlaceholder': '+1 234 567 890',
     'register.password': 'كلمة المرور',
     'register.passwordPlaceholder': 'أدخل كلمة المرور',
     'register.confirmPassword': 'تأكيد كلمة المرور',
     'register.confirmPasswordPlaceholder': 'أعد إدخال كلمة المرور',
     'register.nationality': 'الجنسية',
     'register.nationalityPlaceholder': 'أدخل جنسيتك',
+    'register.country': 'الدولة',
+    'register.countryPlaceholder': 'اختر دولتك',
     'register.passwordStrength': 'قوة كلمة المرور:',
     'register.weak': 'ضعيفة',
     'register.medium': 'متوسطة',
@@ -1013,6 +1042,8 @@ const translations = {
     'register.and': ' و ',
     'register.privacyPolicy': 'سياسة الخصوصية',
     'register.signUpButton': 'إنشاء حساب',
+    'register.acceptTermsTitle': 'الشروط والأحكام',
+    'register.acceptTermsButton': 'قبول ومتابعة',
     'register.alreadyHaveAccount': 'لديك حساب بالفعل؟ ',
     'register.logIn': 'تسجيل الدخول',
 
@@ -1167,6 +1198,7 @@ const translations = {
     'common.on': 'على',
     'common.loadMore': 'تحميل المزيد',
     'common.seeAll': 'عرض الكل',
+    'common.search': 'بحث...',
 
     // Time
     'time.justNow': 'الآن',
@@ -1918,6 +1950,20 @@ const translations = {
     'legal.terms.sec9Content': 'تخضع هذه الشروط وتُفسَّر وفقًا لقوانين دولة الإمارات العربية المتحدة، وتختص محاكم الدولة بالفصل في أي نزاع ينشأ عنها.',
     'legal.terms.sec10Title': '10. الموافقة',
     'legal.terms.sec10Content': 'باستخدامك للتطبيق أو إنشاء حساب، فإنك تقرّ بأنك قرأت هذه الشروط وفهمتها ووافقت عليها بالكامل.',
+
+    // Privacy Policy
+    'legal.privacy.title': 'سياسة الخصوصية',
+    'legal.privacy.header': 'كيف نحمي بياناتك',
+    'legal.privacy.sec1Title': '1. جمع البيانات',
+    'legal.privacy.sec1Content': 'نقوم بجمع المعلومات التي تقدمها لنا مباشرة عند إنشاء حساب، مثل اسمك وبريدك الإلكتروني ورقم هاتفك.',
+    'legal.privacy.sec2Title': '2. استخدام المعلومات',
+    'legal.privacy.sec2Content': 'نستخدم المعلومات التي نجمعها لتوفير خدماتنا وصيانتها وتحسينها، وللتواصل معك بشأن التحديثات والعروض.',
+    'legal.privacy.sec3Title': '3. أمن البيانات',
+    'legal.privacy.sec3Content': 'نتخذ تدابير معقولة للمساعدة في حماية المعلومات المتعلقة بك من الفقدان والسرقة وسوء الاستخدام والوصول غير المصرح به.',
+    'legal.privacy.sec4Title': '4. مشاركة البيانات',
+    'legal.privacy.sec4Content': 'نحن لا نشارك بياناتك الشخصية مع أطراف ثالثة إلا وفقاً لما يقتضيه القانون أو لتقديم خدماتنا الأساسية.',
+    'legal.privacy.sec5Title': '5. خياراتك',
+    'legal.privacy.sec5Content': 'يمكنك تحديث معلومات حسابك في أي وقت عن طريق تسجيل الدخول إلى إعدادات حسابك.',
   },
 };
 

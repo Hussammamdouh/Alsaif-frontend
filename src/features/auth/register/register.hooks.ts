@@ -14,6 +14,7 @@ import {
   validateTermsAgreement,
   calculatePasswordStrength,
 } from './register.validation';
+import { Country } from '../../../core/constants/countries';
 
 /**
  * Custom hook for registration form management
@@ -25,9 +26,10 @@ export const useRegisterForm = () => {
     data: {
       fullName: '',
       email: '',
+      phoneNumber: '',
       password: '',
       confirmPassword: '',
-      nationality: '',
+      country: null,
       agreeToTerms: false,
     },
     errors: {},
@@ -49,15 +51,26 @@ export const useRegisterForm = () => {
     }));
   }, []);
 
+
   /**
-   * Update nationality field
-   * Clears error when user starts typing
+   * Update country field
    */
-  const setNationality = useCallback((nationality: string) => {
+  const setCountry = useCallback((country: Country) => {
     setFormState(prev => ({
       ...prev,
-      data: { ...prev.data, nationality },
-      errors: { ...prev.errors, nationality: undefined, general: undefined },
+      data: { ...prev.data, country },
+      errors: { ...prev.errors, country: undefined, general: undefined },
+    }));
+  }, []);
+
+  /**
+   * Update phone number field
+   */
+  const setPhoneNumber = useCallback((phoneNumber: string) => {
+    setFormState(prev => ({
+      ...prev,
+      data: { ...prev.data, phoneNumber },
+      errors: { ...prev.errors, phoneNumber: undefined, general: undefined },
     }));
   }, []);
 
@@ -170,19 +183,20 @@ export const useRegisterForm = () => {
       formState.data.password,
       formState.data.confirmPassword
     );
-    const termsError = validateTermsAgreement(formState.data.agreeToTerms);
-    const nationalityError = !formState.data.nationality ? 'Nationality is required' : undefined;
+    // T&C validation is now handled in the modal
+    const countryError = !formState.data.country ? 'Country is required' : undefined;
+    const phoneNumberError = !formState.data.phoneNumber ? 'Phone number is required' : undefined;
 
-    if (fullNameError || emailError || passwordError || confirmPasswordError || termsError || nationalityError) {
+    if (fullNameError || emailError || phoneNumberError || passwordError || confirmPasswordError || countryError) {
       setFormState(prev => ({
         ...prev,
         errors: {
           fullName: fullNameError,
           email: emailError,
+          phoneNumber: phoneNumberError,
           password: passwordError,
           confirmPassword: confirmPasswordError,
-          agreeToTerms: termsError,
-          nationality: nationalityError,
+          country: countryError,
         },
       }));
       return false;
@@ -217,7 +231,8 @@ export const useRegisterForm = () => {
           formState.data.fullName,
           formState.data.email,
           formState.data.password,
-          formState.data.nationality
+          formState.data.phoneNumber,
+          formState.data.country?.code
         );
 
         // Success - call the onSuccess callback
@@ -234,25 +249,24 @@ export const useRegisterForm = () => {
         }));
       }
     },
-    [formState.data.fullName, formState.data.email, formState.data.password, formState.data.nationality, register, validateForm]
+    [formState.data.fullName, formState.data.email, formState.data.password, formState.data.phoneNumber, formState.data.country, register, validateForm]
   );
 
   /**
    * Check if submit button should be disabled
    */
   const isSubmitDisabled = useMemo((): boolean => {
-    const { fullName, email, password, confirmPassword, agreeToTerms, nationality } = formState.data;
+    const { fullName, email, phoneNumber, password, confirmPassword, country } = formState.data;
     return (
       !fullName.trim() ||
       !email.trim() ||
+      !phoneNumber.trim() ||
       !password.trim() ||
       !confirmPassword.trim() ||
-      !nationality.trim() ||
-      !agreeToTerms ||
+      !country ||
       formState.isLoading
     );
   }, [formState.data, formState.isLoading]);
-
   return {
     fullName: formState.data.fullName,
     email: formState.data.email,
@@ -273,7 +287,9 @@ export const useRegisterForm = () => {
     toggleShowConfirmPassword,
     submitRegistration,
     isSubmitDisabled,
-    nationality: formState.data.nationality,
-    setNationality,
+    country: formState.data.country,
+    setCountry,
+    phoneNumber: formState.data.phoneNumber,
+    setPhoneNumber,
   };
 };

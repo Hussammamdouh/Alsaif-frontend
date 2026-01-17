@@ -178,7 +178,9 @@ export interface AuthContextValue {
     fullName: string,
     email: string,
     password: string,
-    nationality: string
+    nationality: string,
+    phoneNumber?: string,
+    country?: string
   ) => Promise<void>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<void>;

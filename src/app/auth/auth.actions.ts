@@ -77,14 +77,14 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
  */
 export const login = async (
   dispatch: Dispatch<AuthAction>,
-  email: string,
+  identifier: string,
   password: string
 ) => {
   dispatch({ type: AuthActionType.LOGIN_START });
 
   try {
     // Call API
-    const response = await loginApi({ email, password });
+    const response = await loginApi({ identifier, password });
 
     // Create session
     const now = Date.now();
@@ -123,13 +123,15 @@ export const registerUser = async (
   fullName: string,
   email: string,
   password: string,
-  nationality: string
+  phoneNumber?: string,
+  country?: string,
+  nationality?: string
 ) => {
   dispatch({ type: AuthActionType.REGISTER_START });
 
   try {
     // Call API
-    const response = await registerApi({ fullName, email, password, nationality });
+    const response = await registerApi({ fullName, email, password, nationality, phoneNumber, country });
 
     // Create session
     const now = Date.now();

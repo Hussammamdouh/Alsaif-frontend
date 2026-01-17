@@ -26,6 +26,9 @@ import { useRegisterForm } from './register.hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
 import type { PasswordStrength } from './register.types';
 import { useAuth, useBiometricStatus } from '../../../app/auth';
+import { CountrySelector } from './components/CountrySelector';
+import { TermsModal } from './components/TermsModal';
+import { Country } from '../../../core/constants/countries';
 
 interface RegisterScreenProps {
   onRegisterSuccess: () => void;
@@ -61,9 +64,14 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
       toggleShowConfirmPassword,
       submitRegistration,
       isSubmitDisabled,
-      nationality,
-      setNationality,
+      country,
+      setCountry,
+      phoneNumber,
+      setPhoneNumber,
     } = useRegisterForm();
+
+    const [countrySelectorVisible, setCountrySelectorVisible] = React.useState(false);
+    const [termsModalVisible, setTermsModalVisible] = React.useState(false);
 
     const { enableBiometric, clearError } = useAuth();
     const { enabled: biometricEnabled, type: biometricType } = useBiometricStatus();
@@ -187,29 +195,33 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
      * Handle terms link press
      */
     const handleTermsPress = useCallback(() => {
-      Alert.alert(
-        'Terms of Service',
-        'Terms and conditions will be displayed here.',
-        [{ text: 'OK' }]
-      );
+      setTermsModalVisible(true);
     }, []);
 
     /**
      * Handle privacy policy link press
      */
     const handlePrivacyPress = useCallback(() => {
-      Alert.alert(
-        'Privacy Policy',
-        'Privacy policy details will be displayed here.',
-        [{ text: 'OK' }]
-      );
+      setTermsModalVisible(true);
     }, []);
 
     /**
      * Handle registration submission
      */
     const handleSubmit = useCallback(() => {
-      submitRegistration(handleRegisterSuccess);
+      setTermsModalVisible(true);
+    }, []);
+
+    /**
+     * Handle terms acceptance from modal
+     */
+    const handleAcceptTerms = useCallback(() => {
+      setTermsModalVisible(false);
+
+      // Delay submit slightly for smoother UX and state propagation
+      setTimeout(() => {
+        submitRegistration(handleRegisterSuccess);
+      }, 300);
     }, [submitRegistration, handleRegisterSuccess]);
 
     /**
@@ -385,21 +397,60 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
                   }
                 />
 
-                {/* Nationality Input */}
+                {/* Country Selector */}
+                <TouchableOpacity
+                  onPress={() => setCountrySelectorVisible(true)}
+                  activeOpacity={0.7}
+                >
+                  <Input
+                    label={t('register.country')}
+                    value={country ? (isRTL ? country.name.ar : country.name.en) : ''}
+                    editable={false}
+                    pointerEvents="none"
+                    onChangeText={() => { }} // Non-editable but required by prop types
+                    error={errors.country}
+                    placeholder={t('register.countryPlaceholder')}
+                    leftIcon={
+                      <Icon
+                        name="globe-outline"
+                        size={20}
+                        color={theme.primary.main}
+                      />
+                    }
+                    rightIcon={
+                      <Icon
+                        name="chevron-down"
+                        size={20}
+                        color={theme.text.tertiary}
+                      />
+                    }
+                  />
+                </TouchableOpacity>
+
+                {/* Phone Number Input */}
                 <Input
-                  label={t('register.nationality')}
-                  value={nationality}
-                  onChangeText={setNationality}
-                  error={errors.nationality}
-                  placeholder={t('register.nationalityPlaceholder')}
-                  autoCapitalize="words"
+                  label={t('register.phoneNumber')}
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  error={errors.phoneNumber}
+                  placeholder={t('register.phoneNumberPlaceholder')}
+                  keyboardType="phone-pad"
+                  autoCapitalize="none"
                   autoCorrect={false}
+                  textContentType="telephoneNumber"
                   leftIcon={
-                    <Icon
-                      name="globe-outline"
-                      size={20}
-                      color={theme.primary.main}
-                    />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Icon
+                        name="call-outline"
+                        size={20}
+                        color={theme.primary.main}
+                      />
+                      {country && (
+                        <Text style={{ marginLeft: 8, color: theme.text.primary, fontSize: 14 }}>
+                          +{country.phoneCode}
+                        </Text>
+                      )}
+                    </View>
                   }
                 />
 
@@ -482,47 +533,6 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
                   }
                 />
 
-                {/* Terms & Conditions */}
-                <View>
-                  <View style={styles.termsContainer}>
-                    <Checkbox
-                      checked={agreeToTerms}
-                      onToggle={toggleAgreeToTerms}
-                      accessibilityLabel="Agree to terms and conditions"
-                      accessibilityHint="Toggle agreement to terms of service and privacy policy"
-                    />
-                    <Text style={[styles.termsText, { color: theme.text.secondary }]}>
-                      {t('register.agreeToTerms')}
-                      <Text
-                        style={[styles.termsLink, { color: theme.primary.main }]}
-                        onPress={handleTermsPress}
-                        accessibilityLabel="Terms of Service"
-                        accessibilityHint="View terms of service"
-                        accessibilityRole="button"
-                      >
-                        {t('register.termsOfService')}
-                      </Text>
-                      {t('register.and')}
-                      <Text
-                        style={[styles.termsLink, { color: theme.primary.main }]}
-                        onPress={handlePrivacyPress}
-                        accessibilityLabel="Privacy Policy"
-                        accessibilityHint="View privacy policy"
-                        accessibilityRole="button"
-                      >
-                        {t('register.privacyPolicy')}
-                      </Text>
-                      .
-                    </Text>
-                  </View>
-                  {errors.agreeToTerms && (
-                    <Text
-                      style={[styles.termsError, { color: theme.accent.error }]}
-                    >
-                      {errors.agreeToTerms}
-                    </Text>
-                  )}
-                </View>
 
                 {/* Sign Up Button */}
                 <Button
@@ -555,6 +565,19 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
             </ScrollView>
           </KeyboardAvoidingView>
         </SafeAreaView>
+
+        <CountrySelector
+          visible={countrySelectorVisible}
+          onClose={() => setCountrySelectorVisible(false)}
+          onSelect={setCountry}
+          selectedCountryCode={country?.code}
+        />
+
+        <TermsModal
+          visible={termsModalVisible}
+          onClose={() => setTermsModalVisible(false)}
+          onAccept={handleAcceptTerms}
+        />
       </View>
     );
   }

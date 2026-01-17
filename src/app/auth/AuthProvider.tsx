@@ -123,12 +123,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await AuthActions.login(dispatch, email, password);
   }, []);
 
-  /**
-   * Register
-   */
   const register = useCallback(
-    async (fullName: string, email: string, password: string, nationality: string) => {
-      await AuthActions.registerUser(dispatch, fullName, email, password, nationality);
+    async (fullName: string, email: string, password: string, phoneNumber?: string, country?: string) => {
+      await AuthActions.registerUser(dispatch, fullName, email, password, phoneNumber, country);
     },
     []
   );

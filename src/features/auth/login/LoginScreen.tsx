@@ -42,12 +42,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
     const { t, isRTL } = useLocalization();
 
     const {
-      email,
+      identifier,
       password,
       errors,
       isLoading,
       showPassword,
-      setEmail,
+      setIdentifier,
       setPassword,
       toggleShowPassword,
       submitLogin,
@@ -321,19 +321,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
                   </View>
                 )}
 
-                {/* Email Input */}
+                {/* Email/Phone Input */}
                 <Input
-                  label={t('login.email')}
-                  value={email}
-                  onChangeText={setEmail}
-                  error={errors.email}
-                  placeholder={t('login.emailPlaceholder')}
+                  label={t('login.identifier')}
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                  error={errors.identifier}
+                  placeholder={t('login.identifierPlaceholder')}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
                   textContentType="emailAddress"
-                  accessibilityLabel="Email address input"
-                  accessibilityHint="Enter your email address"
+                  accessibilityLabel="Email or phone number input"
+                  accessibilityHint="Enter your email address or phone number"
                   leftIcon={
                     <Icon
                       name="mail-outline"
@@ -445,8 +445,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
                           biometricType === 'FaceID'
                             ? 'scan-outline'
                             : biometricType === 'TouchID'
-                            ? 'finger-print'
-                            : 'shield-checkmark-outline'
+                              ? 'finger-print'
+                              : 'shield-checkmark-outline'
                         }
                         size={28}
                         color={theme.primary.main}
@@ -456,8 +456,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
                       {biometricType === 'FaceID'
                         ? t('login.faceId')
                         : biometricType === 'TouchID'
-                        ? t('login.touchId')
-                        : t('login.biometricLogin')}
+                          ? t('login.touchId')
+                          : t('login.biometricLogin')}
                     </Text>
                   </TouchableOpacity>
                 )}

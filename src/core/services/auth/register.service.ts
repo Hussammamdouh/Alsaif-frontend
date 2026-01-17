@@ -14,6 +14,8 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   nationality: string;
+  phoneNumber?: string;
+  country?: string;
 }
 
 /**
@@ -67,6 +69,8 @@ export const register = async (
       email: credentials.email,
       password: credentials.password,
       nationality: credentials.nationality,
+      phoneNumber: credentials.phoneNumber,
+      country: credentials.country,
     };
 
     const response = await apiClient.post<BackendResponse<BackendRegisterResponse>>(

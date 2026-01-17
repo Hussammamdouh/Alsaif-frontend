@@ -4,12 +4,12 @@
  */
 
 export interface LoginFormData {
-  email: string;
+  identifier: string;
   password: string;
 }
 
 export interface LoginFormErrors {
-  email?: string;
+  identifier?: string;
   password?: string;
   general?: string;
 }

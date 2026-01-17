@@ -28,12 +28,13 @@ import { useUnreadBadge } from '../notifications';
 type TabType = 'free' | 'premium';
 
 export const HomeScreen: React.FC = React.memo(() => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { t } = useLocalization();
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const { hasPremiumAccess } = useSubscriptionAccess();
   const isAdmin = useIsAdmin();
   const { count: unreadNotifications } = useUnreadBadge();
+  const styles = React.useMemo(() => getStyles(theme), [theme]);
   const [activeTab, setActiveTab] = useState<TabType>('free');
   const [showRequestModal, setShowRequestModal] = useState(false);
 
@@ -67,17 +68,17 @@ export const HomeScreen: React.FC = React.memo(() => {
       edges={['top']}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main }]}>
-        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
           {t('insights.title')}
         </Text>
-        <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={styles.headerActions}>
           <TouchableOpacity
-            style={[styles.addRequestButton, { backgroundColor: theme.background.tertiary }]}
-            onPress={() => navigation.navigate('Notifications')}
+            style={[styles.iconButton, { backgroundColor: theme.background.tertiary, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
+            onPress={() => navigation.navigate('Notifications', {})}
             activeOpacity={0.7}
           >
-            <Ionicons name="notifications-outline" size={20} color={theme.text.primary} />
+            <Ionicons name="notifications-outline" size={22} color={theme.text.primary} />
             {unreadNotifications > 0 ? (
               <View style={[styles.badge, { backgroundColor: theme.accent.error }]}>
                 <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
@@ -87,14 +88,14 @@ export const HomeScreen: React.FC = React.memo(() => {
           {hasPremiumAccess && (
             <>
               <TouchableOpacity
-                style={[styles.addRequestButton, { backgroundColor: theme.background.tertiary }]}
+                style={[styles.iconButton, { backgroundColor: theme.background.tertiary, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
                 onPress={() => navigation.navigate('InsightRequests')}
                 activeOpacity={0.7}
               >
-                <Ionicons name="list" size={20} color={theme.text.primary} />
+                <Ionicons name="list-outline" size={22} color={theme.text.primary} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.addRequestButton, { backgroundColor: theme.primary.main }]}
+                style={[styles.iconButton, { backgroundColor: theme.primary.main, borderColor: 'transparent' }]}
                 onPress={handleAddRequest}
                 activeOpacity={0.7}
               >
@@ -182,29 +183,36 @@ export const HomeScreen: React.FC = React.memo(() => {
 
 HomeScreen.displayName = 'HomeScreen';
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
-  addRequestButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: theme.text.primary,
+    letterSpacing: -0.5,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 1,
   },
   badge: {
     position: 'absolute',
@@ -222,11 +230,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '700',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
   tabsContainer: {
     flexDirection: 'row',

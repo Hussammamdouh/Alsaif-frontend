@@ -17,7 +17,7 @@ export const useLoginForm = () => {
   const { login, state: authState } = useAuth();
   const [formState, setFormState] = useState<LoginFormState>({
     data: {
-      email: '',
+      identifier: '',
       password: '',
     },
     errors: {},
@@ -26,14 +26,14 @@ export const useLoginForm = () => {
   });
 
   /**
-   * Update email field
-   * Clears email error when user starts typing
+   * Update identifier field
+   * Clears error when user starts typing
    */
-  const setEmail = useCallback((email: string) => {
+  const setIdentifier = useCallback((identifier: string) => {
     setFormState(prev => ({
       ...prev,
-      data: { ...prev.data, email },
-      errors: { ...prev.errors, email: undefined, general: undefined },
+      data: { ...prev.data, identifier },
+      errors: { ...prev.errors, identifier: undefined, general: undefined },
     }));
   }, []);
 
@@ -64,14 +64,14 @@ export const useLoginForm = () => {
    * Returns true if valid, false otherwise
    */
   const validateForm = useCallback((): boolean => {
-    const emailError = validateEmail(formState.data.email);
+    const identifierError = !formState.data.identifier.trim() ? 'Email or Phone Number is required' : undefined;
     const passwordError = validatePassword(formState.data.password);
 
-    if (emailError || passwordError) {
+    if (identifierError || passwordError) {
       setFormState(prev => ({
         ...prev,
         errors: {
-          email: emailError,
+          identifier: identifierError,
           password: passwordError,
         },
       }));
@@ -79,14 +79,14 @@ export const useLoginForm = () => {
     }
 
     return true;
-  }, [formState.data.email, formState.data.password]);
+  }, [formState.data.identifier, formState.data.password]);
 
   /**
    * Submit login form
    * Validates inputs and calls auth service with rate limiting
    */
   const submitLogin = useCallback(
-    async (onSuccess: (email: string) => void) => {
+    async (onSuccess: (identifier: string) => void) => {
       // Clear previous errors
       setFormState(prev => ({
         ...prev,
@@ -100,14 +100,14 @@ export const useLoginForm = () => {
 
       // Check rate limit
       const rateLimitResult = rateLimiter.canAttempt(
-        formState.data.email.toLowerCase(),
+        formState.data.identifier.toLowerCase(),
         RATE_LIMIT_CONFIG.LOGIN.maxAttempts,
         RATE_LIMIT_CONFIG.LOGIN.windowMs
       );
 
       if (!rateLimitResult.allowed) {
         const remainingTime = rateLimiter.getRemainingTimeString(
-          formState.data.email.toLowerCase(),
+          formState.data.identifier.toLowerCase(),
           RATE_LIMIT_CONFIG.LOGIN.windowMs
         );
         setFormState(prev => ({
@@ -124,24 +124,24 @@ export const useLoginForm = () => {
 
       try {
         // Call auth login action
-        await login(formState.data.email, formState.data.password);
+        await login(formState.data.identifier, formState.data.password);
 
-        // Success - reset rate limit for this email
-        rateLimiter.reset(formState.data.email.toLowerCase());
+        // Success - reset rate limit
+        rateLimiter.reset(formState.data.identifier.toLowerCase());
 
-        // Call the onSuccess callback with user email
-        onSuccess(formState.data.email);
+        // Call the onSuccess callback
+        onSuccess(formState.data.identifier);
       } catch (error) {
         // Record failed attempt
         rateLimiter.recordAttempt(
-          formState.data.email.toLowerCase(),
+          formState.data.identifier.toLowerCase(),
           RATE_LIMIT_CONFIG.LOGIN.windowMs
         );
 
         // Handle auth errors
         const authError = error as Error;
         const remainingAttempts = rateLimiter.canAttempt(
-          formState.data.email.toLowerCase(),
+          formState.data.identifier.toLowerCase(),
           RATE_LIMIT_CONFIG.LOGIN.maxAttempts,
           RATE_LIMIT_CONFIG.LOGIN.windowMs
         ).remainingAttempts;
@@ -160,28 +160,28 @@ export const useLoginForm = () => {
         }));
       }
     },
-    [formState.data.email, formState.data.password, login, validateForm]
+    [formState.data.identifier, formState.data.password, login, validateForm]
   );
 
   /**
    * Check if submit button should be disabled
    */
   const isSubmitDisabled = useMemo((): boolean => {
-    const { email, password } = formState.data;
+    const { identifier, password } = formState.data;
     return (
-      !email.trim() ||
+      !identifier.trim() ||
       !password.trim() ||
       formState.isLoading
     );
   }, [formState.data, formState.isLoading]);
 
   return {
-    email: formState.data.email,
+    identifier: formState.data.identifier,
     password: formState.data.password,
     errors: formState.errors,
     isLoading: formState.isLoading || authState.isLoading,
     showPassword: formState.showPassword,
-    setEmail,
+    setIdentifier,
     setPassword,
     toggleShowPassword,
     submitLogin,
