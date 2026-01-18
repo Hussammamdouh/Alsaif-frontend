@@ -16,7 +16,7 @@ import { useTheme, useLocalization } from '../../../app/providers';
 const CAROUSEL_HEIGHT = 180;
 
 interface BannerCarouselProps {
-    type: 'free' | 'premium';
+    type: 'news' | 'free' | 'premium';
 }
 
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {

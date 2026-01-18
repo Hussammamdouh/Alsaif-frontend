@@ -241,6 +241,7 @@ const translations = {
 
     // Bottom Tab Navigation
     'tabs.home': 'Home',
+    'tabs.news': 'News',
     'tabs.chat': 'Chat',
     'tabs.market': 'Market',
     'tabs.profile': 'Profile',
@@ -1211,6 +1212,7 @@ const translations = {
 
     // Bottom Tab Navigation
     'tabs.home': 'الرئيسية',
+    'tabs.news': 'الأخبار',
     'tabs.chat': 'المحادثات',
     'tabs.market': 'السوق',
     'tabs.profile': 'الملف الشخصي',

@@ -21,6 +21,7 @@ import {
 import {
   InsightDetailsScreen,
 } from '../../features/insights';
+import { NewsDetailScreen } from '../../features/news/screens/NewsDetailScreen';
 import { UserRequestHistoryScreen } from '../../features/insights/requests/UserRequestHistoryScreen';
 import {
   AdminDashboardScreen,
@@ -229,6 +230,7 @@ export const RootNavigator: React.FC = () => {
                   </MainStack.Screen>
 
                   <MainStack.Screen name="InsightDetail" component={InsightDetailsScreen} />
+                  <MainStack.Screen name="NewsDetail" component={NewsDetailScreen} />
                   <MainStack.Screen name="InsightRequests" component={UserRequestHistoryScreen} />
                   <MainStack.Screen name="Notifications" component={NotificationsScreen} />
 

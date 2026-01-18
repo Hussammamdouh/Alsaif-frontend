@@ -17,6 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../app/navigation/types';
 import { InsightsListScreen } from '../insights/InsightsListScreen';
 import { PremiumInsightsListScreen } from '../insights/PremiumInsightsListScreen';
+import { NewsListScreen } from '../news/screens/NewsListScreen';
 import { InsightRequestModal } from '../insights/requests/InsightRequestModal';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
@@ -25,7 +26,7 @@ import { useIsAdmin } from '../../app/auth/auth.hooks';
 import { BannerCarousel } from './components/BannerCarousel';
 import { useUnreadBadge } from '../notifications';
 
-type TabType = 'free' | 'premium';
+type TabType = 'news' | 'free' | 'premium';
 
 export const HomeScreen: React.FC = React.memo(() => {
   const { theme, isDark } = useTheme();
@@ -35,7 +36,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   const isAdmin = useIsAdmin();
   const { count: unreadNotifications } = useUnreadBadge();
   const styles = React.useMemo(() => getStyles(theme), [theme]);
-  const [activeTab, setActiveTab] = useState<TabType>('free');
+  const [activeTab, setActiveTab] = useState<TabType>('news');
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   const handleTabChange = (tab: TabType) => {
@@ -111,6 +112,28 @@ export const HomeScreen: React.FC = React.memo(() => {
         <TouchableOpacity
           style={[
             styles.tab,
+            activeTab === 'news' && styles.tabActive,
+          ]}
+          onPress={() => handleTabChange('news')}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              { color: theme.text.secondary },
+              activeTab === 'news' && [styles.tabTextActive, { color: theme.primary.main }],
+            ]}
+          >
+            {t('tabs.news') || 'News'}
+          </Text>
+          {activeTab === 'news' && (
+            <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.tab,
             activeTab === 'free' && styles.tabActive,
           ]}
           onPress={() => handleTabChange('free')}
@@ -160,7 +183,12 @@ export const HomeScreen: React.FC = React.memo(() => {
 
       {/* Content - Banners scroll with insights */}
       <View style={styles.content}>
-        {activeTab === 'free' ? (
+        {activeTab === 'news' ? (
+          <NewsListScreen
+            hideHeader
+            ListHeaderComponent={renderBannerHeader()}
+          />
+        ) : activeTab === 'free' ? (
           <InsightsListScreen
             hideHeader
             ListHeaderComponent={renderBannerHeader()}

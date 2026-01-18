@@ -20,6 +20,7 @@ import { MarketScreen } from '../../features/market/MarketScreen';
 import { ChatListScreen } from '../../features/chat/list';
 import { ProfileScreen } from '../../features/profile/ProfileScreen';
 import { AdminDashboardScreen } from '../../features/admin';
+import { NewsListScreen } from '../../features/news/screens/NewsListScreen';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -154,6 +155,18 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
           ),
         }}
         component={HomeScreen}
+      />
+
+      {/* News Tab */}
+      <Tab.Screen
+        name="NewsTab"
+        options={{
+          tabBarLabel: t('tabs.news') || 'News',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="newspaper-outline" color={color} focused={focused} />
+          ),
+        }}
+        component={NewsListScreen}
       />
 
       {/* Market Tab */}
