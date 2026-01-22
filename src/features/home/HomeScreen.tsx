@@ -17,7 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../app/navigation/types';
 import { InsightsListScreen } from '../insights/InsightsListScreen';
 import { PremiumInsightsListScreen } from '../insights/PremiumInsightsListScreen';
-import { NewsListScreen } from '../news/screens/NewsListScreen';
+import { DisclosureListScreen } from '../disclosure';
 import { InsightRequestModal } from '../insights/requests/InsightRequestModal';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
@@ -26,7 +26,7 @@ import { useIsAdmin } from '../../app/auth/auth.hooks';
 import { BannerCarousel } from './components/BannerCarousel';
 import { useUnreadBadge } from '../notifications';
 
-type TabType = 'news' | 'free' | 'premium';
+type TabType = 'disclosures' | 'free' | 'premium';
 
 export const HomeScreen: React.FC = React.memo(() => {
   const { theme, isDark } = useTheme();
@@ -36,7 +36,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   const isAdmin = useIsAdmin();
   const { count: unreadNotifications } = useUnreadBadge();
   const styles = React.useMemo(() => getStyles(theme), [theme]);
-  const [activeTab, setActiveTab] = useState<TabType>('news');
+  const [activeTab, setActiveTab] = useState<TabType>('disclosures');
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   const handleTabChange = (tab: TabType) => {
@@ -109,82 +109,84 @@ export const HomeScreen: React.FC = React.memo(() => {
 
       {/* Top Tabs - Sticky */}
       <View style={[styles.tabsContainer, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main }]}>
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 'news' && styles.tabActive,
-          ]}
-          onPress={() => handleTabChange('news')}
-          activeOpacity={0.7}
-        >
-          <Text
+        <View style={styles.tabsInner}>
+          <TouchableOpacity
             style={[
-              styles.tabText,
-              { color: theme.text.secondary },
-              activeTab === 'news' && [styles.tabTextActive, { color: theme.primary.main }],
+              styles.tab,
+              activeTab === 'disclosures' && styles.tabActive,
             ]}
+            onPress={() => handleTabChange('disclosures')}
+            activeOpacity={0.7}
           >
-            {t('tabs.news') || 'News'}
-          </Text>
-          {activeTab === 'news' && (
-            <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 'free' && styles.tabActive,
-          ]}
-          onPress={() => handleTabChange('free')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              { color: theme.text.secondary },
-              activeTab === 'free' && [styles.tabTextActive, { color: theme.primary.main }],
-            ]}
-          >
-            {t('insights.freeInsights')}
-          </Text>
-          {activeTab === 'free' && (
-            <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 'premium' && styles.tabActive,
-          ]}
-          onPress={() => handleTabChange('premium')}
-          activeOpacity={0.7}
-        >
-          <View style={styles.tabContent}>
             <Text
               style={[
                 styles.tabText,
                 { color: theme.text.secondary },
-                activeTab === 'premium' && [styles.tabTextActive, { color: theme.primary.main }],
+                activeTab === 'disclosures' && [styles.tabTextActive, { color: theme.primary.main }],
               ]}
             >
-              {t('insights.premiumInsights')}
+              {t('tabs.disclosures')}
             </Text>
-            <View style={[styles.premiumBadge, { backgroundColor: theme.primary.main }]}>
-              <Text style={styles.premiumBadgeText}>PRO</Text>
+            {activeTab === 'disclosures' && (
+              <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === 'free' && styles.tabActive,
+            ]}
+            onPress={() => handleTabChange('free')}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: theme.text.secondary },
+                activeTab === 'free' && [styles.tabTextActive, { color: theme.primary.main }],
+              ]}
+            >
+              {t('insights.freeInsights')}
+            </Text>
+            {activeTab === 'free' && (
+              <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === 'premium' && styles.tabActive,
+            ]}
+            onPress={() => handleTabChange('premium')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.tabContent}>
+              <Text
+                style={[
+                  styles.tabText,
+                  { color: theme.text.secondary },
+                  activeTab === 'premium' && [styles.tabTextActive, { color: theme.primary.main }],
+                ]}
+              >
+                {t('insights.premiumInsights')}
+              </Text>
+              <View style={[styles.premiumBadge, { backgroundColor: theme.primary.main }]}>
+                <Text style={styles.premiumBadgeText}>PRO</Text>
+              </View>
             </View>
-          </View>
-          {activeTab === 'premium' && (
-            <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
-          )}
-        </TouchableOpacity>
+            {activeTab === 'premium' && (
+              <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Content - Banners scroll with insights */}
       <View style={styles.content}>
-        {activeTab === 'news' ? (
-          <NewsListScreen
+        {activeTab === 'disclosures' ? (
+          <DisclosureListScreen
             hideHeader
             ListHeaderComponent={renderBannerHeader()}
           />
@@ -260,8 +262,12 @@ const getStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
   },
   tabsContainer: {
-    flexDirection: 'row',
     borderBottomWidth: 1,
+  },
+  tabsInner: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    justifyContent: 'center',
   },
   tab: {
     flex: 1,

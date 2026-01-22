@@ -21,7 +21,7 @@ import {
 import {
   InsightDetailsScreen,
 } from '../../features/insights';
-import { NewsDetailScreen } from '../../features/news/screens/NewsDetailScreen';
+import { PdfViewerScreen } from '../../features/disclosure';
 import { UserRequestHistoryScreen } from '../../features/insights/requests/UserRequestHistoryScreen';
 import {
   AdminDashboardScreen,
@@ -37,6 +37,7 @@ import {
   AdminBannersScreen,
 } from '../../features/admin';
 import { TermsScreen } from '../../features/legal/TermsScreen';
+import { AboutScreen } from '../../features/about/AboutScreen';
 import { NotificationsScreen } from '../../features/notifications';
 import { RootStackParamList, AuthStackParamList, MainStackParamList } from './types';
 import { useAuth } from '../auth';
@@ -207,6 +208,11 @@ export const RootNavigator: React.FC = () => {
                             screen: 'Terms',
                           })
                         }
+                        onNavigateToAbout={() =>
+                          navigation.navigate('Main', {
+                            screen: 'About',
+                          })
+                        }
                         onNavigateToInsightRequests={() =>
                           navigation.navigate('Main', {
                             screen: 'InsightRequests',
@@ -230,7 +236,7 @@ export const RootNavigator: React.FC = () => {
                   </MainStack.Screen>
 
                   <MainStack.Screen name="InsightDetail" component={InsightDetailsScreen} />
-                  <MainStack.Screen name="NewsDetail" component={NewsDetailScreen} />
+                  <MainStack.Screen name="PdfViewer" component={PdfViewerScreen} />
                   <MainStack.Screen name="InsightRequests" component={UserRequestHistoryScreen} />
                   <MainStack.Screen name="Notifications" component={NotificationsScreen} />
 
@@ -247,6 +253,9 @@ export const RootNavigator: React.FC = () => {
                             screen: 'Terms',
                           })
                         }
+                        onNavigateToAbout={() =>
+                          settingsNav.navigate('About')
+                        }
                         onLogout={() => {
                           // Logout is handled by ProfileScreen via authLogout()
                         }}
@@ -261,6 +270,13 @@ export const RootNavigator: React.FC = () => {
                   <MainStack.Screen name="Terms">
                     {({ navigation: termsNav }) => (
                       <TermsScreen onNavigateBack={() => termsNav.goBack()} />
+                    )}
+                  </MainStack.Screen>
+
+                  {/* About Screen */}
+                  <MainStack.Screen name="About">
+                    {({ navigation: aboutNav }) => (
+                      <AboutScreen />
                     )}
                   </MainStack.Screen>
 

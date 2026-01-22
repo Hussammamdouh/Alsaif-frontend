@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Image, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Image, Dimensions, Platform, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { marketService, MarketTicker } from '../../core/services/market/market.service';
+import { favoritesService } from '../../core/services/market/favorites.service';
 import { spacing } from '../../core/theme/spacing';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -13,22 +14,55 @@ export const MarketScreen = () => {
     const { t } = useLocalization();
     const styles = useMemo(() => getStyles(theme), [theme]);
 
-    const [selectedExchange, setSelectedExchange] = useState<'DFM' | 'ADX' | null>(null);
+    const [selectedExchange, setSelectedExchange] = useState<'DFM' | 'ADX' | 'FAVORITES' | null>(null);
     const [loading, setLoading] = useState(false);
     const [marketData, setMarketData] = useState<MarketTicker[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedSymbol, setSelectedSymbol] = useState<MarketTicker | null>(null);
+    const [sharesCount, setSharesCount] = useState<string>('');
+    const [favorites, setFavorites] = useState<string[]>([]);
 
-    // Initial Fetch
+    // Polling Interval
     useEffect(() => {
-        fetchData();
+        // Load favorites on mount
+        loadFavorites();
+
+        fetchData(); // Initial Fetch
+
+        const interval = setInterval(() => {
+            console.log('Refreshing market data (1m interval)...');
+            fetchData();
+        }, 60000); // 1 minute
+
+        return () => clearInterval(interval);
     }, []);
+
+    const loadFavorites = async () => {
+        const favs = await favoritesService.getFavorites();
+        setFavorites(favs);
+    };
+
+    const toggleFavorite = async (symbol: string) => {
+        if (favorites.includes(symbol)) {
+            await favoritesService.removeFavorite(symbol);
+        } else {
+            await favoritesService.addFavorite(symbol);
+        }
+        await loadFavorites();
+    };
 
     const fetchData = async () => {
         try {
-            if (!refreshing) setLoading(true);
+            if (!refreshing && marketData.length === 0) setLoading(true);
             const response = await marketService.getAllMarketData();
             if (response.success && response.data) {
+                console.log('[MarketScreen] Received data count:', response.data.length);
+                // Debug: Check if chartData exists
+                const withCharts = response.data.filter(d => d.chartData && d.chartData.length > 0);
+                console.log('[MarketScreen] Symbols with chartData:', withCharts.length);
+                if (withCharts.length > 0) {
+                    console.log('[MarketScreen] Sample chartData:', withCharts[0].symbol, withCharts[0].chartData?.length, 'points');
+                }
                 setMarketData(response.data);
             }
         } catch (error) {
@@ -47,8 +81,11 @@ export const MarketScreen = () => {
     // Filter Data
     const filteredData = useMemo(() => {
         if (!selectedExchange) return [];
+        if (selectedExchange === 'FAVORITES') {
+            return marketData.filter(item => favorites.includes(item.symbol));
+        }
         return marketData.filter(item => item.exchange === selectedExchange);
-    }, [marketData, selectedExchange]);
+    }, [marketData, selectedExchange, favorites]);
 
     // Render Items
     const renderHeader = () => (
@@ -98,18 +135,50 @@ export const MarketScreen = () => {
                     {t('market.abuDhabi')}
                 </Text>
             </TouchableOpacity>
+
+            {/* Favorites Button */}
+            <TouchableOpacity
+                style={[
+                    styles.selectorButton,
+                    selectedExchange === 'FAVORITES' && styles.selectorButtonActive
+                ]}
+                onPress={() => {
+                    setSelectedExchange('FAVORITES');
+                    setSelectedSymbol(null);
+                }}
+            >
+                <Icon
+                    name={selectedExchange === 'FAVORITES' ? 'star' : 'star-outline'}
+                    size={16}
+                    color={selectedExchange === 'FAVORITES' ? '#FFFFFF' : '#888888'}
+                    style={{ marginRight: 4 }}
+                />
+                <Text style={[
+                    styles.selectorText,
+                    selectedExchange === 'FAVORITES' ? styles.selectorTextActive : styles.selectorTextInactive
+                ]}>
+                    {t('market.favorites')}
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 
     const renderTickerItem = ({ item }: { item: MarketTicker }) => {
-        const isPositive = item.change >= 0;
+        const isPositive = (item.change ?? item.changePercent ?? 0) >= 0;
         const color = isPositive ? '#22c55e' : '#ef4444'; // Green or Red
         const initials = item.shortName ? item.shortName.substring(0, 2).toUpperCase() : item.symbol.substring(0, 2);
+
+        // Derive change if missing from API
+        const displayChange = item.change ?? (item.price * (item.changePercent / 100));
 
         return (
             <TouchableOpacity
                 style={[styles.tickerCard, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}
-                onPress={() => setSelectedSymbol(item)}
+                onPress={() => {
+                    setSelectedSymbol(item);
+                    setSharesCount(''); // Clear shares count when selecting new symbol
+                    console.log('[MarketScreen] Selected symbol:', item.symbol, 'chartData points:', item.chartData?.length || 0);
+                }}
             >
                 <View style={styles.tickerContent}>
                     {/* Avatar */}
@@ -125,13 +194,29 @@ export const MarketScreen = () => {
 
                     {/* Price */}
                     <View style={styles.tickerPriceContainer}>
-                        <Text style={[styles.tickerPrice, { color: theme.text.primary }]}>{item.price.toFixed(2)}</Text>
+                        <Text style={[styles.tickerPrice, { color: theme.text.primary }]}>{(item.price || 0).toFixed(2)}</Text>
                         <View style={[styles.changeBadge, { backgroundColor: isPositive ? '#22c55e20' : '#ef444420' }]}>
                             <Text style={[styles.tickerChange, { color }]}>
-                                {isPositive ? '▲' : '▼'} {Math.abs(item.change).toFixed(2)} ({Math.abs(item.changePercent).toFixed(2)}%)
+                                {isPositive ? '▲' : '▼'} {Math.abs(displayChange).toFixed(2)} ({Math.abs(item.changePercent || 0).toFixed(2)}%)
                             </Text>
                         </View>
                     </View>
+
+                    {/* Favorite Star */}
+                    <TouchableOpacity
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(item.symbol);
+                        }}
+                        style={styles.favoriteButton}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                        <Icon
+                            name={favorites.includes(item.symbol) ? 'star' : 'star-outline'}
+                            size={22}
+                            color={favorites.includes(item.symbol) ? '#FFD700' : theme.text.tertiary}
+                        />
+                    </TouchableOpacity>
                 </View>
             </TouchableOpacity>
         );
@@ -188,80 +273,122 @@ export const MarketScreen = () => {
                     <View style={{ width: 24 }} />
                 </View>
 
-                <View style={[styles.detailCard, { backgroundColor: theme.background.secondary }]}>
-                    <Text style={[styles.bigPrice, { color: theme.text.primary }]}>
-                        {selectedSymbol.price.toFixed(2)} <Text style={{ fontSize: 16 }}>AED</Text>
-                    </Text>
-                    <Text style={[styles.bigChange, { color }]}>
-                        {isPositive ? '▲' : '▼'} {selectedSymbol.change.toFixed(2)} ({selectedSymbol.changePercent.toFixed(2)}%)
-                    </Text>
-
-                    <View style={styles.divider} />
-
-                    <View style={styles.statRow}>
-                        <Stat label={t('market.open')} value={formatStatValue(selectedSymbol.open || selectedSymbol.price)} theme={theme} styles={styles} />
-                        <Stat label={t('market.high')} value={formatStatValue(selectedSymbol.high || selectedSymbol.price)} theme={theme} styles={styles} />
-                        <Stat label={t('market.low')} value={formatStatValue(selectedSymbol.low || selectedSymbol.price)} theme={theme} styles={styles} />
-                    </View>
-                    <View style={styles.statRow}>
-                        <Stat label={t('market.prevClose')} value={formatStatValue(selectedSymbol.prevClose || (selectedSymbol.price - selectedSymbol.change))} theme={theme} styles={styles} />
-                        <Stat label={t('market.volume')} value={formatStatValue(selectedSymbol.volume, true)} theme={theme} styles={styles} />
-                    </View>
-
-                    {/* Dynamic Chart */}
-                    <View style={[styles.chartContainer, { alignItems: 'center', width: '100%' }]}>
-                        <Text style={[styles.chartTitle, { color: theme.text.secondary, alignSelf: 'flex-start', marginLeft: 16 }]}>
-                            {t('market.priceHistory')} (7 Days)
+                <ScrollView
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ paddingBottom: 40 }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={[styles.detailCard, { backgroundColor: theme.background.secondary }]}>
+                        <Text style={[styles.bigPrice, { color: theme.text.primary }]}>
+                            {(selectedSymbol.price || 0).toFixed(2)} <Text style={{ fontSize: 16 }}>AED</Text>
                         </Text>
-                        <LineChart
-                            data={{
-                                labels: getLast7Days(),
-                                datasets: [{
-                                    data: generateChartData(selectedSymbol.price, selectedSymbol.changePercent)
-                                }]
-                            }}
-                            width={Dimensions.get('window').width - (spacing.lg * 2 + spacing.xl * 2)}
-                            height={250}
-                            yAxisLabel=""
-                            yAxisSuffix=""
-                            yAxisInterval={1}
-                            withInnerLines={false}
-                            withOuterLines={false}
-                            withVerticalLines={false}
-                            withHorizontalLines={true}
-                            withVerticalLabels={true}
-                            withHorizontalLabels={true}
-                            fromZero={false}
-                            segments={4}
-                            withDots={true}
-                            chartConfig={{
-                                backgroundColor: 'transparent',
-                                backgroundGradientFrom: theme.background.secondary,
-                                backgroundGradientTo: theme.background.secondary,
-                                fillShadowGradientFrom: color,
-                                fillShadowGradientTo: theme.background.secondary,
-                                fillShadowGradientFromOpacity: 0.5,
-                                fillShadowGradientToOpacity: 0.05,
-                                decimalPlaces: 2,
-                                color: (opacity = 1) => color,
-                                labelColor: (opacity = 1) => theme.text.secondary,
-                                style: { borderRadius: 16 },
-                                propsForDots: { r: "3", strokeWidth: "1", stroke: color },
-                                propsForBackgroundLines: {
-                                    strokeDasharray: "", // solid lines
-                                    strokeWidth: 0.5,
-                                    stroke: theme.divider || '#33333330'
-                                },
-                                paddingRight: 0,
-                            }}
-                            bezier
-                            style={{
-                                marginVertical: 8,
-                                borderRadius: 16,
-                            }}
-                        />
+                        <Text style={[styles.bigChange, { color }]}>
+                            {isPositive ? '▲' : '▼'} {Math.abs(selectedSymbol.change ?? (selectedSymbol.price * (selectedSymbol.changePercent / 100))).toFixed(2)} ({(selectedSymbol.changePercent || 0).toFixed(2)}%)
+                        </Text>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.statRow}>
+                            <Stat label={t('market.open')} value={formatStatValue(selectedSymbol.open || selectedSymbol.price)} theme={theme} styles={styles} />
+                            <Stat label={t('market.high')} value={formatStatValue(selectedSymbol.high || selectedSymbol.price)} theme={theme} styles={styles} />
+                            <Stat label={t('market.low')} value={formatStatValue(selectedSymbol.low || selectedSymbol.price)} theme={theme} styles={styles} />
+                        </View>
+                        <View style={styles.statRow}>
+                            <Stat label={t('market.prevClose')} value={formatStatValue(selectedSymbol.prevClose || ((selectedSymbol.price || 0) - (selectedSymbol.change || 0)))} theme={theme} styles={styles} />
+                            <Stat label={t('market.volume')} value={formatStatValue(selectedSymbol.volume, true)} theme={theme} styles={styles} />
+                        </View>
+
+                        {/* Shares Calculator */}
+                        <View style={styles.calculatorSection}>
+                            <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('market.sharesCalculator')}</Text>
+                            <View style={styles.inputRow}>
+                                <Text style={[styles.inputLabel, { color: theme.text.secondary }]}>{t('market.numberOfShares')}</Text>
+                                <TextInput
+                                    style={[styles.sharesInput, { backgroundColor: theme.background.primary, color: theme.text.primary, borderColor: theme.border.main }]}
+                                    value={sharesCount}
+                                    onChangeText={setSharesCount}
+                                    keyboardType="numeric"
+                                    placeholder="0"
+                                    placeholderTextColor={theme.text.tertiary}
+                                />
+                            </View>
+                            {sharesCount && parseFloat(sharesCount) > 0 && (
+                                <View style={styles.calculationResult}>
+                                    <View style={styles.resultRow}>
+                                        <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalValue')}</Text>
+                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>
+                                            {(parseFloat(sharesCount) * selectedSymbol.price).toFixed(2)} AED
+                                        </Text>
+                                    </View>
+                                    <View style={styles.resultRow}>
+                                        <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.todayChange')}</Text>
+                                        <Text style={[styles.resultValue, { color: isPositive ? '#22c55e' : '#ef4444' }]}>
+                                            {isPositive ? '+' : ''}{(parseFloat(sharesCount) * (selectedSymbol.change || 0)).toFixed(2)} AED
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Dynamic Chart */}
+                        <View style={[styles.chartContainer, { alignItems: 'center', width: '100%' }]}>
+                            <Text style={[styles.chartTitle, { color: theme.text.secondary, alignSelf: 'flex-start', marginLeft: 16 }]}>
+                                {t('market.priceHistory')} (1 Day)
+                            </Text>
+                            <LineChart
+                                data={{
+                                    labels: selectedSymbol.chartData && selectedSymbol.chartData.length > 0
+                                        ? getChartLabels(selectedSymbol.chartData)
+                                        : getLast7Days(),
+                                    datasets: [{
+                                        data: selectedSymbol.chartData && selectedSymbol.chartData.length > 0
+                                            ? selectedSymbol.chartData.map(p => p.price)
+                                            : generateChartData(selectedSymbol.price, selectedSymbol.changePercent)
+                                    }]
+                                }}
+                                width={Dimensions.get('window').width - (spacing.lg * 2 + spacing.xl * 2)}
+                                height={250}
+                                yAxisLabel=""
+                                yAxisSuffix=""
+                                yAxisInterval={1}
+                                withInnerLines={false}
+                                withOuterLines={false}
+                                withVerticalLines={false}
+                                withHorizontalLines={true}
+                                withVerticalLabels={true}
+                                withHorizontalLabels={true}
+                                fromZero={false}
+                                segments={4}
+                                withDots={selectedSymbol.chartData && selectedSymbol.chartData.length > 20 ? false : true}
+                                chartConfig={{
+                                    backgroundColor: 'transparent',
+                                    backgroundGradientFrom: theme.background.secondary,
+                                    backgroundGradientTo: theme.background.secondary,
+                                    fillShadowGradientFrom: color,
+                                    fillShadowGradientTo: theme.background.secondary,
+                                    fillShadowGradientFromOpacity: 0.5,
+                                    fillShadowGradientToOpacity: 0.05,
+                                    decimalPlaces: 2,
+                                    color: (opacity = 1) => color,
+                                    labelColor: (opacity = 1) => theme.text.secondary,
+                                    style: { borderRadius: 16 },
+                                    propsForDots: { r: "3", strokeWidth: "1", stroke: color },
+                                    propsForBackgroundLines: {
+                                        strokeDasharray: "", // solid lines
+                                        strokeWidth: 0.5,
+                                        stroke: theme.divider || '#33333330'
+                                    },
+                                    paddingRight: 0,
+                                }}
+                                bezier
+                                style={{
+                                    marginVertical: 8,
+                                    borderRadius: 16,
+                                }}
+                            />
+                        </View>
                     </View>
-                </View>
+                </ScrollView>
 
             </SafeAreaView>
         );
@@ -297,21 +424,19 @@ export const MarketScreen = () => {
 // Helper to simulate historical data trend
 const generateChartData = (currentPrice: number, changePercent: number): number[] => {
     const points = [];
-    let price = currentPrice;
+    const numPoints = 7;
+    const price = currentPrice || 0;
+    const changePct = changePercent || 0;
 
-    // Add current price as last point
-    points.push(price);
+    // Calculate the total change amount
+    const totalChange = price * (changePct / 100);
+    // Start price (7 days ago)
+    const startPrice = price - totalChange;
 
-    // Generate previous 6 points working backwards
-    const volatility = Math.abs(changePercent) / 100; // e.g. 0.05
-    const direction = changePercent >= 0 ? -1 : 1; // Reverse direction for history
-
-    for (let i = 0; i < 6; i++) {
-        // Random fluctuation between 0.5% and 1.5% of price
-        const fluctuation = price * (Math.random() * 0.015 + 0.005);
-        // Apply trend + noise
-        price = price + (price * volatility * direction * 0.5) + (Math.random() < 0.5 ? -fluctuation : fluctuation);
-        points.unshift(price);
+    // Generate linear steps from startPrice to price
+    for (let i = 0; i < numPoints; i++) {
+        const step = startPrice + (totalChange * (i / (numPoints - 1)));
+        points.push(step);
     }
 
     return points;
@@ -327,6 +452,20 @@ const getLast7Days = (): string[] => {
         labels.push(days[d.getDay()]);
     }
     return labels;
+};
+
+const getChartLabels = (data: { timestamp: any }[]): string[] => {
+    if (!data || data.length === 0) return [];
+
+    // For 1 day, show time every few points
+    const step = Math.max(1, Math.floor(data.length / 5));
+    return data.map((p, i) => {
+        if (i % step === 0) {
+            const date = new Date(p.timestamp);
+            return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+        }
+        return '';
+    });
 };
 
 const formatStatValue = (value: number, isVolume: boolean = false): string => {
@@ -488,5 +627,63 @@ const getStyles = (theme: any) => StyleSheet.create({
     timeRangeText: {
         fontSize: 12,
         fontWeight: '600'
-    }
+    },
+    calculatorSection: {
+        marginTop: 24,
+        paddingTop: 24,
+        borderTopWidth: 1,
+        borderTopColor: '#33333320'
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 16
+    },
+    inputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 16
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '500'
+    },
+    sharesInput: {
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        fontSize: 16,
+        fontWeight: '600',
+        minWidth: 120,
+        textAlign: 'right'
+    },
+    calculationResult: {
+        marginTop: 8
+    },
+    resultRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 8
+    },
+    resultLabel: {
+        fontSize: 14
+    },
+    resultValue: {
+        fontSize: 16,
+        fontWeight: '700'
+    },
+    favoriteButton: {
+        marginLeft: 8,
+        padding: 4,
+    },
+    selectorButton: {
+        flex: 1,
+        flexDirection: 'row',
+        paddingVertical: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 8,
+    },
 });

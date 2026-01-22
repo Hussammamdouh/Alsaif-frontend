@@ -33,6 +33,7 @@ interface ProfileScreenProps {
   onNavigateToSettings: () => void;
   onNavigateToSubscription?: () => void;
   onNavigateToTerms: () => void;
+  onNavigateToAbout?: () => void;
   onNavigateToInsightRequests?: () => void;
   onLogout: () => void;
 }
@@ -44,6 +45,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
   onNavigateToSettings,
   onNavigateToSubscription,
   onNavigateToTerms,
+  onNavigateToAbout,
   onNavigateToInsightRequests,
   onLogout
 }) => {
@@ -341,6 +343,24 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
                 </View>
                 <Text style={[styles.menuLabel, { color: theme.text.primary }]}>
                   {t('profile.privacy')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: theme.border.main }]} />
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              activeOpacity={0.7}
+              onPress={onNavigateToAbout}
+            >
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.menuIconContainer, { backgroundColor: '#10B98110' }]}>
+                  <Ionicons name="information-outline" size={22} color="#10B981" />
+                </View>
+                <Text style={[styles.menuLabel, { color: theme.text.primary }]}>
+                  {t('about.title')}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />

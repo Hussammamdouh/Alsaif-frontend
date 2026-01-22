@@ -48,6 +48,7 @@ interface SettingsScreenProps {
   onNavigateBack: () => void;
   onNavigateToSubscription?: () => void;
   onNavigateToTerms: () => void;
+  onNavigateToAbout?: () => void;
   onLogout: () => void;
 }
 
@@ -55,7 +56,7 @@ interface SettingsScreenProps {
  * Settings Screen Component
  */
 export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
-  ({ onNavigateBack, onNavigateToSubscription, onNavigateToTerms, onLogout }) => {
+  ({ onNavigateBack, onNavigateToSubscription, onNavigateToTerms, onNavigateToAbout, onLogout }) => {
     console.log('[SettingsScreen] Render. onLogout available:', !!onLogout);
     const { profile, updateProfile, loadProfile } = useProfile();
     const { settings, updateSettings, changePassword, isUpdating } = useSettings();
@@ -1038,6 +1039,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                 <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.version')}</Text>
               </View>
               <Text style={[styles.settingValue, { color: theme.text.secondary }]}>1.0.0</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+              onPress={onNavigateToAbout}
+            >
+              <View style={styles.settingLeft}>
+                <Icon name="information-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('about.title')}</Text>
+              </View>
+              <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
             </TouchableOpacity>
 
             <TouchableOpacity

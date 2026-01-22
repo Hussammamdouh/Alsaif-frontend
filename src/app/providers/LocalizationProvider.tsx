@@ -259,6 +259,28 @@ const translations = {
     'market.prevClose': 'Prev Close',
     'market.volume': 'Volume',
     'market.priceHistory': 'Price History',
+    'market.sharesCalculator': 'Shares Calculator',
+    'market.numberOfShares': 'Number of Shares',
+    'market.totalValue': 'Total Value',
+    'market.todayChange': "Today's Change",
+    'market.favorites': 'Favorites',
+
+    // About Screen
+    'about.title': 'About',
+    'about.tagline': 'Smarter Decisions. Higher Returns.',
+    'about.whatIsIt': 'What is Alsaif Analysis?',
+    'about.description': 'Alsaif Analysis is a comprehensive financial analysis platform designed for investors in the UAE stock markets (DFM & ADX). We provide premium insights, real-time market data, expert analysis, and a community of professional traders to help you make informed investment decisions.',
+    'about.keyFeatures': 'Key Features',
+    'about.feature1': 'Real-time market data from Dubai Financial Market (DFM) and Abu Dhabi Securities Exchange (ADX)',
+    'about.feature2': 'Premium insights and expert analysis from certified financial advisors',
+    'about.feature3': 'Direct chat access to financial experts and professional trading groups',
+    'about.feature4': 'Breaking financial news and market updates',
+    'about.feature5': 'Material disclosures and regulatory filings',
+    'about.license': 'Financial Recommendation License',
+    'about.licenseDescription': 'Alsaif Analysis is operated under an official financial recommendation approval from the UAE Securities and Commodities Authority.',
+    'about.viewDocument': 'View Official Document',
+    'about.version': 'Version',
+    'about.pdfViewerComingSoon': 'PDF viewer coming soon',
 
     // Profile Screen
     'profile.title': 'Profile',
@@ -993,6 +1015,18 @@ const translations = {
     'legal.privacy.sec4Content': 'We do not share your personal data with third parties except as required by law or to provide our core services.',
     'legal.privacy.sec5Title': '5. Your Choices',
     'legal.privacy.sec5Content': 'You may update your account information at any time by logging into your account settings.',
+
+    // Disclosures Screen
+    'disclosures.title': 'Corporate Disclosures',
+    'disclosures.selectPdf': 'Select Document',
+    'disclosures.loading': 'Loading disclosures...',
+    'disclosures.noPdfFound': 'No PDF URLs found',
+    'disclosures.pdfFiles': '{count} PDF files',
+    'disclosures.openInNewTab': 'Open in new tab',
+    'disclosures.download': 'Download',
+    'disclosures.errorTitle': 'Sorry, an error occurred',
+    'disclosures.retry': 'Try Again',
+    'disclosures.filterAll': 'All',
   },
   ar: {
     // Splash Screen
@@ -1230,6 +1264,28 @@ const translations = {
     'market.prevClose': 'الإغلاق السابق',
     'market.volume': 'الحجم',
     'market.priceHistory': 'سجل الأسعار',
+    'market.sharesCalculator': 'حاسبة الأسهم',
+    'market.numberOfShares': 'عدد الأسهم',
+    'market.totalValue': 'القيمة الإجمالية',
+    'market.todayChange': 'التغيير اليوم',
+    'market.favorites': 'المفضلة',
+
+    // About Screen
+    'about.title': 'حول التطبيق',
+    'about.tagline': 'قرارات أذكى. عوائد أعلى.',
+    'about.whatIsIt': 'ما هو السيف للتحليل؟',
+    'about.description': 'السيف للتحليل هي منصة تحليل مالي شاملة مصممة للمستثمرين في أسواق الأسهم الإماراتية (سوق دبي المالي وسوق أبوظبي للأوراق المالية). نوفر رؤى مميزة وبيانات السوق الفورية والتحليل الخبير ومجتمع من المتداولين المحترفين لمساعدتك على اتخاذ قرارات استثمارية مدروسة.',
+    'about.keyFeatures': 'المزايا الرئيسية',
+    'about.feature1': 'بيانات السوق الفورية من سوق دبي المالي وسوق أبوظبي للأوراق المالية',
+    'about.feature2': 'رؤى مميزة وتحليلات خبراء من مستشارين ماليين معتمدين',
+    'about.feature3': 'وصول مباشر للدردشة مع الخبراء الماليين ومجموعات التداول المحترفة',
+    'about.feature4': 'آخر الأخبار المالية وتحديثات السوق',
+    'about.feature5': 'الإفصاحات المادية والملفات التنظيمية',
+    'about.license': 'ترخيص التوصيات المالية',
+    'about.licenseDescription': 'يعمل السيف للتحليل بموجب موافقة رسمية للتوصيات المالية من هيئة الأوراق المالية والسلع بدولة الإمارات.',
+    'about.viewDocument': 'عرض المستند الرسمي',
+    'about.version': 'الإصدار',
+    'about.pdfViewerComingSoon': 'عارض PDF قريباً',
 
     // Profile Screen
     'profile.title': 'الملف الشخصي',
@@ -1598,6 +1654,18 @@ const translations = {
     'admin.reviewModerateContent': 'مراجعة وإشراف محتوى المستخدم',
     'admin.manageSubscriptionTiers': 'إدارة مستويات الاشتراك والأسعار',
     'admin.createManageCodes': 'إنشاء وإدارة رموز الترويج',
+
+    // Disclosures Screen
+    'disclosures.title': 'إفصاحات الشركات',
+    'disclosures.selectPdf': 'اختر المستند',
+    'disclosures.loading': 'جاري تحميل الإفصاحات...',
+    'disclosures.noPdfFound': 'لم يتم العثور على ملفات PDF',
+    'disclosures.pdfFiles': '{count} ملفات PDF',
+    'disclosures.openInNewTab': 'فتح في نافذة جديدة',
+    'disclosures.download': 'تحميل',
+    'disclosures.errorTitle': 'عذراً، حدث خطأ',
+    'disclosures.retry': 'إعادة المحاولة',
+    'disclosures.filterAll': 'الكل',
     'admin.designNotificationTemplates': 'تصميم قوالب الإشعارات القابلة لإعادة الاستخدام',
     'admin.performBatchOperations': 'تنفيذ العمليات المجمعة على عدة عناصر',
 

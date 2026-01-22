@@ -36,7 +36,6 @@ export type BottomTabParamList = {
   ChatTab: undefined;
   ProfileTab: undefined;
   AdminTab: undefined;
-  NewsTab: undefined;
 };
 
 /**
@@ -51,7 +50,7 @@ export type MainStackParamList = {
   InsightDetail: { insightId: string; title?: string };
   InsightRequests: undefined;
   Notifications: { category?: string };
-  NewsDetail: { newsId: string; title: string };
+  PdfViewer: { url: string; title: string };
 
   // User Subscription Screens
   Subscription: undefined;
@@ -61,6 +60,7 @@ export type MainStackParamList = {
   // Settings
   Settings: undefined;
   Terms: undefined;
+  About: undefined;
 
   // Admin Screens (protected by role-based guards)
   AdminDashboard: undefined;

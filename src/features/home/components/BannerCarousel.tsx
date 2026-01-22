@@ -16,7 +16,7 @@ import { useTheme, useLocalization } from '../../../app/providers';
 const CAROUSEL_HEIGHT = 180;
 
 interface BannerCarouselProps {
-    type: 'news' | 'free' | 'premium';
+    type: 'disclosures' | 'news' | 'free' | 'premium';
 }
 
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
@@ -33,7 +33,9 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
         const fetchBanners = async () => {
             setLoading(true);
             try {
-                const data = await bannerService.getActive(type);
+                // Only 'free' and 'premium' are valid banner types for the API
+                const bannerType = (type === 'free' || type === 'premium') ? type : undefined;
+                const data = await bannerService.getActive(bannerType);
                 if (isMounted) {
                     setBanners(data);
                 }

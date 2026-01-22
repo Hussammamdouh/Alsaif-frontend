@@ -21,6 +21,10 @@ export interface MarketTicker {
     shortName: string;
     lastUpdated: string;
     isLive?: boolean;
+    chartData?: {
+        timestamp: string | Date;
+        price: number;
+    }[];
 }
 
 export interface MarketResponse {

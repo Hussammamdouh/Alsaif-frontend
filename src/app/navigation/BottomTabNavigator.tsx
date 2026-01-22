@@ -20,7 +20,6 @@ import { MarketScreen } from '../../features/market/MarketScreen';
 import { ChatListScreen } from '../../features/chat/list';
 import { ProfileScreen } from '../../features/profile/ProfileScreen';
 import { AdminDashboardScreen } from '../../features/admin';
-import { NewsListScreen } from '../../features/news/screens/NewsListScreen';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -30,6 +29,7 @@ interface BottomTabNavigatorProps {
   onNavigateToSettings: () => void;
   onNavigateToSubscription: () => void;
   onNavigateToTerms: () => void;
+  onNavigateToAbout: () => void;
   onNavigateToInsightRequests: () => void;
   onLogout: () => void;
 }
@@ -40,6 +40,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   onNavigateToSettings,
   onNavigateToSubscription,
   onNavigateToTerms,
+  onNavigateToAbout,
   onNavigateToInsightRequests,
   onLogout,
 }) => {
@@ -157,18 +158,6 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
         component={HomeScreen}
       />
 
-      {/* News Tab */}
-      <Tab.Screen
-        name="NewsTab"
-        options={{
-          tabBarLabel: t('tabs.news') || 'News',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="newspaper-outline" color={color} focused={focused} />
-          ),
-        }}
-        component={NewsListScreen}
-      />
-
       {/* Market Tab */}
       <Tab.Screen
         name="MarketTab"
@@ -220,6 +209,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
             onNavigateToSettings={onNavigateToSettings}
             onNavigateToSubscription={onNavigateToSubscription}
             onNavigateToTerms={onNavigateToTerms}
+            onNavigateToAbout={onNavigateToAbout}
             onNavigateToInsightRequests={onNavigateToInsightRequests}
             onLogout={onLogout}
           />
