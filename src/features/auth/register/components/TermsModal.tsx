@@ -12,17 +12,20 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
+    useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme, useLocalization } from '../../../../app/providers';
-import { Button, Checkbox } from '../../../../shared/components';
+import { Button, Checkbox, ResponsiveContainer } from '../../../../shared/components';
 
 interface TermsModalProps {
     visible: boolean;
     onClose: () => void;
     onAccept: () => void;
 }
+
+const DESKTOP_BREAKPOINT = 768;
 
 export const TermsModal: React.FC<TermsModalProps> = ({
     visible,
@@ -32,6 +35,8 @@ export const TermsModal: React.FC<TermsModalProps> = ({
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
     const [accepted, setAccepted] = useState(false);
+    const { width } = useWindowDimensions();
+    const isDesktop = width > DESKTOP_BREAKPOINT;
 
     const renderSection = (titleKey: string, contentKey: string | string[]) => {
         return (
@@ -60,9 +65,24 @@ export const TermsModal: React.FC<TermsModalProps> = ({
     };
 
     return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={styles.modalOverlay}>
-                <SafeAreaView style={[styles.modalContent, { backgroundColor: theme.background.primary }]} edges={['top', 'bottom']}>
+        <Modal
+            visible={visible}
+            animationType={isDesktop ? "fade" : "slide"}
+            transparent
+            onRequestClose={onClose}
+        >
+            <View style={[
+                styles.modalOverlay,
+                isDesktop && styles.desktopOverlay
+            ]}>
+                <SafeAreaView
+                    style={[
+                        styles.modalContent,
+                        { backgroundColor: theme.background.primary },
+                        isDesktop && styles.desktopModalContent
+                    ]}
+                    edges={['top', 'bottom']}
+                >
                     <View style={[styles.header, { borderBottomColor: theme.ui.border, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                         <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
                             {t('legal.terms.title')}
@@ -76,57 +96,59 @@ export const TermsModal: React.FC<TermsModalProps> = ({
                         contentContainerStyle={styles.scrollContent}
                         showsVerticalScrollIndicator={false}
                     >
-                        <View style={styles.heroHeader}>
-                            <Icon name="document-text-outline" size={48} color={theme.primary.main} />
-                            <Text style={[styles.heroTitle, { color: theme.text.primary, textAlign: 'center' }]}>
-                                {t('legal.terms.header')}
-                            </Text>
-                        </View>
+                        <ResponsiveContainer>
+                            <View style={styles.heroHeader}>
+                                <Icon name="document-text-outline" size={48} color={theme.primary.main} />
+                                <Text style={[styles.heroTitle, { color: theme.text.primary, textAlign: 'center' }]}>
+                                    {t('legal.terms.header')}
+                                </Text>
+                            </View>
 
-                        <View style={styles.content}>
-                            <Text style={[styles.mainSectionHeader, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-                                {t('legal.terms.title')}
-                            </Text>
-                            {renderSection('legal.terms.sec1Title', 'legal.terms.sec1Content')}
-                            {renderSection('legal.terms.sec2Title', [
-                                'legal.terms.sec2Content1',
-                                'legal.terms.sec2Content2',
-                                'legal.terms.sec2Content3',
-                            ])}
-                            {renderSection('legal.terms.sec3Title', [
-                                'legal.terms.sec3Content1',
-                                'legal.terms.sec3Content2'
-                            ])}
-                            {renderSection('legal.terms.sec4Title', [
-                                'legal.terms.sec4Content1',
-                                'legal.terms.sec4Content2',
-                                'legal.terms.sec4Content3',
-                            ])}
-                            {renderSection('legal.terms.sec5Title', [
-                                'legal.terms.sec5Content1',
-                                'legal.terms.sec5Content2',
-                                'legal.terms.sec5Content3',
-                            ])}
-                            {renderSection('legal.terms.sec6Title', 'legal.terms.sec6Content')}
-                            {renderSection('legal.terms.sec7Title', 'legal.terms.sec7Content')}
-                            {renderSection('legal.terms.sec8Title', 'legal.terms.sec8Content')}
-                            {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
-                            {renderSection('legal.terms.sec10Title', 'legal.terms.sec10Content')}
+                            <View style={styles.content}>
+                                <Text style={[styles.mainSectionHeader, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
+                                    {t('legal.terms.title')}
+                                </Text>
+                                {renderSection('legal.terms.sec1Title', 'legal.terms.sec1Content')}
+                                {renderSection('legal.terms.sec2Title', [
+                                    'legal.terms.sec2Content1',
+                                    'legal.terms.sec2Content2',
+                                    'legal.terms.sec2Content3',
+                                ])}
+                                {renderSection('legal.terms.sec3Title', [
+                                    'legal.terms.sec3Content1',
+                                    'legal.terms.sec3Content2'
+                                ])}
+                                {renderSection('legal.terms.sec4Title', [
+                                    'legal.terms.sec4Content1',
+                                    'legal.terms.sec4Content2',
+                                    'legal.terms.sec4Content3',
+                                ])}
+                                {renderSection('legal.terms.sec5Title', [
+                                    'legal.terms.sec5Content1',
+                                    'legal.terms.sec5Content2',
+                                    'legal.terms.sec5Content3',
+                                ])}
+                                {renderSection('legal.terms.sec6Title', 'legal.terms.sec6Content')}
+                                {renderSection('legal.terms.sec7Title', 'legal.terms.sec7Content')}
+                                {renderSection('legal.terms.sec8Title', 'legal.terms.sec8Content')}
+                                {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
+                                {renderSection('legal.terms.sec10Title', 'legal.terms.sec10Content')}
 
-                            <View style={[styles.divider, { backgroundColor: theme.ui.border }]} />
+                                <View style={[styles.divider, { backgroundColor: theme.ui.border }]} />
 
-                            <Text style={[styles.mainSectionHeader, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-                                {t('legal.privacy.title')}
-                            </Text>
-                            <Text style={[styles.heroTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left', fontSize: 18, marginBottom: 16 }]}>
-                                {t('legal.privacy.header')}
-                            </Text>
-                            {renderSection('legal.privacy.sec1Title', 'legal.privacy.sec1Content')}
-                            {renderSection('legal.privacy.sec2Title', 'legal.privacy.sec2Content')}
-                            {renderSection('legal.privacy.sec3Title', 'legal.privacy.sec3Content')}
-                            {renderSection('legal.privacy.sec4Title', 'legal.privacy.sec4Content')}
-                            {renderSection('legal.privacy.sec5Title', 'legal.privacy.sec5Content')}
-                        </View>
+                                <Text style={[styles.mainSectionHeader, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
+                                    {t('legal.privacy.title')}
+                                </Text>
+                                <Text style={[styles.heroTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left', fontSize: 18, marginBottom: 16 }]}>
+                                    {t('legal.privacy.header')}
+                                </Text>
+                                {renderSection('legal.privacy.sec1Title', 'legal.privacy.sec1Content')}
+                                {renderSection('legal.privacy.sec2Title', 'legal.privacy.sec2Content')}
+                                {renderSection('legal.privacy.sec3Title', 'legal.privacy.sec3Content')}
+                                {renderSection('legal.privacy.sec4Title', 'legal.privacy.sec4Content')}
+                                {renderSection('legal.privacy.sec5Title', 'legal.privacy.sec5Content')}
+                            </View>
+                        </ResponsiveContainer>
                     </ScrollView>
 
                     <View style={[styles.footer, { borderTopColor: theme.ui.border }]}>
@@ -155,7 +177,12 @@ export const TermsModal: React.FC<TermsModalProps> = ({
 const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    desktopOverlay: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40,
     },
     modalContent: {
         flex: 1,
@@ -163,6 +190,14 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 32,
         borderTopRightRadius: 32,
         overflow: 'hidden',
+    },
+    desktopModalContent: {
+        flex: 0,
+        width: '100%',
+        maxWidth: 600,
+        maxHeight: '90%',
+        marginTop: 0,
+        borderRadius: 24,
     },
     header: {
         padding: 20,

@@ -19,6 +19,7 @@ import {
   Animated,
   Easing,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -28,12 +29,15 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../app/navigation/types';
 
 import { useTheme, useLocalization } from '../../../app/providers';
-import { styles } from './chatList.styles';
+import { ResponsiveContainer } from '../../../shared/components';
+import { useUser } from '../../../app/auth/auth.hooks';
+import { getStyles } from './chatList.styles';
 import { useChatList, useConversationPress } from './chatList.hooks';
 import { UIConversation, ChatFilter } from './chatList.types';
 import { CHAT_FILTERS, EMPTY_STATES, LIST_CONFIG } from './chatList.constants';
 import { formatUnreadCount } from './chatList.mapper';
 import { NewChatModal } from './NewChatModal';
+import { ConversationView } from '../conversation-v2/ConversationView';
 
 /**
  * Chat List Screen Props
@@ -51,8 +55,10 @@ const ConversationRow = React.memo<{
   conversation: UIConversation;
   onPress: (conversation: UIConversation) => void;
   onLongPress: (conversation: UIConversation) => void;
-}>(({ conversation, onPress, onLongPress }) => {
+  isSelected?: boolean;
+}>(({ conversation, onPress, onLongPress, isSelected }) => {
   const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { t } = useLocalization();
 
   const handlePress = useCallback(() => {
@@ -67,8 +73,9 @@ const ConversationRow = React.memo<{
       onLongPress={() => onLongPress(conversation)}
       style={({ pressed }) => [
         styles.conversationRow,
-        { backgroundColor: theme.ui.card },
+        { backgroundColor: isSelected ? theme.primary.main + '10' : theme.ui.card },
         pressed && { backgroundColor: theme.background.secondary },
+        isSelected && { borderLeftWidth: 4, borderLeftColor: theme.primary.main },
       ]}
     >
       {/* Avatar */}
@@ -106,7 +113,7 @@ const ConversationRow = React.memo<{
 
         {/* Online indicator for private chats */}
         {conversation.type === 'private' && (
-          <View style={[styles.onlineIndicator, { backgroundColor: theme.accent.success }]} />
+          <View style={[styles.onlineIndicator, { backgroundColor: theme.accent.success, borderColor: theme.ui.card }]} />
         )}
       </View>
 
@@ -117,7 +124,7 @@ const ConversationRow = React.memo<{
             style={[
               styles.conversationTitle,
               { color: theme.text.primary },
-              hasUnread && { fontWeight: '700' },
+              (hasUnread || isSelected) && { fontWeight: '700' },
             ]}
             numberOfLines={1}
           >
@@ -180,6 +187,7 @@ ConversationRow.displayName = 'ConversationRow';
  */
 const SectionHeader = React.memo<{ title: string }>(({ title }) => {
   const { theme } = useTheme();
+  const styles = getStyles(theme);
 
   return (
     <View style={[styles.sectionHeader, { backgroundColor: theme.background.primary }]}>
@@ -193,7 +201,11 @@ SectionHeader.displayName = 'SectionHeader';
 /**
  * Item Separator Component
  */
-const ItemSeparator = React.memo(() => <View style={styles.separator} />);
+const ItemSeparator = React.memo(() => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+  return <View style={[styles.separator, { backgroundColor: theme.ui.divider }]} />;
+});
 
 ItemSeparator.displayName = 'ItemSeparator';
 
@@ -205,6 +217,7 @@ const EmptyState = React.memo<{
   onRetry?: () => void;
 }>(({ type, onRetry }) => {
   const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { t } = useLocalization();
   const emptyState = EMPTY_STATES[type];
 
@@ -238,7 +251,7 @@ const EmptyState = React.memo<{
 
   return (
     <View style={styles.emptyContainer}>
-      <View style={styles.emptyIconContainer}>
+      <View style={[styles.emptyIconContainer, { backgroundColor: theme.background.secondary }]}>
         <Icon name={emptyState.icon} size={40} color={theme.text.tertiary} />
       </View>
       <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>{content.title}</Text>
@@ -264,6 +277,7 @@ EmptyState.displayName = 'EmptyState';
  */
 const FooterLoading = React.memo(() => {
   const { theme } = useTheme();
+  const styles = getStyles(theme);
 
   return (
     <View style={styles.footerLoading}>
@@ -281,9 +295,15 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
   ({ onNavigateToChat, onNavigateToNewChat }) => {
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
+    const user = useUser();
+    const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+    const { width } = useWindowDimensions();
+    const isDesktop = width >= 1024;
 
     const [isNewChatModalVisible, setIsNewChatModalVisible] = useState(false);
+    const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+    const styles = useMemo(() => getStyles(theme), [theme]);
 
     const {
       conversations,
@@ -305,7 +325,23 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
       handleBlock,
     } = useChatList();
 
-    const { handlePress } = useConversationPress(onNavigateToChat);
+    // Desktop: Select first conversation automatically if none selected
+    useEffect(() => {
+      if (isDesktop && !selectedConversationId && conversations.length > 0) {
+        setSelectedConversationId(conversations[0].id);
+      }
+    }, [isDesktop, conversations, selectedConversationId]);
+
+    /**
+     * Handle conversation press
+     */
+    const handlePress = useCallback((conversation: UIConversation) => {
+      if (isDesktop) {
+        setSelectedConversationId(conversation.id);
+      } else {
+        onNavigateToChat(conversation.id);
+      }
+    }, [isDesktop, onNavigateToChat]);
 
     // Animation values
     const headerOpacity = useRef(new Animated.Value(0)).current;
@@ -320,7 +356,6 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
     // Entrance animations
     useEffect(() => {
       Animated.parallel([
-        // Header animation
         Animated.timing(headerOpacity, {
           toValue: 1,
           duration: 600,
@@ -333,7 +368,6 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        // Search bar animation
         Animated.timing(searchOpacity, {
           toValue: 1,
           duration: 600,
@@ -348,7 +382,6 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
           delay: 200,
           useNativeDriver: true,
         }),
-        // Filter chips animation
         Animated.timing(filterOpacity, {
           toValue: 1,
           duration: 600,
@@ -363,7 +396,6 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        // List animation
         Animated.timing(listOpacity, {
           toValue: 1,
           duration: 600,
@@ -371,7 +403,6 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        // FAB animation
         Animated.spring(fabScale, {
           toValue: 1,
           tension: 50,
@@ -382,85 +413,49 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
       ]).start();
     }, []);
 
-    // Dynamic container style
-    const containerStyle = useMemo(() => ({
-      flex: 1,
-      backgroundColor: theme.background.primary,
-    }), [theme.background.primary]);
-
-    /**
-     * Handle long press on conversation
-     */
     const handleLongPress = useCallback((conversation: UIConversation) => {
       Alert.alert(
         conversation.title,
         t('chatList.manageChat'),
         [
           { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('chatList.archive'),
-            onPress: () => handleArchive(conversation.id)
-          },
-          {
-            text: t('chatList.delete'),
-            style: 'destructive',
-            onPress: () => handleDelete(conversation.id)
-          },
-          {
-            text: t('chatList.block'),
-            style: 'destructive',
-            onPress: () => handleBlock(conversation.id)
-          },
+          { text: t('chatList.archive'), onPress: () => handleArchive(conversation.id) },
+          { text: t('chatList.delete'), style: 'destructive', onPress: () => handleDelete(conversation.id) },
+          { text: t('chatList.block'), style: 'destructive', onPress: () => handleBlock(conversation.id) },
         ]
       );
     }, [t, handleArchive, handleDelete, handleBlock]);
 
-    /**
-     * Render conversation row
-     */
     const renderConversation = useCallback(
       ({ item }: ListRenderItemInfo<UIConversation>) => (
         <ConversationRow
           conversation={item}
           onPress={handlePress}
           onLongPress={handleLongPress}
+          isSelected={isDesktop && selectedConversationId === item.id}
         />
       ),
-      [handlePress, handleLongPress]
+      [handlePress, handleLongPress, isDesktop, selectedConversationId]
     );
 
-    /**
-     * Render section headers
-     */
     const renderSectionHeader = useCallback(
       (title: string) => <SectionHeader title={title} />,
       []
     );
 
-    /**
-     * Build list data with section headers
-     */
     const listData = useMemo(() => {
       const data: Array<UIConversation | { type: 'header'; title: string }> = [];
-
-      // Add pinned section
       if (pinnedConversations.length > 0) {
         data.push({ type: 'header', title: t('chatList.pinned') });
         data.push(...pinnedConversations);
       }
-
-      // Add recent section
       if (recentConversations.length > 0) {
         data.push({ type: 'header', title: t('chatList.recent') });
         data.push(...recentConversations);
       }
-
       return data;
     }, [pinnedConversations, recentConversations, t]);
 
-    /**
-     * Render item (conversation or header)
-     */
     const renderItem = useCallback(
       ({ item }: ListRenderItemInfo<any>) => {
         if ('type' in item && item.type === 'header') {
@@ -471,18 +466,12 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
       [renderConversation, renderSectionHeader]
     );
 
-    /**
-     * Handle end reached (pagination)
-     */
     const handleEndReached = useCallback(() => {
       if (hasMore && !isLoading) {
         handleLoadMore();
       }
     }, [hasMore, isLoading, handleLoadMore]);
 
-    /**
-     * Render list footer
-     */
     const renderListFooter = useCallback(() => {
       if (isLoading && conversations.length > 0) {
         return <FooterLoading />;
@@ -490,9 +479,6 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
       return null;
     }, [isLoading, conversations.length]);
 
-    /**
-     * Skeleton loading rows
-     */
     const renderSkeletonRow = useCallback(() => (
       <View style={[styles.conversationRow, { backgroundColor: theme.ui.card, opacity: 0.6 }]}>
         <View style={[styles.avatarPlaceholder, { backgroundColor: theme.background.secondary }]} />
@@ -500,240 +486,202 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
           <View style={{ width: '60%', height: 14, backgroundColor: theme.background.secondary, borderRadius: 4, marginBottom: 8 }} />
           <View style={{ width: '80%', height: 12, backgroundColor: theme.background.secondary, borderRadius: 4 }} />
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <View style={{ width: 40, height: 12, backgroundColor: theme.background.secondary, borderRadius: 4, marginBottom: 4 }} />
-          <ActivityIndicator size="small" color={theme.primary.main} />
-        </View>
       </View>
     ), [theme]);
 
-    /**
-     * Render content area - either loading skeletons, error, empty, or actual conversations
-     */
-    const renderContent = useCallback(() => {
-      // Show error state
+    const renderChatListContent = () => {
       if (error && conversations.length === 0) {
-        return (
-          <Animated.View style={[{ flex: 1 }, { opacity: listOpacity }]}>
-            <EmptyState type="ERROR" onRetry={handleRetry} />
-          </Animated.View>
-        );
+        return <EmptyState type="ERROR" onRetry={handleRetry} />;
       }
 
-      // Show loading skeletons on initial load
       if (isLoading && conversations.length === 0) {
         return (
-          <Animated.View style={[{ flex: 1, paddingTop: 8 }, { opacity: listOpacity }]}>
-            {[1, 2, 3, 4, 5].map((i) => (
+          <View style={{ flex: 1, paddingTop: 8 }}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <View key={i}>{renderSkeletonRow()}</View>
             ))}
-          </Animated.View>
+          </View>
         );
       }
 
-      // Show empty state
       if (conversations.length === 0) {
         return (
-          <Animated.View style={[{ flex: 1 }, { opacity: listOpacity }]}>
-            <EmptyState
-              type={searchQuery ? 'NO_RESULTS' : 'NO_CHATS'}
-              onRetry={error ? handleRetry : undefined}
-            />
-          </Animated.View>
+          <EmptyState
+            type={searchQuery ? 'NO_RESULTS' : 'NO_CHATS'}
+            onRetry={error ? handleRetry : undefined}
+          />
         );
       }
 
-      // Show actual conversation list
       return (
-        <Animated.View style={[{ flex: 1 }, { opacity: listOpacity }]}>
-          <FlatList
-            data={listData}
-            renderItem={renderItem}
-            keyExtractor={(item: any) =>
-              'type' in item ? `header-${item.title}` : item.id
-            }
-            ItemSeparatorComponent={ItemSeparator}
-            ListFooterComponent={renderListFooter}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-                tintColor={theme.primary.main}
-                colors={[theme.primary.main]}
-              />
-            }
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.5}
-            style={styles.list}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            removeClippedSubviews={LIST_CONFIG.REMOVE_CLIPPED_SUBVIEWS}
-            maxToRenderPerBatch={LIST_CONFIG.MAX_TO_RENDER_PER_BATCH}
-            windowSize={LIST_CONFIG.WINDOW_SIZE}
-            initialNumToRender={LIST_CONFIG.INITIAL_NUM_TO_RENDER}
-            updateCellsBatchingPeriod={LIST_CONFIG.UPDATE_CELLS_BATCH_PERIOD}
-          />
-        </Animated.View>
+        <FlatList
+          data={listData}
+          renderItem={renderItem}
+          keyExtractor={(item: any) => 'type' in item ? `header-${item.title}` : item.id}
+          ItemSeparatorComponent={ItemSeparator}
+          ListFooterComponent={renderListFooter}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.primary.main}
+              colors={[theme.primary.main]}
+            />
+          }
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          style={styles.list}
+          contentContainerStyle={[styles.listContent, isDesktop && { paddingBottom: 20 }]}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews={LIST_CONFIG.REMOVE_CLIPPED_SUBVIEWS}
+          maxToRenderPerBatch={LIST_CONFIG.MAX_TO_RENDER_PER_BATCH}
+          windowSize={LIST_CONFIG.WINDOW_SIZE}
+          initialNumToRender={LIST_CONFIG.INITIAL_NUM_TO_RENDER}
+        />
       );
-    }, [error, conversations.length, isLoading, searchQuery, handleRetry, listOpacity, renderSkeletonRow, listData, renderItem, renderListFooter, isRefreshing, handleRefresh, theme.primary.main, handleEndReached]);
+    };
 
-    return (
-      <LinearGradient
-        colors={[theme.background.primary, '#1a1f3a', '#0f1729']}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      >
-        <SafeAreaView style={containerStyle} edges={['top']}>
-          <View style={styles.container}>
-            {/* Header */}
-            <Animated.View
-              style={[
-                styles.header,
-                {
-                  opacity: headerOpacity,
-                  transform: [{ translateY: headerTranslateY }],
-                },
-              ]}
-            >
-              {/* Title and Notification Button Row */}
-              <View style={[styles.headerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <Text style={[styles.title, { color: theme.text.primary }]}>{t('chatList.title')}</Text>
+    const renderHeader = () => (
+      <View style={[styles.header, isDesktop && styles.desktopHeader]}>
+        <View style={[styles.headerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <Text style={[styles.title, { color: theme.text.primary }]}>{t('chatList.title')}</Text>
+          <View style={styles.headerActions}>
+            {isAdmin && (
+              <TouchableOpacity
+                style={[styles.createButton, { backgroundColor: theme.primary.main }]}
+                activeOpacity={0.8}
+                onPress={() => setIsNewChatModalVisible(true)}
+              >
+                <Icon name="add" size={20} color="#FFFFFF" />
+                <Text style={styles.createButtonText}>{t('chatList.create')}</Text>
+              </TouchableOpacity>
+            )}
+            {!isDesktop && (
+              <TouchableOpacity
+                style={[styles.notificationButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
+                activeOpacity={0.7}
+                onPress={() => (navigation as any).navigate('Notifications', { category: 'engagement' })}
+              >
+                <Icon name="notifications-outline" size={22} color={theme.text.primary} />
+                <View style={[styles.notificationBadge, { backgroundColor: theme.accent.error }]} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
-                <View style={styles.headerActions}>
-                  <TouchableOpacity
-                    style={[styles.notificationButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
-                    activeOpacity={0.7}
-                    onPress={() => (navigation as any).navigate('Notifications', { category: 'engagement' })}
-                  >
-                    <Icon name="notifications-outline" size={22} color={theme.text.primary} />
-                    <View style={[styles.notificationBadge, { backgroundColor: theme.accent.error }]} />
-                  </TouchableOpacity>
-                </View>
+        <View style={[styles.searchContainer, { backgroundColor: theme.ui.card }]}>
+          <Icon name="search-outline" size={20} color={theme.text.tertiary} style={styles.searchIcon} />
+          <TextInput
+            style={[styles.searchInput, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}
+            placeholder={t('chatList.searchPlaceholder')}
+            placeholderTextColor={theme.text.tertiary}
+            value={searchQuery}
+            onChangeText={handleSearch}
+            autoCapitalize="none"
+          />
+        </View>
+
+        <View style={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          {CHAT_FILTERS.map(filter => {
+            const isActive = activeFilter === filter.id;
+            const getFilterLabel = (id: ChatFilter) => {
+              switch (id) {
+                case ChatFilter.ALL: return t('chatList.filterAll');
+                case ChatFilter.UNREAD: return t('chatList.filterUnread');
+                case ChatFilter.PREMIUM: return t('chatList.filterPremium');
+                case ChatFilter.GROUPS: return t('chatList.filterGroups');
+                default: return filter.label;
+              }
+            };
+            return (
+              <TouchableOpacity
+                key={filter.id}
+                style={[styles.filterChip, isActive ? { backgroundColor: theme.primary.main } : { backgroundColor: theme.ui.card }]}
+                onPress={() => handleFilterChange(filter.id)}
+              >
+                {filter.icon && <Icon name={filter.icon} size={14} color={isActive ? theme.text.inverse : theme.accent.warning} style={styles.filterChipIcon} />}
+                <Text style={[styles.filterChipText, isActive ? { color: theme.text.inverse } : { color: theme.text.secondary }]}>{getFilterLabel(filter.id)}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+
+    const mainContent = (
+      <View style={styles.container}>
+        {renderHeader()}
+        {renderChatListContent()}
+        <NewChatModal
+          isVisible={isNewChatModalVisible}
+          onClose={() => setIsNewChatModalVisible(false)}
+          onChatCreated={(chatId) => {
+            setIsNewChatModalVisible(false);
+            if (isDesktop) setSelectedConversationId(chatId);
+            else onNavigateToChat(chatId);
+            handleRefresh();
+          }}
+        />
+        <Animated.View style={[styles.fab, { backgroundColor: theme.primary.main, transform: [{ scale: fabScale }], opacity: fabScale }]}>
+          <TouchableOpacity onPress={() => setIsNewChatModalVisible(true)} activeOpacity={0.8}>
+            <Icon name="create-outline" size={28} color="#FFFFFF" />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    );
+
+    if (isDesktop) {
+      return (
+        <View
+          style={[styles.gradient, { backgroundColor: theme.background.primary }]}
+        >
+          <View style={[styles.desktopCenterContainer, { flex: 1 }]}>
+            <View style={[styles.splitViewCard, { flex: 1, backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+              {/* Sidebar */}
+              <View style={[styles.sidebar, { borderRightColor: theme.border.main }]}>
+                {renderHeader()}
+                {renderChatListContent()}
               </View>
 
-              {/* Search Bar */}
-              <Animated.View
-                style={[
-                  styles.searchContainer,
-                  { backgroundColor: theme.ui.card },
-                  {
-                    opacity: searchOpacity,
-                    transform: [{ scale: searchScale }],
-                  },
-                ]}
-              >
-                <Icon
-                  name="search-outline"
-                  size={20}
-                  color={theme.text.tertiary}
-                  style={styles.searchIcon}
-                />
-                <TextInput
-                  style={[styles.searchInput, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}
-                  placeholder={t('chatList.searchPlaceholder')}
-                  placeholderTextColor={theme.text.tertiary}
-                  value={searchQuery}
-                  onChangeText={handleSearch}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </Animated.View>
-
-              {/* Filter Chips */}
-              <Animated.View
-                style={[
-                  styles.filterContainer,
-                  { flexDirection: isRTL ? 'row-reverse' : 'row' },
-                  {
-                    opacity: filterOpacity,
-                    transform: [{ translateX: filterTranslateX }],
-                  },
-                ]}
-              >
-                {CHAT_FILTERS.map(filter => {
-                  const isActive = activeFilter === filter.id;
-
-                  // Get translated label
-                  const getFilterLabel = (filterId: ChatFilter) => {
-                    switch (filterId) {
-                      case ChatFilter.ALL: return t('chatList.filterAll');
-                      case ChatFilter.UNREAD: return t('chatList.filterUnread');
-                      case ChatFilter.PREMIUM: return t('chatList.filterPremium');
-                      case ChatFilter.GROUPS: return t('chatList.filterGroups');
-                      default: return filter.label;
-                    }
-                  };
-
-                  return (
-                    <TouchableOpacity
-                      key={filter.id}
-                      style={[
-                        styles.filterChip,
-                        isActive && [styles.filterChipActive, { backgroundColor: theme.primary.main }],
-                        !isActive && { backgroundColor: theme.ui.card },
-                      ]}
-                      onPress={() => handleFilterChange(filter.id)}
-                      activeOpacity={0.7}
-                    >
-                      {filter.icon && (
-                        <Icon
-                          name={filter.icon}
-                          size={14}
-                          color={isActive ? theme.text.inverse : theme.accent.warning}
-                          style={styles.filterChipIcon}
-                        />
-                      )}
-                      <Text
-                        style={[
-                          styles.filterChipText,
-                          isActive && [styles.filterChipTextActive, { color: theme.text.inverse }],
-                          !isActive && { color: theme.text.secondary },
-                        ]}
-                      >
-                        {getFilterLabel(filter.id)}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </Animated.View>
-            </Animated.View>
-
-            {/* Conversation List */}
-            {renderContent()}
-
-            {/* New Chat Modal */}
-            <NewChatModal
-              isVisible={isNewChatModalVisible}
-              onClose={() => setIsNewChatModalVisible(false)}
-              onChatCreated={(chatId) => {
-                setIsNewChatModalVisible(false);
-                onNavigateToChat(chatId);
-                handleRefresh(); // Refresh list to show new chat
-              }}
-            />
-
-            {/* Floating Action Button */}
-            <Animated.View
-              style={{
-                position: 'absolute',
-                bottom: 0, // Positioned via styles.fab, but container needs absolute
-                right: 0,
-                transform: [{ scale: fabScale }],
-                opacity: fabScale, // Fade in with scale
-              }}
-            >
-              <TouchableOpacity
-                style={[styles.fab, { backgroundColor: theme.primary.main }]}
-                onPress={() => setIsNewChatModalVisible(true)}
-                activeOpacity={0.8}
-              >
-                <Icon name="create-outline" size={28} color="#FFFFFF" />
-              </TouchableOpacity>
-            </Animated.View>
+              {/* Chat Detail Area */}
+              <View style={styles.mainArea}>
+                {selectedConversationId ? (
+                  <ConversationView
+                    conversationId={selectedConversationId}
+                    hideBackButton
+                    isSplitView
+                  />
+                ) : (
+                  <View style={styles.noChatSelected}>
+                    <Icon name="chatbubbles-outline" size={64} color={theme.text.tertiary} />
+                    <Text style={[styles.noChatText, { color: theme.text.primary }]}>{t('chatList.noChatSelected')}</Text>
+                    <Text style={[styles.noChatMessage, { color: theme.text.secondary }]}>{t('chatList.noChatSelectedMessage')}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
           </View>
+          <NewChatModal
+            isVisible={isNewChatModalVisible}
+            onClose={() => setIsNewChatModalVisible(false)}
+            onChatCreated={(chatId) => {
+              setIsNewChatModalVisible(false);
+              setSelectedConversationId(chatId);
+              handleRefresh();
+            }}
+          />
+        </View>
+      );
+    }
+
+    return (
+      <View
+        style={[styles.gradient, { backgroundColor: theme.background.primary }]}
+      >
+        <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+          {mainContent}
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 );

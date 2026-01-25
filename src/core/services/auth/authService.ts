@@ -126,3 +126,66 @@ export const refreshToken = async (
     throw authError;
   }
 };
+
+/**
+ * Verify account with code
+ *
+ * @param userId - User ID
+ * @param code - 6-digit verification code
+ * @returns Promise with user data and tokens
+ */
+export const verify = async (
+  userId: string,
+  code: string
+): Promise<LoginResponse> => {
+  try {
+    const response = await apiClient.post<BackendResponse<BackendAuthResponse>>(
+      '/api/auth/verify',
+      { userId, code },
+      false
+    );
+
+    const { user, accessToken, refreshToken } = response.data;
+
+    return {
+      user: {
+        id: user.id || user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      tokens: {
+        accessToken,
+        refreshToken,
+        expiresIn: 900,
+      },
+    };
+  } catch (error: any) {
+    const authError: AuthError = {
+      code: 'VERIFICATION_FAILED',
+      message: error.message || 'Verification failed. Please try again.',
+    };
+    throw authError;
+  }
+};
+
+/**
+ * Resend verification code
+ *
+ * @param userId - User ID
+ */
+export const resendVerificationCode = async (userId: string): Promise<void> => {
+  try {
+    await apiClient.post(
+      '/api/auth/resend-verification',
+      { userId },
+      false
+    );
+  } catch (error: any) {
+    const authError: AuthError = {
+      code: 'RESEND_FAILED',
+      message: error.message || 'Failed to resend code. Please try again.',
+    };
+    throw authError;
+  }
+};

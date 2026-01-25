@@ -108,6 +108,7 @@ const translations = {
 
     // Chat List Screen
     'chatList.title': 'Chats',
+    'chatList.create': 'Create',
     'chatList.searchPlaceholder': 'Search advisor or ticker...',
     'chatList.filterAll': 'All',
     'chatList.filterUnread': 'Unread',
@@ -223,12 +224,15 @@ const translations = {
     'common.loading': 'Loading...',
     'common.error': 'Error',
     'common.retry': 'Retry',
+    'common.yes': 'Yes',
+    'common.no': 'No',
     'common.author': 'Unknown Author',
     'common.details': 'Details',
     'common.on': 'on',
     'common.loadMore': 'Load More',
     'common.seeAll': 'See All',
     'common.search': 'Search...',
+    'common.exit': 'Exit Panel',
 
     // Time
     'time.justNow': 'Just now',
@@ -241,6 +245,7 @@ const translations = {
 
     // Bottom Tab Navigation
     'tabs.home': 'Home',
+    'tabs.disclosures': 'Disclosures',
     'tabs.news': 'News',
     'tabs.chat': 'Chat',
     'tabs.market': 'Market',
@@ -335,6 +340,7 @@ const translations = {
 
     // Insights Screen
     'insights.title': 'Insights',
+    'insights.searchPlaceholder': 'Search insights...',
     'insights.freeInsights': 'Free Advice',
     'insights.premiumInsights': 'Premium Insights',
     'insights.noInsights': 'No insights available',
@@ -508,6 +514,7 @@ const translations = {
 
     // Admin Dashboard
     'admin.dashboard': 'Admin Dashboard',
+    'admin.dashboardOverview': 'Dashboard Overview',
     'admin.users': 'Users',
     'admin.insights': 'Insights',
     'admin.subscriptions': 'Subscriptions',
@@ -521,6 +528,13 @@ const translations = {
     'admin.moderation': 'Moderation',
     'admin.subscriptionPlans': 'Subscription Plans',
     'admin.discountCodes': 'Discount Codes',
+    'admin.subscriptionsOverview': 'Subscriptions Overview',
+    'admin.broadcastOverview': 'Broadcast Notifications',
+    'admin.analyticsOverview': 'Analytics Overview',
+    'admin.moderationOverview': 'Moderation Queue',
+    'admin.discountCodesOverview': 'Discount Codes',
+    'admin.bannersOverview': 'Banner Management',
+    'admin.retention': 'Retention Rate',
     'admin.bannerManagement': 'Banner Management',
     'admin.manageHomeBanners': 'Manage home screen carousel banners',
     'admin.createBanner': 'Create Banner',
@@ -599,6 +613,8 @@ const translations = {
     'admin.approved': 'Approved',
     'admin.rejected': 'Rejected',
     'admin.resolved': 'Resolved',
+    'admin.currency': 'Currency',
+    'admin.stripePriceId': 'Stripe Price ID',
     'admin.reports': 'Reports',
     'admin.review': 'Review',
     'admin.noDiscountCodes': 'No Discount Codes',
@@ -1113,6 +1129,7 @@ const translations = {
 
     // Chat List Screen
     'chatList.title': 'المحادثات',
+    'chatList.create': 'إنشاء',
     'chatList.searchPlaceholder': 'ابحث عن مستشار أو رمز...',
     'chatList.filterAll': 'الكل',
     'chatList.filterUnread': 'غير مقروء',
@@ -1228,10 +1245,13 @@ const translations = {
     'common.loading': 'جاري التحميل...',
     'common.error': 'خطأ',
     'common.retry': 'إعادة المحاولة',
+    'common.yes': 'نعم',
+    'common.no': 'لا',
     'common.author': 'كاتب غير معروف',
     'common.details': 'التفاصيل',
     'common.on': 'على',
     'common.loadMore': 'تحميل المزيد',
+    'common.exit': 'الخروج من اللوحة',
     'common.seeAll': 'عرض الكل',
     'common.search': 'بحث...',
 
@@ -1246,6 +1266,7 @@ const translations = {
 
     // Bottom Tab Navigation
     'tabs.home': 'الرئيسية',
+    'tabs.disclosures': 'الإفصاحات',
     'tabs.news': 'الأخبار',
     'tabs.chat': 'المحادثات',
     'tabs.market': 'السوق',
@@ -1340,6 +1361,7 @@ const translations = {
 
     // Insights Screen
     'insights.title': 'التوصية',
+    'insights.searchPlaceholder': 'Search insights...',
     'insights.freeInsights': 'توصية مجانية',
     'insights.premiumInsights': 'توصية مميزة',
     'insights.noInsights': 'لا توجد توصية متاحة',
@@ -1513,12 +1535,20 @@ const translations = {
 
     // Admin Dashboard
     'admin.dashboard': 'لوحة التحكم',
+    'admin.dashboardOverview': 'نظرة عامة على لوحة التحكم',
     'admin.users': 'المستخدمون',
     'admin.insights': 'التوصية',
     'admin.subscriptions': 'الاشتراكات',
     'admin.broadcast': 'البث',
     'admin.auditLogs': 'سجلات التدقيق',
     'admin.analytics': 'التحليلات',
+    'admin.subscriptionsOverview': 'نظرة عامة على الاشتراكات',
+    'admin.broadcastOverview': 'نظرة عامة على البث',
+    'admin.analyticsOverview': 'نظرة عامة على التحليلات',
+    'admin.moderationOverview': 'نظرة عامة على الإشراف',
+    'admin.discountCodesOverview': 'نظرة عامة على رموز الخصم',
+    'admin.bannersOverview': 'نظرة عامة على اللافتات',
+    'admin.retention': 'معدل الاحتفاظ',
     'admin.revenue': 'الإيرادات',
     'admin.description': 'الوصف',
     'admin.descripation': 'الوصف',
@@ -1551,6 +1581,8 @@ const translations = {
     'admin.pro': 'احترافي',
     'admin.enterprise': 'شركات',
     'admin.savePlan': 'حفظ الخطة',
+    'admin.currency': 'العملة',
+    'admin.stripePriceId': 'معرف سعر Stripe',
     'admin.noDiscountCodes': 'لا توجد أكواد خصم',
     'admin.noDiscountCodesMessage': 'أنشئ أكواد خصم لتقديم عروض خاصة لمستخدميك',
     'admin.createCode': 'إنشاء كود',

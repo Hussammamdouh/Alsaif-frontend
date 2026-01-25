@@ -19,6 +19,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,7 +32,9 @@ import {
   EmptyState,
   ActionSheet,
   ConfirmationModal,
+  AdminSidebar,
 } from '../components';
+import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminSubscriptionPlansScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -39,6 +42,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   const { t } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -56,6 +61,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   const [newFeature, setNewFeature] = useState('');
   const [formIsActive, setFormIsActive] = useState(true);
   const [formIsFeatured, setFormIsFeatured] = useState(false);
+  const [formCurrency, setFormCurrency] = useState('AED');
+  const [formStripePriceId, setFormStripePriceId] = useState('');
 
   const {
     plans,
@@ -77,6 +84,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
     setNewFeature('');
     setFormIsActive(true);
     setFormIsFeatured(false);
+    setFormCurrency('AED');
+    setFormStripePriceId('');
     setSelectedPlan(null);
   };
 
@@ -99,6 +108,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
     );
     setFormIsActive(plan.isActive !== false);
     setFormIsFeatured(plan.isFeatured === true);
+    setFormCurrency(plan.currency || 'AED');
+    setFormStripePriceId(plan.stripePriceId || '');
     setShowFormModal(true);
   };
 
@@ -116,6 +127,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
         features: formFeatures,
         isActive: formIsActive,
         isFeatured: formIsFeatured,
+        currency: formCurrency,
+        stripePriceId: formStripePriceId,
       };
 
       if (selectedPlan) {
@@ -182,7 +195,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
         <View style={{ flex: 1 }}>
           <Text style={localStyles.planName}>{item.name}</Text>
           <Text style={localStyles.planPrice}>
-            ${item.price}/{item.billingCycle || item.interval}
+            {item.currency || 'USD'} {item.price}/{item.billingCycle || item.interval}
           </Text>
         </View>
         <View
@@ -236,51 +249,76 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
     return <LoadingState type="list" count={3} />;
   }
 
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{isDesktop ? t('admin.subscriptionPlansOverview') : t('admin.subscriptionPlans')}</Text>
+      </View>
+      <TouchableOpacity
+        style={localStyles.addButton}
+        onPress={openCreateModal}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="add" size={24} color={theme.primary.contrast} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <>
+      {error ? (
+        <EmptyState
+          icon="alert-circle"
+          title={t('common.error')}
+          message={error}
+          actionLabel={t('common.retry')}
+          onActionPress={refresh}
+          iconColor={theme.error.main}
+        />
+      ) : plans.length === 0 ? (
+        <EmptyState
+          icon="card-outline"
+          title={t('admin.noSubscriptionPlans')}
+          message={t('admin.noSubscriptionPlansMessage')}
+          actionLabel={t('admin.createPlan')}
+          onActionPress={openCreateModal}
+          iconColor={theme.primary.main}
+        />
+      ) : (
+        <FlatList
+          data={plans}
+          renderItem={renderPlanItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={[styles.scrollContent, isDesktop && { paddingHorizontal: 24 }]}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
+          numColumns={isDesktop ? 2 : 1}
+          key={isDesktop ? 'desktop' : 'mobile'}
+        />
+      )}
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.subscriptionPlans')}</Text>
+        {isDesktop ? (
+          <View style={styles.desktopContentWrapper}>
+            <AdminSidebar />
+            <View style={styles.desktopMainContent}>
+              {renderHeader()}
+              {renderMainContent()}
+            </View>
           </View>
-          <TouchableOpacity
-            style={localStyles.addButton}
-            onPress={openCreateModal}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="add" size={24} color={theme.primary.contrast} />
-          </TouchableOpacity>
-        </View>
-
-        {error ? (
-          <EmptyState
-            icon="alert-circle"
-            title={t('common.error')}
-            message={error}
-            actionLabel={t('common.retry')}
-            onActionPress={refresh}
-            iconColor={theme.error.main}
-          />
-        ) : plans.length === 0 ? (
-          <EmptyState
-            icon="card-outline"
-            title={t('admin.noSubscriptionPlans')}
-            message={t('admin.noSubscriptionPlansMessage')}
-            actionLabel={t('admin.createPlan')}
-            onActionPress={openCreateModal}
-            iconColor={theme.primary.main}
-          />
         ) : (
-          <FlatList
-            data={plans}
-            renderItem={renderPlanItem}
-            keyExtractor={(item) => item._id}
-            contentContainerStyle={styles.scrollContent}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
-          />
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderHeader()}
+            {renderMainContent()}
+          </ResponsiveContainer>
         )}
 
         <ActionSheet
@@ -348,7 +386,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
           <View style={localStyles.modalOverlay}>
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={localStyles.modalContent}
+              style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}
             >
               <View style={localStyles.modalHeader}>
                 <Text style={localStyles.modalTitle}>
@@ -445,6 +483,30 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
+                </View>
+
+                <View style={localStyles.row}>
+                  <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                    <Text style={localStyles.label}>{t('admin.currency')} *</Text>
+                    <TextInput
+                      style={localStyles.input}
+                      value={formCurrency}
+                      onChangeText={setFormCurrency}
+                      placeholder="AED or USD"
+                      placeholderTextColor={theme.text.tertiary}
+                      autoCapitalize="characters"
+                    />
+                  </View>
+                  <View style={[localStyles.formGroup, { flex: 2, marginLeft: 8 }]}>
+                    <Text style={localStyles.label}>{t('admin.stripePriceId')}</Text>
+                    <TextInput
+                      style={localStyles.input}
+                      value={formStripePriceId}
+                      onChangeText={setFormStripePriceId}
+                      placeholder="price_..."
+                      placeholderTextColor={theme.text.tertiary}
+                    />
+                  </View>
                 </View>
 
                 <View style={localStyles.formGroup}>
@@ -602,6 +664,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
+  },
+  desktopModalContent: {
+    width: 700,
+    alignSelf: 'center',
+    marginVertical: 40,
+    borderRadius: 24,
+    minHeight: 'auto',
+    maxHeight: '90%',
   },
   modalOverlay: {
     flex: 1,

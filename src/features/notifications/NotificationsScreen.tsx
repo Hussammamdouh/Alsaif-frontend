@@ -16,6 +16,7 @@ import {
   Image,
   Linking,
   StatusBar,
+  Dimensions,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,6 +41,10 @@ import {
 import { Notification } from './notifications.types';
 import { createStyles } from './notifications.styles';
 import { NOTIFICATION_CATEGORIES } from './notifications.constants';
+import { ResponsiveContainer } from '../../shared/components';
+
+const { width } = Dimensions.get('window');
+const isDesktop = width > 768;
 
 const NotificationsScreen: React.FC = () => {
   const {
@@ -180,7 +185,7 @@ const NotificationsScreen: React.FC = () => {
           onPress={() => handleNotificationPress(notification)}
           activeOpacity={0.7}
         >
-          <View style={styles.notificationContent}>
+          <View style={[styles.notificationContent, isDesktop && { alignItems: 'center' }]}>
             {/* Icon */}
             <View style={[styles.notificationIcon, { backgroundColor: color }]}>
               <Icon name={icon} size={24} color="#fff" />
@@ -202,25 +207,27 @@ const NotificationsScreen: React.FC = () => {
 
             {/* Text Content */}
             <View style={styles.notificationTextContainer}>
-              <View style={styles.notificationHeader}>
+              <View style={[styles.notificationHeader, isDesktop && { marginBottom: 0 }]}>
                 <Text
                   style={[
                     styles.notificationTitle,
                     unread && styles.notificationTitleUnread,
+                    isDesktop && { fontSize: 16 }
                   ]}
                   numberOfLines={1}
                 >
                   {t(title)}
                 </Text>
-                <Text style={styles.notificationTime}>{time}</Text>
+                {!isDesktop && <Text style={styles.notificationTime}>{time}</Text>}
               </View>
 
               <Text
                 style={[
                   styles.notificationBody,
                   unread && styles.notificationBodyUnread,
+                  isDesktop && { fontSize: 14, marginTop: 2 }
                 ]}
-                numberOfLines={2}
+                numberOfLines={isDesktop ? 1 : 2}
               >
                 {t(notification.body)}
               </Text>
@@ -229,7 +236,7 @@ const NotificationsScreen: React.FC = () => {
               {notification.richContent?.imageUrl && (
                 <Image
                   source={{ uri: notification.richContent.imageUrl }}
-                  style={styles.notificationImage}
+                  style={[styles.notificationImage, isDesktop && { width: 400, height: 220 }]}
                   resizeMode="cover"
                 />
               )}
@@ -237,7 +244,7 @@ const NotificationsScreen: React.FC = () => {
               {/* Rich Content - CTA Buttons */}
               {notification.richContent?.ctaButtons &&
                 notification.richContent.ctaButtons.length > 0 && (
-                  <View style={styles.ctaButtonsContainer}>
+                  <View style={[styles.ctaButtonsContainer, isDesktop && { marginTop: 12, maxWidth: 300 }]}>
                     {notification.richContent.ctaButtons.map((button: any, index: number) => (
                       <TouchableOpacity
                         key={index}
@@ -274,8 +281,16 @@ const NotificationsScreen: React.FC = () => {
                 )}
             </View>
 
-            {/* Unread Indicator */}
-            {unread && <View style={styles.unreadIndicator} />}
+            {/* Desktop Time & Unread Indicator */}
+            {isDesktop && (
+              <View style={{ alignItems: 'flex-end', minWidth: 120 }}>
+                <Text style={[styles.notificationTime, { marginBottom: 8 }]}>{time}</Text>
+                {unread && <View style={[styles.unreadIndicator, { marginTop: 0, marginLeft: 0 }]} />}
+              </View>
+            )}
+
+            {/* Mobile Unread Indicator */}
+            {!isDesktop && unread && <View style={styles.unreadIndicator} />}
           </View>
 
           {/* Dismiss Button */}
@@ -431,78 +446,111 @@ const NotificationsScreen: React.FC = () => {
       style={styles.container}
       edges={['top']}
     >
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTitleContainer}>
+      {/* Standardized Dashboard Header for Desktop */}
+      {isDesktop ? (
+        <View style={styles.dashboardHeader}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
-            style={{ marginRight: 12 }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
           >
-            <Icon name="arrow-back" size={24} color={theme.text.primary} />
+            <Icon name="chevron-back" size={24} color={theme.text.primary} />
+            <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('notifications.title')}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
-          {unreadCount > 0 ? (
-            <View style={styles.unreadBadge}>
-              <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-            </View>
-          ) : null}
-        </View>
 
-        {notifications.length > 0 && (
-          <TouchableOpacity
-            style={styles.markAllReadButton}
-            onPress={handleMarkAllAsRead}
-            disabled={isUpdating || unreadCount === 0}
-          >
-            <Text
-              style={[
-                styles.markAllReadButtonText,
-                (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
-              ]}
+          {notifications.length > 0 && (
+            <TouchableOpacity
+              style={styles.markAllReadButton}
+              onPress={handleMarkAllAsRead}
+              disabled={isUpdating || unreadCount === 0}
             >
-              {t('notifications.markAllRead')}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.markAllReadButtonText,
+                  (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
+                ]}
+              >
+                {t('notifications.markAllRead')}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        /* Mobile Header */
+        <View style={styles.header}>
+          <View style={styles.headerTitleContainer}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ marginRight: 12 }}
+            >
+              <Icon name="arrow-back" size={24} color={theme.text.primary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
+            {unreadCount > 0 ? (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {notifications.length > 0 && (
+            <TouchableOpacity
+              style={styles.markAllReadButton}
+              onPress={handleMarkAllAsRead}
+              disabled={isUpdating || unreadCount === 0}
+            >
+              <Text
+                style={[
+                  styles.markAllReadButtonText,
+                  (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
+                ]}
+              >
+                {t('notifications.markAllRead')}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      <View style={styles.desktopContentWrapper}>
+        {/* Category Filter */}
+        {notifications.length > 0 && renderCategoryFilter()}
+
+        {/* Content */}
+        {error ? (
+          renderErrorState()
+        ) : notifications.length === 0 && !isFetching ? (
+          renderEmptyState()
+        ) : (
+          <FlatList
+            data={listData}
+            renderItem={({ item }: any) => {
+              if (item.type === 'header') {
+                return renderSectionHeader(item.title);
+              }
+              return renderNotificationItem(item);
+            }}
+            keyExtractor={(item: any, index) =>
+              item.type === 'header' ? `header-${item.title}` : item.id || `item-${index}`
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={isFetching && notifications.length === 0}
+                onRefresh={refreshNotifications}
+                tintColor={theme.primary.main}
+              />
+            }
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderLoadingFooter}
+            contentContainerStyle={[
+              styles.listContent,
+              notifications.length === 0 ? { flex: 1, justifyContent: 'center' } : undefined
+            ]}
+          />
         )}
       </View>
-
-      {/* Category Filter */}
-      {notifications.length > 0 && renderCategoryFilter()}
-
-      {/* Content */}
-      {error ? (
-        renderErrorState()
-      ) : notifications.length === 0 && !isFetching ? (
-        renderEmptyState()
-      ) : (
-        <FlatList
-          data={listData}
-          renderItem={({ item }: any) => {
-            if (item.type === 'header') {
-              return renderSectionHeader(item.title);
-            }
-            return renderNotificationItem(item);
-          }}
-          keyExtractor={(item: any, index) =>
-            item.type === 'header' ? `header-${item.title}` : item.id || `item-${index}`
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={isFetching && notifications.length === 0}
-              onRefresh={refreshNotifications}
-              tintColor={theme.primary.main}
-            />
-          }
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderLoadingFooter}
-          contentContainerStyle={
-            notifications.length === 0 ? { flex: 1, justifyContent: 'center' } : undefined
-          }
-        />
-      )}
     </SafeAreaView>
   );
 };

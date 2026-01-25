@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../app/providers/ThemeProvider';
 import { useLocalization } from '../../../app/providers/LocalizationProvider';
+import { ResponsiveContainer } from '../../../shared/components';
 import { useInsightRequest } from './useInsightRequest';
 
 interface InsightRequestModalProps {
@@ -51,91 +52,93 @@ export const InsightRequestModal: React.FC<InsightRequestModalProps> = ({ isVisi
                 style={styles.modalOverlay}
             >
                 <View style={[styles.modalContent, { backgroundColor: theme.background.primary }]}>
-                    {/* Header */}
-                    <View style={[styles.header, { borderBottomColor: theme.border.main }]}>
-                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color={theme.text.primary} />
-                        </TouchableOpacity>
-                        <Text style={[styles.title, { color: theme.text.primary }]}>
-                            {t('insights.requestTitle')}
-                        </Text>
-                        <View style={{ width: 40 }} />
-                    </View>
-
-                    <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
-                        {/* Title Input */}
-                        <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
-                                {t('insights.requestDetails')}
-                            </Text>
-                            <TextInput
-                                style={[
-                                    styles.input,
-                                    {
-                                        backgroundColor: theme.background.secondary,
-                                        color: theme.text.primary,
-                                        borderColor: theme.border.main,
-                                        textAlign: isRTL ? 'right' : 'left'
-                                    }
-                                ]}
-                                placeholder={t('insights.requestPlaceholder')}
-                                placeholderTextColor={theme.text.hint}
-                                value={title}
-                                onChangeText={setTitle}
-                                maxLength={200}
-                            />
-                            <Text style={[styles.hint, { color: theme.text.hint, textAlign: isRTL ? 'right' : 'left' }]}>
-                                {title.length}/200
-                            </Text>
-                        </View>
-
-                        {/* Details Input */}
-                        <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
-                                {t('insights.requestDetails')}
-                            </Text>
-                            <TextInput
-                                style={[
-                                    styles.textArea,
-                                    {
-                                        backgroundColor: theme.background.secondary,
-                                        color: theme.text.primary,
-                                        borderColor: theme.border.main,
-                                        textAlign: isRTL ? 'right' : 'left'
-                                    }
-                                ]}
-                                placeholder={t('insights.detailsPlaceholder')}
-                                placeholderTextColor={theme.text.hint}
-                                value={details}
-                                onChangeText={setDetails}
-                                multiline
-                                numberOfLines={6}
-                                textAlignVertical="top"
-                                maxLength={2000}
-                            />
-                            <Text style={[styles.hint, { color: theme.text.hint, textAlign: isRTL ? 'right' : 'left' }]}>
-                                {details.length}/2000
-                            </Text>
-                        </View>
-
-                        <View style={styles.footer}>
-                            <TouchableOpacity
-                                style={[
-                                    styles.submitButton,
-                                    { backgroundColor: theme.primary.main },
-                                    (isSubmitDisabled || isLoading) && styles.disabledButton
-                                ]}
-                                onPress={handleSubmit}
-                                disabled={isSubmitDisabled || isLoading}
-                            >
-                                {isLoading ? (
-                                    <ActivityIndicator color="#FFFFFF" />
-                                ) : (
-                                    <Text style={styles.submitButtonText}>{t('insights.submitRequest')}</Text>
-                                )}
+                    <ResponsiveContainer>
+                        {/* Header */}
+                        <View style={[styles.header, { borderBottomColor: theme.border.main }]}>
+                            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                                <Ionicons name="close" size={24} color={theme.text.primary} />
                             </TouchableOpacity>
+                            <Text style={[styles.title, { color: theme.text.primary }]}>
+                                {t('insights.requestTitle')}
+                            </Text>
+                            <View style={{ width: 40 }} />
                         </View>
-                    </ScrollView>
+
+                        <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
+                            {/* Title Input */}
+                            <View style={styles.inputGroup}>
+                                <Text style={[styles.label, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
+                                    {t('insights.requestDetails')}
+                                </Text>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        {
+                                            backgroundColor: theme.background.secondary,
+                                            color: theme.text.primary,
+                                            borderColor: theme.border.main,
+                                            textAlign: isRTL ? 'right' : 'left'
+                                        }
+                                    ]}
+                                    placeholder={t('insights.requestPlaceholder')}
+                                    placeholderTextColor={theme.text.hint}
+                                    value={title}
+                                    onChangeText={setTitle}
+                                    maxLength={200}
+                                />
+                                <Text style={[styles.hint, { color: theme.text.hint, textAlign: isRTL ? 'right' : 'left' }]}>
+                                    {title.length}/200
+                                </Text>
+                            </View>
+
+                            {/* Details Input */}
+                            <View style={styles.inputGroup}>
+                                <Text style={[styles.label, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
+                                    {t('insights.requestDetails')}
+                                </Text>
+                                <TextInput
+                                    style={[
+                                        styles.textArea,
+                                        {
+                                            backgroundColor: theme.background.secondary,
+                                            color: theme.text.primary,
+                                            borderColor: theme.border.main,
+                                            textAlign: isRTL ? 'right' : 'left'
+                                        }
+                                    ]}
+                                    placeholder={t('insights.detailsPlaceholder')}
+                                    placeholderTextColor={theme.text.hint}
+                                    value={details}
+                                    onChangeText={setDetails}
+                                    multiline
+                                    numberOfLines={6}
+                                    textAlignVertical="top"
+                                    maxLength={2000}
+                                />
+                                <Text style={[styles.hint, { color: theme.text.hint, textAlign: isRTL ? 'right' : 'left' }]}>
+                                    {details.length}/2000
+                                </Text>
+                            </View>
+
+                            <View style={styles.footer}>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.submitButton,
+                                        { backgroundColor: theme.primary.main },
+                                        (isSubmitDisabled || isLoading) && styles.disabledButton
+                                    ]}
+                                    onPress={handleSubmit}
+                                    disabled={isSubmitDisabled || isLoading}
+                                >
+                                    {isLoading ? (
+                                        <ActivityIndicator color="#FFFFFF" />
+                                    ) : (
+                                        <Text style={styles.submitButtonText}>{t('insights.submitRequest')}</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </ResponsiveContainer>
                 </View>
             </KeyboardAvoidingView>
         </Modal>

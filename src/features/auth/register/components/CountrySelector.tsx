@@ -13,6 +13,7 @@ import {
     TextInput,
     StyleSheet,
     Platform,
+    useWindowDimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme, useLocalization } from '../../../../app/providers';
@@ -25,6 +26,8 @@ interface CountrySelectorProps {
     selectedCountryCode?: string;
 }
 
+const DESKTOP_BREAKPOINT = 768;
+
 export const CountrySelector: React.FC<CountrySelectorProps> = ({
     visible,
     onClose,
@@ -34,6 +37,8 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
     const [searchQuery, setSearchQuery] = useState('');
+    const { width } = useWindowDimensions();
+    const isDesktop = width > DESKTOP_BREAKPOINT;
 
     const filteredCountries = useMemo(() => {
         let result = COUNTRIES;
@@ -82,10 +87,25 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
     );
 
     return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={styles.modalOverlay}>
-                <View style={[styles.modalContent, { backgroundColor: theme.background.primary }]}>
-                    <View style={[styles.header, { borderBottomColor: theme.ui.border, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <Modal
+            visible={visible}
+            animationType={isDesktop ? "fade" : "slide"}
+            transparent
+            onRequestClose={onClose}
+        >
+            <View style={[
+                styles.modalOverlay,
+                isDesktop && styles.desktopOverlay
+            ]}>
+                <View style={[
+                    styles.modalContent,
+                    { backgroundColor: theme.background.primary },
+                    isDesktop && styles.desktopModalContent
+                ]}>
+                    <View style={[
+                        styles.header,
+                        { borderBottomColor: theme.ui.border, flexDirection: isRTL ? 'row-reverse' : 'row' }
+                    ]}>
                         <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
                             {t('register.country')}
                         </Text>
@@ -122,8 +142,13 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
 const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'flex-end',
+    },
+    desktopOverlay: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
     },
     modalContent: {
         height: '80%',
@@ -131,8 +156,17 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 24,
         paddingTop: 8,
     },
+    desktopModalContent: {
+        width: '100%',
+        maxWidth: 500,
+        height: 'auto',
+        maxHeight: 600,
+        borderRadius: 24,
+        paddingTop: 0,
+        overflow: 'hidden',
+    },
     header: {
-        padding: 16,
+        padding: 20,
         borderBottomWidth: 1,
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -148,7 +182,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         margin: 16,
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         borderRadius: 12,
         height: 48,
     },
@@ -159,13 +193,14 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     listContent: {
-        paddingBottom: 40,
+        paddingBottom: 20,
     },
     countryItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 20,
         borderBottomWidth: 0.5,
     },
     countryInfo: {

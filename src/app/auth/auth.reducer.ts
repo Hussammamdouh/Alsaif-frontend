@@ -102,8 +102,8 @@ export const authReducer = (
     case AuthActionType.REGISTER_SUCCESS:
       return {
         ...state,
-        session: action.payload,
-        isAuthenticated: true,
+        session: null, // No session yet, needs verification
+        isAuthenticated: false,
         isLoading: false,
         error: null,
       };
@@ -199,6 +199,30 @@ export const authReducer = (
         ...state,
         error: null,
         bootstrapError: null,
+      };
+
+    // ==================== VERIFICATION ====================
+    case AuthActionType.VERIFY_START:
+      return {
+        ...state,
+        isLoading: true,
+        error: null,
+      };
+
+    case AuthActionType.VERIFY_SUCCESS:
+      return {
+        ...state,
+        session: action.payload,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      };
+
+    case AuthActionType.VERIFY_ERROR:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload,
       };
 
     default:

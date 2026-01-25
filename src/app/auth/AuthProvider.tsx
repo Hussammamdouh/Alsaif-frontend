@@ -11,8 +11,8 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
-import { AuthContextValue, BootstrapState } from './auth.types';
+import { AppState, AppStateStatus, PanResponder } from 'react-native';
+import { AuthContextValue, BootstrapState, User } from './auth.types';
 import { authReducer, initialAuthState } from './auth.reducer';
 import * as AuthActions from './auth.actions';
 import { LoadingScreen } from '../../shared/components';
@@ -92,6 +92,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [state.isAuthenticated]);
 
   /**
+   * Session Inactivity Timeout
+   * Automatically log out user after 30 minutes of inactivity
+   */
+  const lastActivityRef = React.useRef(Date.now());
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if (now - lastActivityRef.current > INACTIVITY_TIMEOUT) {
+        console.log('[AuthProvider] Inactivity timeout reached - logging out');
+        logout();
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [state.isAuthenticated]);
+
+  // Update activity timestamp on AppState change (foreground)
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        lastActivityRef.current = Date.now();
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
+  /**
    * Handle app state changes (background/foreground)
    * Validate session when app comes to foreground
    */
@@ -136,8 +167,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const register = useCallback(
-    async (fullName: string, email: string, password: string, phoneNumber?: string, country?: string) => {
-      await AuthActions.registerUser(dispatch, fullName, email, password, phoneNumber, country);
+    async (fullName: string, email: string, password: string, nationality: string, phoneNumber?: string, country?: string): Promise<User> => {
+      return await AuthActions.registerUser(dispatch, fullName, email, password, phoneNumber, country, nationality) as User;
     },
     []
   );
@@ -181,6 +212,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   /**
+   * Verify Account
+   */
+  const verifyAccount = useCallback(async (userId: string, code: string) => {
+    await AuthActions.verifyAccount(dispatch, userId, code);
+  }, []);
+
+  /**
+   * Resend Verification Code
+   */
+  const resendVerificationCode = useCallback(async (userId: string) => {
+    await AuthActions.resendVerificationCode(dispatch, userId);
+  }, []);
+
+  /**
    * Clear Error
    */
   const clearError = useCallback(() => {
@@ -201,6 +246,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       enableBiometric,
       disableBiometric,
       loginWithBiometric,
+      verifyAccount,
+      resendVerificationCode,
       clearError,
     }),
     [
@@ -212,6 +259,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       enableBiometric,
       disableBiometric,
       loginWithBiometric,
+      verifyAccount,
+      resendVerificationCode,
       clearError,
     ]
   );

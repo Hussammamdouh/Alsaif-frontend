@@ -18,6 +18,7 @@ import {
   Platform,
   StatusBar,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,6 +28,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { createAdminStyles } from '../admin.styles';
 import { useAdminInsights, useAdminInsightRequests } from '../hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { AdminSidebar } from '../components/AdminSidebar';
 import {
   INSIGHT_TYPE_FILTER_OPTIONS,
   INSIGHT_STATUS_FILTER_OPTIONS,
@@ -43,12 +45,15 @@ import {
   SearchBar,
   FilterBar,
 } from '../components';
+import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminInsightsScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<any>();
   const { theme, isDark } = useTheme();
   const { t, isRTL } = useLocalization();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
 
@@ -631,401 +636,398 @@ export const AdminInsightsScreen: React.FC = () => {
     return <LoadingState type="list" count={5} />;
   }
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <View style={styles.container}>
-        <LinearGradient
-          colors={isDark ? [theme.background.primary, '#1a2e1a', '#0a1a0a'] : ['#FFFFFF', '#F8FAF8', '#F1F5F1']}
-          style={StyleSheet.absoluteFill}
-        />
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.insights')}</Text>
-          </View>
-          <TouchableOpacity style={styles.addButton} onPress={openCreateModal}>
-            <Ionicons name="add" size={24} color={theme.primary.contrast} />
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
           </TouchableOpacity>
-        </View>
+        )}
+        <Text style={styles.headerTitle}>{t('admin.insights')}</Text>
+      </View>
+      <TouchableOpacity style={styles.addButton} onPress={openCreateModal}>
+        <Ionicons name="add" size={24} color={theme.primary.contrast} />
+      </TouchableOpacity>
+    </View>
+  );
 
-        {/* Main Tabs */}
-        <View style={localStyles.mainTabs}>
-          <TouchableOpacity
-            style={[localStyles.mainTab, mainTab === 'insights' && localStyles.mainTabActive]}
-            onPress={() => setMainTab('insights')}
-          >
-            <Text style={[localStyles.mainTabText, mainTab === 'insights' && localStyles.mainTabTextActive]}>
-              {t('admin.insights')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[localStyles.mainTab, mainTab === 'proposals' && localStyles.mainTabActive]}
-            onPress={() => setMainTab('proposals')}
-          >
-            <Text style={[localStyles.mainTabText, mainTab === 'proposals' && localStyles.mainTabTextActive]}>
-              {t('admin.insightRequests')}
-            </Text>
-          </TouchableOpacity>
-        </View>
+  const renderMainContent = () => (
+    <>
+      {/* Main Tabs */}
+      <View style={localStyles.mainTabs}>
+        <TouchableOpacity
+          style={[localStyles.mainTab, mainTab === 'insights' && localStyles.mainTabActive]}
+          onPress={() => setMainTab('insights')}
+        >
+          <Text style={[localStyles.mainTabText, mainTab === 'insights' && localStyles.mainTabTextActive]}>
+            {t('admin.insights')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[localStyles.mainTab, mainTab === 'proposals' && localStyles.mainTabActive]}
+          onPress={() => setMainTab('proposals')}
+        >
+          <Text style={[localStyles.mainTabText, mainTab === 'proposals' && localStyles.mainTabTextActive]}>
+            {t('admin.insightRequests')}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-        {mainTab === 'insights' ? (
-          <>
-            {/* Search Bar & Filters */}
-            <SearchBar
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder={t('admin.searchInsights')}
-              loading={isLoading && insights.length > 0}
-            />
+      {mainTab === 'insights' ? (
+        <>
+          {/* Search Bar & Filters */}
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder={t('admin.searchInsights')}
+            loading={isLoading && insights.length > 0}
+          />
 
-            {/* Type Filter */}
-            <FilterBar
-              options={INSIGHT_TYPE_FILTER_OPTIONS.map(opt => ({
-                label: t(opt.labelKey),
-                value: opt.value as string
-              }))}
-              selectedValue={selectedTypeFilter}
-              onSelect={(val) => handleTypeFilterChange(val as string)}
-              label={t('admin.filterByType')}
-            />
+          {/* Type Filter */}
+          <FilterBar
+            options={INSIGHT_TYPE_FILTER_OPTIONS.map(opt => ({
+              label: t(opt.labelKey),
+              value: opt.value as string
+            }))}
+            selectedValue={selectedTypeFilter}
+            onSelect={(val) => handleTypeFilterChange(val as string)}
+            label={t('admin.filterByType')}
+          />
 
-            {/* Status Filter */}
-            <FilterBar
-              options={INSIGHT_STATUS_FILTER_OPTIONS.map(opt => ({
-                label: t(opt.labelKey),
-                value: opt.value as string
-              }))}
-              selectedValue={selectedStatusFilter}
-              onSelect={(val) => handleStatusFilterChange(val as string)}
-              label={t('admin.filterByStatus')}
-            />
-          </>
-        ) : null}
+          {/* Status Filter */}
+          <FilterBar
+            options={INSIGHT_STATUS_FILTER_OPTIONS.map(opt => ({
+              label: t(opt.labelKey),
+              value: opt.value as string
+            }))}
+            selectedValue={selectedStatusFilter}
+            onSelect={(val) => handleStatusFilterChange(val as string)}
+            label={t('admin.filterByStatus')}
+          />
 
-        {/* List Content */}
-        {mainTab === 'insights' ? (
-          error ? (
+          {error ? (
             <EmptyState
               icon="alert-circle"
               title={t('common.error')}
               message={error}
               actionLabel={t('common.retry')}
               onActionPress={refresh}
-              iconColor={theme.error.main}
             />
           ) : insights.length === 0 ? (
             <EmptyState
               icon="document-text-outline"
               title={t('admin.noInsightsFound')}
               message={t('admin.noInsightsMessage')}
-              actionLabel=""
-              onActionPress={() => { }}
-              iconColor={theme.text.tertiary}
+              actionLabel={t('admin.createNewInsight')}
+              onActionPress={openCreateModal}
             />
           ) : (
             <FlatList
               data={insights}
               renderItem={renderInsightCard}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={localStyles.listContent}
+              contentContainerStyle={[localStyles.listContent, isDesktop && { paddingHorizontal: 32 }]}
+              onEndReached={loadMore}
+              onEndReachedThreshold={0.5}
               refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
-              ListFooterComponent={
-                pagination && pagination.currentPage < pagination.totalPages ? (
-                  <TouchableOpacity
-                    style={localStyles.loadMoreButton}
-                    onPress={loadMore}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <ActivityIndicator color={theme.primary.main} />
-                    ) : (
-                      <Text style={localStyles.loadMoreText}>{t('common.loadMore')}</Text>
-                    )}
-                  </TouchableOpacity>
-                ) : null
-              }
+              ListFooterComponent={pagination?.hasMore ? <ActivityIndicator style={{ padding: 20 }} /> : null}
             />
-          )
-        ) : (
-          requestsError ? (
+          )}
+        </>
+      ) : (
+        <>
+          {/* Proposals List */}
+          {requestsError ? (
             <EmptyState
               icon="alert-circle"
               title={t('common.error')}
               message={requestsError}
               actionLabel={t('common.retry')}
               onActionPress={refreshRequests}
-              iconColor={theme.error.main}
             />
           ) : requests.length === 0 ? (
             <EmptyState
-              icon="mail-outline"
-              title={t('admin.noInsightsFound')}
-              message={t('admin.noInsightsMessage')}
-              actionLabel=""
-              onActionPress={() => { }}
-              iconColor={theme.text.tertiary}
+              icon="paper-plane-outline"
+              title={t('admin.noProposalsFound')}
+              message={t('admin.noProposalsMessage')}
             />
           ) : (
             <FlatList
               data={requests}
               renderItem={renderRequestCard}
-              keyExtractor={(item: any) => item.id || item._id}
-              contentContainerStyle={localStyles.listContent}
+              keyExtractor={(item) => item.id || item._id}
+              contentContainerStyle={[localStyles.listContent, isDesktop && { paddingHorizontal: 32 }]}
+              onEndReached={loadMoreRequests}
+              onEndReachedThreshold={0.5}
               refreshControl={<RefreshControl refreshing={isRequestsLoading} onRefresh={refreshRequests} />}
-              ListFooterComponent={
-                proposalsPagination && proposalsPagination.currentPage < proposalsPagination.totalPages ? (
+              ListFooterComponent={proposalsPagination?.hasMore ? <ActivityIndicator style={{ padding: 20 }} /> : null}
+            />
+          )}
+        </>
+      )}
+    </>
+  );
+
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+
+      {isDesktop ? (
+        <View style={styles.desktopContentWrapper}>
+          <AdminSidebar />
+          <View style={styles.desktopMainContent}>
+            {renderHeader()}
+            <View style={{ flex: 1, paddingVertical: 24 }}>
+              {renderMainContent()}
+            </View>
+          </View>
+        </View>
+      ) : (
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.container}>
+            <ResponsiveContainer>
+              <LinearGradient
+                colors={isDark ? [theme.background.primary, '#1a2e1a', '#0a1a0a'] : ['#FFFFFF', '#F8FAF8', '#F1F5F1']}
+                style={StyleSheet.absoluteFill}
+              />
+              {renderHeader()}
+              {renderMainContent()}
+            </ResponsiveContainer>
+          </View>
+        </SafeAreaView>
+      )}
+
+      <ActionSheet
+        visible={showActionSheet}
+        onClose={() => {
+          setShowActionSheet(false);
+          // Don't clear selectedInsight here - let the individual modals handle it
+        }}
+        title={selectedInsight?.title || t('admin.manageInsight')}
+        options={[
+          {
+            label: t('admin.editInsight'),
+            icon: 'create-outline',
+            onPress: () => {
+              setShowActionSheet(false);
+              if (selectedInsight) openEditModal(selectedInsight);
+            },
+          },
+          ...(selectedInsight?.status === 'draft'
+            ? [
+              {
+                label: t('admin.publishInsight'),
+                icon: 'globe',
+                onPress: () => {
+                  setShowActionSheet(false);
+                  setShowPublishModal(true);
+                },
+              },
+            ]
+            : []),
+          {
+            label: selectedInsight?.featured ? t('admin.unfeatureInsight') : t('admin.featureInsight'),
+            icon: selectedInsight?.featured ? 'star' : 'star-outline',
+            onPress: () => handleFeature(),
+          },
+          {
+            label: t('admin.deleteInsight'),
+            icon: 'trash-outline',
+            onPress: () => {
+              setShowActionSheet(false);
+              setShowDeleteModal(true);
+            },
+            destructive: true,
+          },
+        ]}
+      />
+
+      <ConfirmationModal
+        visible={showPublishModal}
+        onClose={() => {
+          setShowPublishModal(false);
+          setSelectedInsight(null);
+        }}
+        onConfirm={handlePublish}
+        title={t('admin.publishConfirm')}
+        message={t('admin.publishMessage')}
+        confirmText={t('admin.publishInsight')}
+        cancelText={t('common.cancel')}
+        icon="globe"
+      />
+
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDeleteReason('');
+          setSelectedInsight(null);
+        }}
+        onConfirm={handleDelete}
+        title={t('admin.deleteConfirm')}
+        message={t('admin.deleteMessage')}
+        confirmText={t('admin.deleteInsight')}
+        cancelText={t('common.cancel')}
+        destructive
+        icon="trash"
+        customContent={
+          <View style={localStyles.formGroup}>
+            <Text style={localStyles.label}>{t('admin.provideReason')}</Text>
+            <TextInput
+              style={[localStyles.formInput, localStyles.textArea]}
+              placeholder={t('admin.provideReason')}
+              placeholderTextColor={theme.text.tertiary}
+              value={deleteReason}
+              onChangeText={setDeleteReason}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+        }
+      />
+
+      {/* Create Modal */}
+      {renderFormModal(
+        createModalVisible,
+        () => setCreateModalVisible(false),
+        handleCreateInsight,
+        t('admin.createInsightTitle')
+      )}
+
+      {/* Edit Modal */}
+      {renderFormModal(
+        editModalVisible,
+        () => setEditModalVisible(false),
+        handleUpdateInsight,
+        t('admin.updateInsightTitle')
+      )}
+
+      {/* Proposals Moderation Modal */}
+      <Modal
+        visible={showModerateModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowModerateModal(false)}
+      >
+        <View style={localStyles.modalOverlay}>
+          <View style={localStyles.modalContainer}>
+            <View style={localStyles.modalContent}>
+              <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.moderateRequest')}</Text>
+                <TouchableOpacity onPress={() => setShowModerateModal(false)}>
+                  <Ionicons name="close" size={24} color={theme.text.primary} />
+                </TouchableOpacity>
+              </View>
+
+              {selectedRequest && (
+                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+                  <Text style={[localStyles.label, { marginBottom: 4 }]}>{t('admin.insightTitle')}</Text>
+                  <Text style={[localStyles.modalSubtitle, { marginBottom: 16 }]}>{selectedRequest.title}</Text>
+
+                  <Text style={[localStyles.label, { marginBottom: 4 }]}>{t('admin.insightContent')}</Text>
+                  <Text style={[localStyles.modalSubtitle, { marginBottom: 16 }]}>{selectedRequest.details}</Text>
+
+                  <Text style={localStyles.label}>{t('admin.status')}</Text>
+                  <View style={localStyles.typeButtonsRow}>
+                    {['approved', 'rejected'].map((s) => (
+                      <TouchableOpacity
+                        key={s}
+                        style={[
+                          localStyles.typeButton,
+                          moderationStatus === s && localStyles.typeButtonActive,
+                        ]}
+                        onPress={() => setModerationStatus(s as any)}
+                      >
+                        <Text
+                          style={[
+                            localStyles.typeButtonText,
+                            moderationStatus === s && localStyles.typeButtonTextActive,
+                          ]}
+                        >
+                          {t(`admin.${s}`)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  {moderationStatus === 'approved' && (
+                    <View style={{ marginTop: 16 }}>
+                      <Text style={localStyles.label}>{t('admin.insightType')}</Text>
+                      <View style={localStyles.typeButtonsRow}>
+                        {[
+                          { label: 'Free Insight', value: 'free_insight' },
+                          { label: 'Premium Insight', value: 'premium_insight' },
+                          { label: 'Free Chat', value: 'free_chat' },
+                          { label: 'Premium Chat', value: 'premium_chat' },
+                        ].map((opt) => (
+                          <TouchableOpacity
+                            key={opt.value}
+                            style={[
+                              localStyles.typeButton,
+                              { flex: 0, paddingHorizontal: 12, marginBottom: 8, marginRight: 8 },
+                              targetType === opt.value && localStyles.typeButtonActive,
+                            ]}
+                            onPress={() => setTargetType(opt.value as any)}
+                          >
+                            <Text
+                              style={[
+                                localStyles.typeButtonText,
+                                targetType === opt.value && localStyles.typeButtonTextActive,
+                              ]}
+                            >
+                              {opt.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+
+                  {moderationStatus === 'rejected' && (
+                    <View style={{ marginTop: 16 }}>
+                      <Text style={localStyles.label}>{t('admin.reason')}</Text>
+                      <TextInput
+                        style={[localStyles.formInput, localStyles.textArea]}
+                        placeholder={t('admin.reasonPlaceholder')}
+                        value={rejectionReason}
+                        onChangeText={setRejectionReason}
+                        multiline
+                      />
+                    </View>
+                  )}
+
                   <TouchableOpacity
-                    style={localStyles.loadMoreButton}
-                    onPress={loadMoreRequests}
+                    style={[localStyles.submitButton, { marginTop: 24 }]}
+                    onPress={async () => {
+                      try {
+                        await moderateRequest(selectedRequest.id || selectedRequest._id, {
+                          status: moderationStatus,
+                          rejectionReason: moderationStatus === 'rejected' ? rejectionReason : undefined,
+                          targetType: moderationStatus === 'approved' ? targetType : undefined,
+                        });
+                        setShowModerateModal(false);
+                        setRejectionReason('');
+                      } catch (err) {
+                        // Error handled in hook
+                      }
+                    }}
                     disabled={isRequestsLoading}
                   >
                     {isRequestsLoading ? (
-                      <ActivityIndicator color={theme.primary.main} />
+                      <ActivityIndicator color="#FFFFFF" />
                     ) : (
-                      <Text style={localStyles.loadMoreText}>{t('common.loadMore')}</Text>
+                      <Text style={localStyles.submitButtonText}>{t('admin.takeAction')}</Text>
                     )}
                   </TouchableOpacity>
-                ) : null
-              }
-            />
-          )
-        )}
-
-        <ActionSheet
-          visible={showActionSheet}
-          onClose={() => {
-            setShowActionSheet(false);
-            // Don't clear selectedInsight here - let the individual modals handle it
-          }}
-          title={selectedInsight?.title || t('admin.manageInsight')}
-          options={[
-            {
-              label: t('admin.editInsight'),
-              icon: 'create-outline',
-              onPress: () => {
-                setShowActionSheet(false);
-                if (selectedInsight) openEditModal(selectedInsight);
-              },
-            },
-            ...(selectedInsight?.status === 'draft'
-              ? [
-                {
-                  label: t('admin.publishInsight'),
-                  icon: 'globe',
-                  onPress: () => {
-                    setShowActionSheet(false);
-                    setShowPublishModal(true);
-                  },
-                },
-              ]
-              : []),
-            {
-              label: selectedInsight?.featured ? t('admin.unfeatureInsight') : t('admin.featureInsight'),
-              icon: selectedInsight?.featured ? 'star' : 'star-outline',
-              onPress: () => handleFeature(),
-            },
-            {
-              label: t('admin.deleteInsight'),
-              icon: 'trash-outline',
-              onPress: () => {
-                setShowActionSheet(false);
-                setShowDeleteModal(true);
-              },
-              destructive: true,
-            },
-          ]}
-        />
-
-        <ConfirmationModal
-          visible={showPublishModal}
-          onClose={() => {
-            setShowPublishModal(false);
-            setSelectedInsight(null);
-          }}
-          onConfirm={handlePublish}
-          title={t('admin.publishConfirm')}
-          message={t('admin.publishMessage')}
-          confirmText={t('admin.publishInsight')}
-          cancelText={t('common.cancel')}
-          icon="globe"
-        />
-
-        <ConfirmationModal
-          visible={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setDeleteReason('');
-            setSelectedInsight(null);
-          }}
-          onConfirm={handleDelete}
-          title={t('admin.deleteConfirm')}
-          message={t('admin.deleteMessage')}
-          confirmText={t('admin.deleteInsight')}
-          cancelText={t('common.cancel')}
-          destructive
-          icon="trash"
-          customContent={
-            <View style={localStyles.formGroup}>
-              <Text style={localStyles.label}>{t('admin.provideReason')}</Text>
-              <TextInput
-                style={[localStyles.formInput, localStyles.textArea]}
-                placeholder={t('admin.provideReason')}
-                placeholderTextColor={theme.text.tertiary}
-                value={deleteReason}
-                onChangeText={setDeleteReason}
-                multiline
-                numberOfLines={3}
-              />
-            </View>
-          }
-        />
-
-        {/* Create Modal */}
-        {renderFormModal(
-          createModalVisible,
-          () => setCreateModalVisible(false),
-          handleCreateInsight,
-          t('admin.createInsightTitle')
-        )}
-
-        {/* Edit Modal */}
-        {renderFormModal(
-          editModalVisible,
-          () => setEditModalVisible(false),
-          handleUpdateInsight,
-          t('admin.updateInsightTitle')
-        )}
-
-        {/* Proposals Moderation Modal */}
-        <Modal
-          visible={showModerateModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowModerateModal(false)}
-        >
-          <View style={localStyles.modalOverlay}>
-            <View style={localStyles.modalContainer}>
-              <View style={localStyles.modalContent}>
-                <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.moderateRequest')}</Text>
-                  <TouchableOpacity onPress={() => setShowModerateModal(false)}>
-                    <Ionicons name="close" size={24} color={theme.text.primary} />
-                  </TouchableOpacity>
-                </View>
-
-                {selectedRequest && (
-                  <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-                    <Text style={[localStyles.label, { marginBottom: 4 }]}>{t('admin.insightTitle')}</Text>
-                    <Text style={[localStyles.modalSubtitle, { marginBottom: 16 }]}>{selectedRequest.title}</Text>
-
-                    <Text style={[localStyles.label, { marginBottom: 4 }]}>{t('admin.insightContent')}</Text>
-                    <Text style={[localStyles.modalSubtitle, { marginBottom: 16 }]}>{selectedRequest.details}</Text>
-
-                    <Text style={localStyles.label}>{t('admin.status')}</Text>
-                    <View style={localStyles.typeButtonsRow}>
-                      {['approved', 'rejected'].map((s) => (
-                        <TouchableOpacity
-                          key={s}
-                          style={[
-                            localStyles.typeButton,
-                            moderationStatus === s && localStyles.typeButtonActive,
-                          ]}
-                          onPress={() => setModerationStatus(s as any)}
-                        >
-                          <Text
-                            style={[
-                              localStyles.typeButtonText,
-                              moderationStatus === s && localStyles.typeButtonTextActive,
-                            ]}
-                          >
-                            {t(`admin.${s}`)}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-
-                    {moderationStatus === 'approved' && (
-                      <View style={{ marginTop: 16 }}>
-                        <Text style={localStyles.label}>{t('admin.insightType')}</Text>
-                        <View style={localStyles.typeButtonsRow}>
-                          {[
-                            { label: 'Free Insight', value: 'free_insight' },
-                            { label: 'Premium Insight', value: 'premium_insight' },
-                            { label: 'Free Chat', value: 'free_chat' },
-                            { label: 'Premium Chat', value: 'premium_chat' },
-                          ].map((opt) => (
-                            <TouchableOpacity
-                              key={opt.value}
-                              style={[
-                                localStyles.typeButton,
-                                { flex: 0, paddingHorizontal: 12, marginBottom: 8, marginRight: 8 },
-                                targetType === opt.value && localStyles.typeButtonActive,
-                              ]}
-                              onPress={() => setTargetType(opt.value as any)}
-                            >
-                              <Text
-                                style={[
-                                  localStyles.typeButtonText,
-                                  targetType === opt.value && localStyles.typeButtonTextActive,
-                                ]}
-                              >
-                                {opt.label}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      </View>
-                    )}
-
-                    {moderationStatus === 'rejected' && (
-                      <View style={{ marginTop: 16 }}>
-                        <Text style={localStyles.label}>{t('admin.reason')}</Text>
-                        <TextInput
-                          style={[localStyles.formInput, localStyles.textArea]}
-                          placeholder={t('admin.reasonPlaceholder')}
-                          value={rejectionReason}
-                          onChangeText={setRejectionReason}
-                          multiline
-                        />
-                      </View>
-                    )}
-
-                    <TouchableOpacity
-                      style={[localStyles.submitButton, { marginTop: 24 }]}
-                      onPress={async () => {
-                        try {
-                          await moderateRequest(selectedRequest.id || selectedRequest._id, {
-                            status: moderationStatus,
-                            rejectionReason: moderationStatus === 'rejected' ? rejectionReason : undefined,
-                            targetType: moderationStatus === 'approved' ? targetType : undefined,
-                          });
-                          setShowModerateModal(false);
-                          setRejectionReason('');
-                        } catch (err) {
-                          // Error handled in hook
-                        }
-                      }}
-                      disabled={isRequestsLoading}
-                    >
-                      {isRequestsLoading ? (
-                        <ActivityIndicator color="#FFFFFF" />
-                      ) : (
-                        <Text style={localStyles.submitButtonText}>{t('admin.takeAction')}</Text>
-                      )}
-                    </TouchableOpacity>
-                  </ScrollView>
-                )}
-              </View>
+                </ScrollView>
+              )}
             </View>
           </View>
-        </Modal>
+        </View>
+      </Modal>
 
-      </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

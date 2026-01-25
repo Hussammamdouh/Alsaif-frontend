@@ -20,20 +20,44 @@ export const styles = StyleSheet.create({
     paddingTop: theme.spacing['3xl'],
     paddingBottom: theme.spacing['4xl'],
   },
+  desktopWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.md,
+  },
+  loginCard: {
+    borderRadius: theme.borderRadius['2xl'],
+    padding: theme.spacing.xl, // Reduced from 2xl
+    width: '100%',
+    maxWidth: 580,
+    alignSelf: 'center',
+    ...theme.shadows.lg,
+    borderWidth: 1,
+  },
+  absoluteToggles: {
+    position: 'absolute',
+    top: theme.spacing.xl,
+    right: theme.spacing.xl,
+    zIndex: 10,
+  },
+  togglesContainer: {
+    alignSelf: 'flex-end',
+    marginBottom: theme.spacing.md,
+  },
 
   // Header Section
   header: {
     alignItems: 'center',
-    marginBottom: theme.spacing['3xl'],
+    marginBottom: theme.spacing.xl,
   },
   iconContainer: {
-    width: 90,
-    height: 90,
+    width: 64, // Reduced from 90
+    height: 64, // Reduced from 90
     borderRadius: theme.borderRadius.full,
     backgroundColor: `${theme.colors.primary.main}15`,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
     ...theme.shadows.sm,
   },
 
@@ -151,7 +175,7 @@ export const styles = StyleSheet.create({
   // Back to Login Link
   footer: {
     alignItems: 'center',
-    marginTop: theme.spacing['3xl'],
+    marginTop: theme.spacing.xl,
   },
   backToLoginText: {
     fontSize: 15,

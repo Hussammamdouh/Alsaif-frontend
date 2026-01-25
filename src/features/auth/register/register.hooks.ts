@@ -210,7 +210,7 @@ export const useRegisterForm = () => {
    * Validates inputs and calls registration service
    */
   const submitRegistration = useCallback(
-    async (onSuccess: (email: string) => void) => {
+    async (onSuccess: (userId: string, email: string) => void) => {
       // Clear previous errors
       setFormState(prev => ({
         ...prev,
@@ -227,16 +227,17 @@ export const useRegisterForm = () => {
 
       try {
         // Call auth register action
-        await register(
+        const user = await register(
           formState.data.fullName,
           formState.data.email,
           formState.data.password,
+          formState.data.country?.name.en || '',
           formState.data.phoneNumber,
           formState.data.country?.code
         );
 
         // Success - call the onSuccess callback
-        onSuccess(formState.data.email);
+        onSuccess(user.id, formState.data.email);
       } catch (error) {
         // Handle registration errors
         const authError = error as Error;

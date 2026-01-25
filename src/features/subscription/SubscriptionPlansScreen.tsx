@@ -4,10 +4,11 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, StatusBar, Dimensions, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, StatusBar, Dimensions, Alert, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { PlanSkeleton } from './components/PlanSkeleton';
 import {
   useSubscriptionPlans,
   useCheckout,
@@ -23,6 +24,7 @@ const { width } = Dimensions.get('window');
 export const SubscriptionPlansScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
+  const shimmerValue = useRef(new Animated.Value(-width)).current;
   const { t } = useLocalization();
   const styles = useMemo(() => getStyles(theme), [theme]);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
@@ -38,6 +40,16 @@ export const SubscriptionPlansScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerValue, {
+        toValue: width,
+        duration: 2000,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
   const handleSelectPlan = async (planId: string) => {
     const success = await initiateCheckout(planId, billingCycle);
     if (success) {
@@ -47,10 +59,20 @@ export const SubscriptionPlansScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.center]}>
+      <View style={styles.container}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
         <LinearGradient colors={isDark ? [theme.background.primary, '#0a1a0a'] : ['#FFFFFF', '#FFFFFF']} style={StyleSheet.absoluteFill} />
-        <ActivityIndicator size="large" color={theme.primary.main} />
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={28} color={isDark ? "#FFF" : "#000"} />
+          </TouchableOpacity>
+        </View>
+        <ScrollView contentContainerStyle={styles.scrollContent} padsVerticalScrollIndicator={false}>
+          <View style={styles.plansList}>
+            <PlanSkeleton />
+            <PlanSkeleton />
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -172,6 +194,14 @@ export const SubscriptionPlansScreen: React.FC = () => {
                 }
                 style={StyleSheet.absoluteFill}
               />
+              <Animated.View style={[styles.premiumGlow, { transform: [{ translateX: shimmerValue }] }]}>
+                <LinearGradient
+                  colors={['transparent', 'rgba(255,255,255,0.1)', 'transparent']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </Animated.View>
               <View style={styles.recommendedTag}>
                 <Text style={styles.recommendedText}>{t('plans.mostPopular')}</Text>
               </View>
@@ -448,5 +478,10 @@ const getStyles = (theme: any) => StyleSheet.create({
   planButtonDisabled: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  premiumGlow: {
+    ...StyleSheet.absoluteFillObject,
+    width: width,
+    opacity: 0.5,
   },
 });

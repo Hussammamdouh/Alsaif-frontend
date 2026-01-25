@@ -19,11 +19,13 @@ import {
   Animated,
   Easing,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { styles } from './settings.styles';
+import { ResponsiveContainer } from '../../shared/components';
 import { useSettings, useDeviceManagement, useNotificationSettings } from './settings.hooks';
 import { useProfile } from '../profile/profile.hooks';
 import { useTheme } from '../../app/providers/ThemeProvider';
@@ -46,7 +48,8 @@ import { calculatePasswordStrength } from '../../shared/utils/passwordStrength';
  */
 interface SettingsScreenProps {
   onNavigateBack: () => void;
-  onNavigateToSubscription?: () => void;
+  onNavigateToSubscription?: (isSubscribed: boolean) => void;
+  onNavigateToSecurity: () => void;
   onNavigateToTerms: () => void;
   onNavigateToAbout?: () => void;
   onLogout: () => void;
@@ -56,15 +59,17 @@ interface SettingsScreenProps {
  * Settings Screen Component
  */
 export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
-  ({ onNavigateBack, onNavigateToSubscription, onNavigateToTerms, onNavigateToAbout, onLogout }) => {
+  ({ onNavigateBack, onNavigateToSecurity, onNavigateToSubscription, onNavigateToTerms, onNavigateToAbout, onLogout }) => {
     console.log('[SettingsScreen] Render. onLogout available:', !!onLogout);
-    const { profile, updateProfile, loadProfile } = useProfile();
+    const { profile, subscription, updateProfile, loadProfile } = useProfile();
     const { settings, updateSettings, changePassword, isUpdating } = useSettings();
     const { sessions, loadSessions, revokeSession, logoutAllDevices, isRevoking } = useDeviceManagement();
     const { preferences, updatePreferences } = useNotificationSettings();
     const { theme, themeMode, toggleTheme, setThemeMode } = useTheme();
     const { t, language, setLanguage } = useLocalization();
     const { logout: authLogout } = useAuth();
+    const { width } = useWindowDimensions();
+    const isDesktop = width > 768;
 
     // Local state for modals and inputs
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -715,95 +720,122 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
           </View>
         )}
 
-        <ScrollView style={[styles.scrollView, { backgroundColor: theme.background.primary }]} showsVerticalScrollIndicator={false}>
-          {/* Account Section */}
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: accountOpacity,
-                transform: [{ translateY: accountTranslateY }],
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>{t('settings.account')}</Text>
+        <ScrollView style={[styles.scrollView, { backgroundColor: theme.background.primary }]} showsVerticalScrollIndicator={false} contentContainerStyle={isDesktop && { flexGrow: 1, justifyContent: 'center' }}>
+          <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
+            <ResponsiveContainer maxWidth={isDesktop ? 900 : undefined}>
+              <View style={isDesktop ? {
+                backgroundColor: theme.background.secondary,
+                borderRadius: 24,
+                padding: 32,
+                borderWidth: 1,
+                borderColor: theme.border.main,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+                elevation: 5,
+              } : null}>
+                {/* Account Section */}
+                <Animated.View
+                  style={[
+                    styles.section,
+                    {
+                      opacity: accountOpacity,
+                      transform: [{ translateY: accountTranslateY }],
+                    },
+                  ]}
+                >
+                  <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>{t('settings.account')}</Text>
 
-            {/* Change Password */}
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={() => setShowChangePasswordModal(true)}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="key-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.changePassword')}</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-            </TouchableOpacity>
+                  {/* Change Password */}
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }, isDesktop && { padding: 12 }]}
+                    onPress={() => setShowChangePasswordModal(true)}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="key-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.changePassword')}</Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                  </TouchableOpacity>
 
-            {/* Biometric Login - Commented out as requested
-            <View style={[styles.settingRow, { backgroundColor: theme.background.secondary }]}>
-              <View style={styles.settingLeft}>
-                <Icon name="finger-print-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.biometricLogin')}</Text>
-              </View>
-              <Switch
-                value={profile?.settings?.biometricEnabled || false}
-                onValueChange={handleBiometricToggle}
-                disabled={isUpdating}
-                trackColor={{ false: '#767577', true: '#A855F7' }}
-                thumbColor={profile?.settings?.biometricEnabled ? '#fff' : '#f4f3f4'}
-              />
-            </View>
-            */}
-          </Animated.View>
+                  {/* Security & Sessions */}
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }, isDesktop && { padding: 12 }]}
+                    onPress={onNavigateToSecurity}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="shield-checkmark-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>Security & Sessions</Text>
+                    </View>
+                    <View style={styles.settingRight}>
+                      <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                    </View>
+                  </TouchableOpacity>
 
-          {/* App Preferences Section */}
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: appPreferencesOpacity,
-                transform: [{ translateY: appPreferencesTranslateY }],
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>{t('settings.appPreferences')}</Text>
+                  {/* Biometric Login */}
+                  <View style={[styles.settingRow, { backgroundColor: theme.background.secondary }, isDesktop && { padding: 12 }]}>
+                    <View style={styles.settingLeft}>
+                      <Icon name="finger-print-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.biometricLogin')}</Text>
+                    </View>
+                    <Switch
+                      value={profile?.settings?.biometricEnabled || false}
+                      onValueChange={handleBiometricToggle}
+                      disabled={isUpdating}
+                      trackColor={{ false: '#767577', true: '#A855F7' }}
+                      thumbColor={profile?.settings?.biometricEnabled ? '#fff' : '#f4f3f4'}
+                    />
+                  </View>
+                </Animated.View>
 
-            {/* Language */}
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary }]}
-              onPress={() => setShowLanguageModal(true)}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="language-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.language')}</Text>
-              </View>
-              <View style={styles.settingRight}>
-                <Text style={[styles.settingValue, { color: theme.text.secondary }]}>
-                  {language === 'en' ? 'English' : language === 'ar' ? 'العربية' : LANGUAGE_OPTIONS.find(l => l.value === language)?.label || 'English'}
-                </Text>
-                <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-              </View>
-            </TouchableOpacity>
+                {/* App Preferences Section */}
+                <Animated.View
+                  style={[
+                    styles.section,
+                    {
+                      opacity: appPreferencesOpacity,
+                      transform: [{ translateY: appPreferencesTranslateY }],
+                    },
+                  ]}
+                >
+                  <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>{t('settings.appPreferences')}</Text>
 
-            {/* Theme */}
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary }]}
-              onPress={() => setShowThemeModal(true)}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="color-palette-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.theme')}</Text>
-              </View>
-              <View style={styles.settingRight}>
-                <Text style={[styles.settingValue, { color: theme.text.secondary }]}>
-                  {themeMode === 'dark' ? t('settings.dark') : themeMode === 'light' ? t('settings.light') : t('settings.auto')}
-                </Text>
-                <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-              </View>
-            </TouchableOpacity>
+                  {/* Language */}
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary }, isDesktop && { padding: 12 }]}
+                    onPress={() => setShowLanguageModal(true)}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="language-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.language')}</Text>
+                    </View>
+                    <View style={styles.settingRight}>
+                      <Text style={[styles.settingValue, { color: theme.text.secondary }]}>
+                        {language === 'en' ? 'English' : language === 'ar' ? 'العربية' : LANGUAGE_OPTIONS.find(l => l.value === language)?.label || 'English'}
+                      </Text>
+                      <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                    </View>
+                  </TouchableOpacity>
 
-            {/* Chat Settings - Commented out as requested
+                  {/* Theme */}
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary }]}
+                    onPress={() => setShowThemeModal(true)}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="color-palette-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.theme')}</Text>
+                    </View>
+                    <View style={styles.settingRight}>
+                      <Text style={[styles.settingValue, { color: theme.text.secondary }]}>
+                        {themeMode === 'dark' ? t('settings.dark') : themeMode === 'light' ? t('settings.light') : t('settings.auto')}
+                      </Text>
+                      <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Chat Settings - Commented out as requested
             <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
               <View style={styles.settingLeft}>
                 <Icon name="chatbubbles-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
@@ -832,9 +864,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
               />
             </View>
             */}
-          </Animated.View>
+                </Animated.View>
 
-          {/* Accessibility Section - Commented out as requested
+                {/* Accessibility Section - Commented out as requested
           <Animated.View
             style={[
               styles.section,
@@ -884,103 +916,120 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
           </Animated.View>
           */}
 
-          {/* Security Section */}
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: securityOpacity,
-                transform: [{ translateY: securityTranslateY }],
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.security')}</Text>
+                {/* Security Section */}
+                <Animated.View
+                  style={[
+                    styles.section,
+                    {
+                      opacity: securityOpacity,
+                      transform: [{ translateY: securityTranslateY }],
+                    },
+                  ]}
+                >
+                  <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.security')}</Text>
 
-            {/* Active Sessions */}
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={() => setShowDeviceManagementModal(true)}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="phone-portrait-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.activeSessions')}</Text>
-              </View>
-              <View style={styles.settingRight}>
-                <Text style={[styles.settingValue, { color: theme.text.secondary }]}>{sessions.length} {t('settings.devices')}</Text>
-                <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-              </View>
-            </TouchableOpacity>
+                  {onNavigateToSubscription && (
+                    <TouchableOpacity
+                      style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                      onPress={() => onNavigateToSubscription(subscription?.tier === 'premium')}
+                    >
+                      <View style={styles.settingLeft}>
+                        <Icon name="card-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                        <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('profile.subscription')}</Text>
+                      </View>
+                      <View style={styles.settingRight}>
+                        <Text style={[styles.settingValue, { color: theme.text.secondary }]}>
+                          {subscription?.tier === 'premium' ? t('profile.premium') : t('profile.free')}
+                        </Text>
+                        <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                  {/* Active Sessions */}
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={() => setShowDeviceManagementModal(true)}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="phone-portrait-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.activeSessions')}</Text>
+                    </View>
+                    <View style={styles.settingRight}>
+                      <Text style={[styles.settingValue, { color: theme.text.secondary }]}>{sessions.length} {t('settings.devices')}</Text>
+                      <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                    </View>
+                  </TouchableOpacity>
 
-            {/* Logout All Devices */}
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={handleLogoutAllDevices}
-              disabled={isRevoking}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="log-out-outline" size={24} color="#ff3b30" style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, styles.dangerText]}>{t('settings.logoutAllDevices')}</Text>
-              </View>
-              {isRevoking && <ActivityIndicator size="small" color={theme.primary.main} />}
-            </TouchableOpacity>
-          </Animated.View>
+                  {/* Logout All Devices */}
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={handleLogoutAllDevices}
+                    disabled={isRevoking}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="log-out-outline" size={24} color="#ff3b30" style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, styles.dangerText]}>{t('settings.logoutAllDevices')}</Text>
+                    </View>
+                    {isRevoking && <ActivityIndicator size="small" color={theme.primary.main} />}
+                  </TouchableOpacity>
+                </Animated.View>
 
-          {/* Notifications Section */}
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: notificationsOpacity,
-                transform: [{ translateY: notificationsTranslateY }],
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.notifications')}</Text>
+                {/* Notifications Section */}
+                <Animated.View
+                  style={[
+                    styles.section,
+                    {
+                      opacity: notificationsOpacity,
+                      transform: [{ translateY: notificationsTranslateY }],
+                    },
+                  ]}
+                >
+                  <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.notifications')}</Text>
 
-            {/* Detailed Notification Preferences */}
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={() => setShowNotificationPreferencesModal(true)}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="options-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.notificationPreferences')}</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-            </TouchableOpacity>
+                  {/* Detailed Notification Preferences */}
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={() => setShowNotificationPreferencesModal(true)}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="options-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.notificationPreferences')}</Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                  </TouchableOpacity>
 
-            <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
-              <View style={styles.settingLeft}>
-                <Icon name="notifications-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.pushNotifications')}</Text>
-              </View>
-              <Switch
-                value={preferences?.globalSettings?.pushEnabled || false}
-                onValueChange={(value) => {
-                  updatePreferences({ globalSettings: { pushEnabled: value } });
-                }}
-                trackColor={{ false: theme.border.main, true: theme.primary.main }}
-                thumbColor={theme.background.primary}
-              />
-            </View>
+                  <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
+                    <View style={styles.settingLeft}>
+                      <Icon name="notifications-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.pushNotifications')}</Text>
+                    </View>
+                    <Switch
+                      value={preferences?.globalSettings?.pushEnabled || false}
+                      onValueChange={(value) => {
+                        updatePreferences({ globalSettings: { pushEnabled: value } });
+                      }}
+                      trackColor={{ false: theme.border.main, true: theme.primary.main }}
+                      thumbColor={theme.background.primary}
+                    />
+                  </View>
 
-            <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
-              <View style={styles.settingLeft}>
-                <Icon name="mail-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.emailNotifications')}</Text>
-              </View>
-              <Switch
-                value={preferences?.globalSettings?.emailEnabled || false}
-                onValueChange={(value) => {
-                  updatePreferences({ globalSettings: { emailEnabled: value } });
-                }}
-                trackColor={{ false: theme.border.main, true: theme.primary.main }}
-                thumbColor={theme.background.primary}
-              />
-            </View>
-          </Animated.View>
+                  <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
+                    <View style={styles.settingLeft}>
+                      <Icon name="mail-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.emailNotifications')}</Text>
+                    </View>
+                    <Switch
+                      value={preferences?.globalSettings?.emailEnabled || false}
+                      onValueChange={(value) => {
+                        updatePreferences({ globalSettings: { emailEnabled: value } });
+                      }}
+                      trackColor={{ false: theme.border.main, true: theme.primary.main }}
+                      thumbColor={theme.background.primary}
+                    />
+                  </View>
+                </Animated.View>
 
-          {/* Privacy & Data Section - Commented out as requested
+                {/* Privacy & Data Section - Commented out as requested
           <Animated.View
             style={[
               styles.section,
@@ -1021,106 +1070,110 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
           </Animated.View>
           */}
 
-          {/* About Section */}
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: aboutOpacity,
-                transform: [{ translateY: aboutTranslateY }],
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.about')}</Text>
+                {/* About Section */}
+                <Animated.View
+                  style={[
+                    styles.section,
+                    {
+                      opacity: aboutOpacity,
+                      transform: [{ translateY: aboutTranslateY }],
+                    },
+                  ]}
+                >
+                  <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.about')}</Text>
 
-            <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
-              <View style={styles.settingLeft}>
-                <Icon name="information-circle-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.version')}</Text>
+                  <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
+                    <View style={styles.settingLeft}>
+                      <Icon name="information-circle-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.version')}</Text>
+                    </View>
+                    <Text style={[styles.settingValue, { color: theme.text.secondary }]}>1.0.0</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={onNavigateToAbout}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="information-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('about.title')}</Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={onNavigateToTerms}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="document-text-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.termsOfService')}</Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={onNavigateToTerms}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="shield-checkmark-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.privacyPolicy')}</Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
+                    <View style={styles.settingLeft}>
+                      <Icon name="help-circle-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.helpSupport')}</Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                  </TouchableOpacity>
+                </Animated.View>
+
+                {/* Danger Zone */}
+                <Animated.View
+                  style={[
+                    styles.section,
+                    {
+                      opacity: dangerOpacity,
+                      transform: [{ translateY: dangerTranslateY }],
+                    },
+                  ]}
+                >
+                  <Text style={[styles.sectionTitle, styles.dangerText]}>{t('settings.dangerZone')}</Text>
+
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={() => setShowDeleteAccountModal(true)}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon name="trash-outline" size={24} color="#ff3b30" style={styles.settingIcon} />
+                      <Text style={[styles.settingLabel, styles.dangerText]}>{t('settings.deleteAccount')}</Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color="#ff3b30" />
+                  </TouchableOpacity>
+                </Animated.View>
+
+                <View style={styles.bottomSpacer} />
               </View>
-              <Text style={[styles.settingValue, { color: theme.text.secondary }]}>1.0.0</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={onNavigateToAbout}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="information-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('about.title')}</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={onNavigateToTerms}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="document-text-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.termsOfService')}</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={onNavigateToTerms}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="shield-checkmark-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.privacyPolicy')}</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
-              <View style={styles.settingLeft}>
-                <Icon name="help-circle-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.helpSupport')}</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
-            </TouchableOpacity>
-          </Animated.View>
-
-          {/* Danger Zone */}
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: dangerOpacity,
-                transform: [{ translateY: dangerTranslateY }],
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, styles.dangerText]}>{t('settings.dangerZone')}</Text>
-
-            <TouchableOpacity
-              style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-              onPress={() => setShowDeleteAccountModal(true)}
-            >
-              <View style={styles.settingLeft}>
-                <Icon name="trash-outline" size={24} color="#ff3b30" style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, styles.dangerText]}>{t('settings.deleteAccount')}</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color="#ff3b30" />
-            </TouchableOpacity>
-          </Animated.View>
-
-          <View style={styles.bottomSpacer} />
+            </ResponsiveContainer>
+          </View>
         </ScrollView>
 
         {/* Change Password Modal */}
         <Modal
           visible={showChangePasswordModal}
           transparent
-          animationType="fade"
+          animationType={isDesktop ? "fade" : "fade"}
           onRequestClose={() => setShowChangePasswordModal(false)}
         >
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, isDesktop && styles.desktopModalOverlay]}>
             <Animated.View
               style={[
                 styles.modalContent,
+                isDesktop && styles.desktopModalContent,
                 { backgroundColor: theme.background.primary },
                 {
                   opacity: modalOpacity,
@@ -1291,13 +1344,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
         <Modal
           visible={showDeleteAccountModal}
           transparent
-          animationType="fade"
+          animationType={isDesktop ? "fade" : "fade"}
           onRequestClose={() => setShowDeleteAccountModal(false)}
         >
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, isDesktop && styles.desktopModalOverlay]}>
             <Animated.View
               style={[
                 styles.modalContent,
+                isDesktop && styles.desktopModalContent,
                 { backgroundColor: theme.background.primary },
                 {
                   opacity: modalOpacity,
@@ -1363,13 +1417,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
         <Modal
           visible={showLanguageModal}
           transparent
-          animationType="fade"
+          animationType={isDesktop ? "fade" : "fade"}
           onRequestClose={() => setShowLanguageModal(false)}
         >
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, isDesktop && styles.desktopModalOverlay]}>
             <Animated.View
               style={[
                 styles.modalContent,
+                isDesktop && styles.desktopModalContent,
                 { backgroundColor: theme.background.primary },
                 {
                   opacity: modalOpacity,
@@ -1417,13 +1472,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
         <Modal
           visible={showThemeModal}
           transparent
-          animationType="fade"
+          animationType={isDesktop ? "fade" : "fade"}
           onRequestClose={() => setShowThemeModal(false)}
         >
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, isDesktop && styles.desktopModalOverlay]}>
             <Animated.View
               style={[
                 styles.modalContent,
+                isDesktop && styles.desktopModalContent,
                 { backgroundColor: theme.background.primary },
                 {
                   opacity: modalOpacity,
@@ -1474,13 +1530,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
         <Modal
           visible={showLogoutAllDevicesModal}
           transparent
-          animationType="fade"
+          animationType={isDesktop ? "fade" : "fade"}
           onRequestClose={() => setShowLogoutAllDevicesModal(false)}
         >
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, isDesktop && styles.desktopModalOverlay]}>
             <Animated.View
               style={[
                 styles.modalContent,
+                isDesktop && styles.desktopModalContent,
                 { backgroundColor: theme.background.primary },
                 {
                   opacity: modalOpacity,
@@ -1527,11 +1584,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
         <Modal
           visible={showNotificationPreferencesModal}
           transparent
-          animationType="slide"
+          animationType={isDesktop ? "fade" : "slide"}
           onRequestClose={() => setShowNotificationPreferencesModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, styles.notificationModalContent, { backgroundColor: theme.background.primary }]}>
+          <View style={[styles.modalOverlay, isDesktop && styles.desktopModalOverlay]}>
+            <View style={[
+              styles.modalContent,
+              styles.notificationModalContent,
+              { backgroundColor: theme.background.primary },
+              isDesktop && styles.desktopModalContent
+            ]}>
               <View style={[styles.modalHeader, { borderBottomColor: theme.border.main }]}>
                 <Text style={[styles.modalTitle, { color: theme.text.primary }]}>
                   {t('settings.notificationPreferences')}

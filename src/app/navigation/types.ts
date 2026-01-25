@@ -24,6 +24,7 @@ export type AuthStackParamList = {
   Register: undefined;
   ForgotPassword: undefined;
   ResetPassword: { email?: string };
+  Verification: { userId: string; email: string };
 };
 
 /**
@@ -50,7 +51,7 @@ export type MainStackParamList = {
   InsightDetail: { insightId: string; title?: string };
   InsightRequests: undefined;
   Notifications: { category?: string };
-  PdfViewer: { url: string; title: string };
+  PdfViewer: { url: string | any; title: string };
 
   // User Subscription Screens
   Subscription: undefined;
@@ -59,6 +60,7 @@ export type MainStackParamList = {
 
   // Settings
   Settings: undefined;
+  Security: undefined;
   Terms: undefined;
   About: undefined;
 
@@ -80,6 +82,7 @@ export type MainStackParamList = {
   AdminNotificationTemplates: undefined;
   AdminBulkActions: undefined;
   AdminBanners: undefined;
+  AdminGroupChat: undefined;
 };
 
 declare global {

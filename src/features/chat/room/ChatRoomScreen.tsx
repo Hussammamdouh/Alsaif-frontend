@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { ResponsiveContainer } from '../../../shared/components';
 
 interface ChatRoomScreenProps {
   conversationId: string;
@@ -29,16 +30,18 @@ export const ChatRoomScreen: React.FC<ChatRoomScreenProps> = ({
       </View>
 
       {/* Placeholder Content */}
-      <View style={styles.content}>
-        <Icon name="chatbubbles-outline" size={80} color="#E5E7EB" />
-        <Text style={styles.placeholderTitle}>Chat Room</Text>
-        <Text style={styles.placeholderText}>
-          Conversation ID: {conversationId}
-        </Text>
-        <Text style={styles.placeholderSubtext}>
-          This screen will be implemented in the next phase
-        </Text>
-      </View>
+      <ResponsiveContainer>
+        <View style={styles.content}>
+          <Icon name="chatbubbles-outline" size={80} color="#E5E7EB" />
+          <Text style={styles.placeholderTitle}>Chat Room</Text>
+          <Text style={styles.placeholderText}>
+            Conversation ID: {conversationId}
+          </Text>
+          <Text style={styles.placeholderSubtext}>
+            This screen will be implemented in the next phase
+          </Text>
+        </View>
+      </ResponsiveContainer>
     </SafeAreaView>
   );
 };

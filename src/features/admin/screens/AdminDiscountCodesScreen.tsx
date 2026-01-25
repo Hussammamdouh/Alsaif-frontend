@@ -19,6 +19,7 @@ import {
   Platform,
   Switch,
   ActivityIndicator,
+  useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,7 +35,9 @@ import {
   EmptyState,
   ActionSheet,
   ConfirmationModal,
+  AdminSidebar,
 } from '../components';
+import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminDiscountCodesScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -42,6 +45,8 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   const { t } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showActionSheet, setShowActionSheet] = useState(false);
@@ -330,86 +335,109 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     return <LoadingState type="list" count={5} />;
   }
 
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{isDesktop ? t('admin.discountCodesOverview') : t('admin.discountCodes')}</Text>
+      </View>
+      <TouchableOpacity
+        style={localStyles.addButtonHeader}
+        onPress={openCreateModal}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="add" size={24} color={theme.primary.contrast} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <>
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder={t('admin.searchCodes')}
+        loading={loading}
+      />
+
+      <View style={localStyles.filtersRow}>
+        <FilterBar
+          options={statusOptions}
+          selectedValue={isActive as any}
+          onSelect={(value) => setActiveFilter(value as any)}
+          label={t('admin.status')}
+        />
+      </View>
+
+      <View style={localStyles.filtersRow}>
+        <FilterBar
+          options={typeOptions}
+          selectedValue={type as any}
+          onSelect={(value) => setTypeFilter(value as any)}
+          label={t('admin.codeType')}
+        />
+      </View>
+
+      {error ? (
+        <EmptyState
+          icon="alert-circle"
+          title={t('common.error')}
+          message={error}
+          actionLabel={t('common.retry')}
+          onActionPress={refresh}
+          iconColor={theme.error.main}
+        />
+      ) : codes.length === 0 ? (
+        <EmptyState
+          icon="pricetag-outline"
+          title={t('admin.noDiscountCodes')}
+          message={t('admin.noDiscountCodesMessage')}
+          actionLabel={t('admin.createCode')}
+          onActionPress={openCreateModal}
+          iconColor={theme.primary.main}
+        />
+      ) : (
+        <FlatList
+          data={codes}
+          renderItem={renderCodeItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={localStyles.listContent}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
+        />
+      )}
+
+      {totalPages > 1 && (
+        <PaginationControls
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={20}
+          onPageChange={goToPage}
+        />
+      )}
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.discountCodes')}</Text>
+        {isDesktop ? (
+          <View style={styles.desktopContentWrapper}>
+            <AdminSidebar />
+            <View style={styles.desktopMainContent}>
+              {renderHeader()}
+              {renderMainContent()}
+            </View>
           </View>
-          <TouchableOpacity
-            style={localStyles.addButtonHeader}
-            onPress={openCreateModal}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="add" size={24} color={theme.primary.contrast} />
-          </TouchableOpacity>
-        </View>
-
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder={t('admin.searchCodes')}
-          loading={loading}
-        />
-
-        <View style={localStyles.filtersRow}>
-          <FilterBar
-            options={statusOptions}
-            selectedValue={isActive}
-            onSelect={(value) => setActiveFilter(value as any)}
-            label={t('admin.status')}
-          />
-        </View>
-
-        <View style={localStyles.filtersRow}>
-          <FilterBar
-            options={typeOptions}
-            selectedValue={type}
-            onSelect={(value) => setTypeFilter(value as any)}
-            label={t('admin.codeType')}
-          />
-        </View>
-
-        {error ? (
-          <EmptyState
-            icon="alert-circle"
-            title={t('common.error')}
-            message={error}
-            actionLabel={t('common.retry')}
-            onActionPress={refresh}
-            iconColor={theme.error.main}
-          />
-        ) : codes.length === 0 ? (
-          <EmptyState
-            icon="pricetag-outline"
-            title={t('admin.noDiscountCodes')}
-            message={t('admin.noDiscountCodesMessage')}
-            actionLabel={t('admin.createCode')}
-            onActionPress={openCreateModal}
-            iconColor={theme.primary.main}
-          />
         ) : (
-          <FlatList
-            data={codes}
-            renderItem={renderCodeItem}
-            keyExtractor={(item) => item._id}
-            contentContainerStyle={localStyles.listContent}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
-          />
-        )}
-
-        {totalPages > 1 && (
-          <PaginationControls
-            currentPage={page}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={20}
-            onPageChange={goToPage}
-          />
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderHeader()}
+            {renderMainContent()}
+          </ResponsiveContainer>
         )}
 
         <ActionSheet
@@ -481,7 +509,7 @@ export const AdminDiscountCodesScreen: React.FC = () => {
           <View style={localStyles.modalOverlay}>
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={localStyles.modalContent}
+              style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}
             >
               <View style={localStyles.modalHeader}>
                 <Text style={localStyles.modalTitle}>
@@ -661,6 +689,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
+  },
+  desktopModalContent: {
+    width: 600,
+    alignSelf: 'center',
+    marginVertical: 40,
+    borderRadius: 24,
+    minHeight: 'auto',
+    maxHeight: '90%',
   },
   filtersRow: {
     marginBottom: 4,

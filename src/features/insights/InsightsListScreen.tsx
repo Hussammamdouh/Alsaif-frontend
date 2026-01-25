@@ -3,7 +3,7 @@
  * Main insights feed matching Free Advices.png design
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,13 +13,17 @@ import {
   ActivityIndicator,
   Image,
   StyleSheet,
+  TextInput,
+  I18nManager,
   Platform,
   StatusBar,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../app/providers/ThemeProvider';
+import { ResponsiveContainer } from '../../shared/components';
 import { useInsights } from './insights.hooks';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription';
@@ -44,8 +48,12 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
   const { t } = useLocalization();
-  const styles = React.useMemo(() => getStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const columnCount = width > 1600 ? 3 : 2;
+  const styles = React.useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
   const { canAccessInsight } = useSubscriptionAccess();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     insights,
@@ -57,6 +65,15 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
     loadMore,
     updateInsightInList,
   } = useInsights();
+
+  // Handle debounced search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      refresh({ search: searchQuery });
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   const handleInsightPress = (insight: InsightListItem) => {
     const hasAccess = canAccessInsight(insight.type);
@@ -252,7 +269,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
         {/* Error State */}
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={refresh}>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refresh()}>
             <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
@@ -262,55 +279,75 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <LinearGradient
-        colors={isDark ? [theme.background.primary, '#1a2e1a', '#0a1a0a'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
-        style={StyleSheet.absoluteFill}
-      />
+      <ResponsiveContainer>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <LinearGradient
+          colors={isDark ? [theme.background.primary, '#1a2e1a', '#0a1a0a'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
+          style={StyleSheet.absoluteFill}
+        />
 
-      {/* Header - only show if not hidden */}
-      {!hideHeader && (
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t('insights.freeInsights')}</Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="notifications-outline" size={22} color={isDark ? "#FFF" : "#000"} />
-            </TouchableOpacity>
+        {/* Header - only show if not hidden */}
+        {!hideHeader && (
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{t('insights.freeInsights')}</Text>
+            <View style={styles.headerActions}>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="notifications-outline" size={22} color={isDark ? "#FFF" : "#000"} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBarWrapper}>
+            <Ionicons name="search" size={18} color={isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t('insights.searchPlaceholder') || 'Search insights...'}
+              placeholderTextColor={isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              clearButtonMode="while-editing"
+            />
           </View>
         </View>
-      )}
 
 
-      {/* Insights List */}
-      <FlatList
-        data={insights}
-        renderItem={renderInsightCard}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={ListHeaderComponent}
-        refreshControl={
-
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={refresh}
-            tintColor={theme.primary.main}
-            colors={[theme.primary.main]}
-          />
-        }
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListEmptyComponent={renderEmpty}
-        ListFooterComponent={renderFooter}
-        showsVerticalScrollIndicator={false}
-      />
+        {/* Insights List */}
+        <FlatList
+          key={isDesktop ? `grid-${columnCount}` : 'list'}
+          data={insights}
+          renderItem={renderInsightCard}
+          keyExtractor={(item) => item._id}
+          numColumns={isDesktop ? columnCount : 1}
+          columnWrapperStyle={isDesktop && columnCount > 1 ? { gap: 24, paddingHorizontal: 24 } : null}
+          contentContainerStyle={[styles.listContent, isDesktop && { paddingHorizontal: 24 }]}
+          ListHeaderComponent={ListHeaderComponent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => refresh()}
+              tintColor={theme.primary.main}
+              colors={[theme.primary.main]}
+            />
+          }
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
+          showsVerticalScrollIndicator={false}
+        />
+      </ResponsiveContainer>
     </View>
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: theme.background.primary,
   },
   header: {
     flexDirection: 'row',
@@ -320,6 +357,27 @@ const getStyles = (theme: any) => StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 16,
     zIndex: 10,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  searchBarWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 48,
+    borderWidth: 1,
+    borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 16,
+    color: theme.text.primary,
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
   },
   headerTitle: {
     fontSize: 28,
@@ -346,10 +404,11 @@ const getStyles = (theme: any) => StyleSheet.create({
     paddingBottom: 40,
   },
   insightCard: {
-    marginHorizontal: 20,
+    flex: 1,
+    marginHorizontal: isDesktop ? 12 : 20,
     borderRadius: 24,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 24,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',

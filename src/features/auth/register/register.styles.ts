@@ -17,7 +17,27 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: theme.spacing.xl,
     paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing['4xl'],
+    paddingBottom: theme.spacing.lg,
+  },
+  desktopWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.md,
+  },
+  loginCard: {
+    borderRadius: theme.borderRadius['2xl'],
+    padding: theme.spacing.xl,
+    width: '100%',
+    maxWidth: 700,
+    alignSelf: 'center',
+    ...theme.shadows.lg,
+    borderWidth: 1,
+  },
+  absoluteToggles: {
+    position: 'absolute',
+    top: theme.spacing.xl,
+    right: theme.spacing.xl,
+    zIndex: 10,
   },
 
   // Theme and Language Toggles
@@ -29,8 +49,8 @@ export const styles = StyleSheet.create({
   // Header Section
   header: {
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
-    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    marginTop: 0,
   },
   logoContainer: {
     flexDirection: 'row',
@@ -38,8 +58,8 @@ export const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   logoImageContainer: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     borderRadius: theme.borderRadius.xl,
     backgroundColor: theme.colors.ui.card,
     alignItems: 'center',
@@ -48,8 +68,8 @@ export const styles = StyleSheet.create({
     ...theme.shadows.md,
   },
   logoImage: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
   },
   logoText: {
     ...theme.typography.h4,
@@ -190,8 +210,8 @@ export const styles = StyleSheet.create({
   // Footer
   footer: {
     alignItems: 'center',
-    marginTop: theme.spacing['2xl'],
-    paddingTop: theme.spacing.md,
+    marginTop: theme.spacing.lg,
+    paddingTop: theme.spacing.xs,
   },
   footerText: {
     ...theme.typography.body,

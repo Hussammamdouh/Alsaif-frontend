@@ -16,11 +16,12 @@ import {
   Image,
   Animated,
   Easing,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { Input, Button, ThemeLanguageToggle } from '../../../shared/components';
+import { Input, Button, ThemeLanguageToggle, ResponsiveContainer } from '../../../shared/components';
 import { styles } from './login.styles';
 import { useLoginForm } from './login.hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
@@ -57,6 +58,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
     const { loginWithBiometric, enableBiometric, clearError } = useAuth();
     const { enabled: biometricEnabled, type: biometricType } = useBiometricStatus();
     const biometricAvailable = biometricType !== null;
+
+    const { width } = useWindowDimensions();
+    const isDesktop = width > 768;
 
     // Animation values
     const logoScale = useRef(new Animated.Value(0.8)).current;
@@ -240,6 +244,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
 
     return (
       <View style={[styles.gradient, { backgroundColor: theme.background.primary }]}>
+        {isDesktop && (
+          <View style={styles.absoluteToggles}>
+            <ThemeLanguageToggle />
+          </View>
+        )}
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <KeyboardAvoidingView
             style={styles.container}
@@ -251,252 +260,262 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-              {/* Theme and Language Toggles */}
-              <View style={[styles.togglesContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemeLanguageToggle />
-              </View>
-
-              {/* Header Section */}
-              <Animated.View
-                style={[
-                  styles.header,
-                  {
-                    opacity: headerOpacity,
-                    transform: [{ translateY: headerTranslateY }],
-                  },
-                ]}
-              >
-                {/* Logo */}
-                <Animated.View
-                  style={[
-                    styles.logoContainer,
-                    {
-                      opacity: logoOpacity,
-                      transform: [{ scale: logoScale }],
-                    },
-                  ]}
-                >
-                  <View style={[styles.logoImageContainer, { backgroundColor: theme.ui.card }]}>
-                    <Image
-                      source={require('../../../assets/images/logo.png')}
-                      style={styles.logoImage}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
-                </Animated.View>
-
-                {/* Title */}
-                <Text style={[styles.title, { color: theme.text.primary }]}>{t('login.title')}</Text>
-
-                {/* Subtitle */}
-                <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
-                  {t('login.subtitle')}
-                </Text>
-              </Animated.View>
-
-              {/* Form Section */}
-              <Animated.View
-                style={[
-                  styles.formContainer,
-                  {
-                    opacity: formOpacity,
-                    transform: [{ translateY: formTranslateY }],
-                  },
-                ]}
-              >
-                {/* General Error Message */}
-                {errors.general && (
-                  <View
-                    style={[
-                      styles.errorContainer,
-                      {
-                        backgroundColor: `${theme.accent.error}20`,
-                        borderLeftColor: theme.accent.error,
-                      },
-                    ]}
-                  >
-                    <Icon name="warning-outline" size={20} color={theme.accent.error} style={styles.errorIcon} />
-                    <Text style={[styles.errorText, { color: theme.accent.error }]}>{errors.general}</Text>
-                  </View>
-                )}
-
-                {/* Email/Phone Input */}
-                <Input
-                  label={t('login.identifier')}
-                  value={identifier}
-                  onChangeText={setIdentifier}
-                  error={errors.identifier}
-                  placeholder={t('login.identifierPlaceholder')}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  textContentType="emailAddress"
-                  accessibilityLabel="Email or phone number input"
-                  accessibilityHint="Enter your email address or phone number"
-                  leftIcon={
-                    <Icon
-                      name="mail-outline"
-                      size={20}
-                      color={theme.primary.main}
-                    />
-                  }
-                />
-
-                {/* Password Input */}
-                <Input
-                  label={t('login.password')}
-                  value={password}
-                  onChangeText={setPassword}
-                  error={errors.password}
-                  placeholder={t('login.passwordPlaceholder')}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  textContentType="password"
-                  accessibilityLabel="Password input"
-                  accessibilityHint="Enter your password"
-                  leftIcon={
-                    <Icon
-                      name="lock-closed-outline"
-                      size={20}
-                      color={theme.primary.main}
-                    />
-                  }
-                  rightIcon={
-                    <TouchableOpacity
-                      onPress={toggleShowPassword}
-                      activeOpacity={0.7}
-                      accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
-                      accessibilityHint="Toggles password visibility"
-                      accessibilityRole="button"
-                    >
-                      <Icon
-                        name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                        size={20}
-                        color={theme.primary.main}
-                      />
-                    </TouchableOpacity>
-                  }
-                />
-
-                {/* Forgot Password */}
-                <TouchableOpacity
-                  style={styles.forgotPasswordContainer}
-                  onPress={handleForgotPassword}
-                  activeOpacity={0.7}
-                  accessibilityLabel="Forgot password"
-                  accessibilityHint="Navigate to password reset"
-                  accessibilityRole="button"
-                >
-                  <Text style={[styles.forgotPasswordText, { color: theme.primary.main }]}>
-                    {t('login.forgotPassword')}
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Login Button */}
-                <Button
-                  title={t('login.loginButton')}
-                  onPress={handleSubmit}
-                  loading={isLoading}
-                  disabled={isSubmitDisabled}
-                  style={styles.loginButton}
-                  accessibilityLabel="Log in"
-                  accessibilityHint="Submits login form"
-                  accessibilityRole="button"
-                />
-              </Animated.View>
-
-              {/* Security Section */}
-              <Animated.View
-                style={[
-                  styles.securitySection,
-                  { opacity: footerOpacity },
-                ]}
-              >
-                {/* Divider */}
-                <View style={styles.securityDivider}>
-                  <View style={[styles.dividerLine, { backgroundColor: theme.ui.border }]} />
-                  <Text style={[styles.securityText, { color: theme.text.tertiary }]}>
-                    {t('login.secureConnection')}
-                  </Text>
-                  <View style={[styles.dividerLine, { backgroundColor: theme.ui.border }]} />
-                </View>
-
-                {/* Biometric Auth */}
-                {biometricEnabled && (
-                  <TouchableOpacity
-                    style={styles.biometricContainer}
-                    onPress={handleBiometricAuth}
-                    activeOpacity={0.7}
-                    accessibilityLabel={`Login with ${biometricType === 'FaceID' ? t('login.faceId') : biometricType === 'TouchID' ? t('login.touchId') : t('login.biometricLogin')}`}
-                    accessibilityHint="Authenticate using biometric recognition"
-                    accessibilityRole="button"
-                  >
+              <View style={isDesktop ? [styles.desktopWrapper, { flex: 0, minHeight: '100%', paddingVertical: 20 }] : null}>
+                <ResponsiveContainer maxWidth={isDesktop ? 1200 : 480}>
+                  <View style={isDesktop ? [styles.loginCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border, alignSelf: 'center' }] : null}>
+                    {/* Header Section */}
                     <Animated.View
                       style={[
-                        styles.biometricIconContainer,
-                        { backgroundColor: `${theme.primary.main}20` },
-                        { transform: [{ scale: pulseAnim }] },
+                        styles.header,
+                        {
+                          opacity: headerOpacity,
+                          transform: [{ translateY: headerTranslateY }],
+                        },
                       ]}
                     >
-                      <Icon
-                        name={
-                          biometricType === 'FaceID'
-                            ? 'scan-outline'
-                            : biometricType === 'TouchID'
-                              ? 'finger-print'
-                              : 'shield-checkmark-outline'
+                      {/* Logo */}
+                      <Animated.View
+                        style={[
+                          styles.logoContainer,
+                          {
+                            opacity: logoOpacity,
+                            transform: [{ scale: logoScale }],
+                          },
+                        ]}
+                      >
+                        <View style={[styles.logoImageContainer, { backgroundColor: theme.ui.card }]}>
+                          <Image
+                            source={require('../../../assets/images/logo.png')}
+                            style={styles.logoImage}
+                            resizeMode="contain"
+                          />
+                        </View>
+                        <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
+                      </Animated.View>
+
+                      {/* Title */}
+                      <Text style={[styles.title, { color: theme.text.primary }]}>{t('login.title')}</Text>
+
+                      {/* Subtitle */}
+                      <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
+                        {t('login.subtitle')}
+                      </Text>
+                    </Animated.View>
+
+                    {/* Form Section */}
+                    <Animated.View
+                      style={[
+                        styles.formContainer,
+                        {
+                          opacity: formOpacity,
+                          transform: [{ translateY: formTranslateY }],
+                        },
+                      ]}
+                    >
+                      {/* General Error Message */}
+                      {errors.general && (
+                        <View
+                          style={[
+                            styles.errorContainer,
+                            {
+                              backgroundColor: `${theme.accent.error}20`,
+                              borderLeftColor: theme.accent.error,
+                            },
+                          ]}
+                        >
+                          <Icon name="warning-outline" size={20} color={theme.accent.error} style={styles.errorIcon} />
+                          <Text style={[styles.errorText, { color: theme.accent.error }]}>{errors.general}</Text>
+                        </View>
+                      )}
+
+                      {/* Email/Phone Input */}
+                      <Input
+                        label={t('login.identifier')}
+                        value={identifier}
+                        onChangeText={setIdentifier}
+                        error={errors.identifier}
+                        placeholder={t('login.identifierPlaceholder')}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        textContentType="username"
+                        autoComplete="username"
+                        accessibilityLabel="Email or phone number input"
+                        accessibilityHint="Enter your email address or phone number"
+                        leftIcon={
+                          <Icon
+                            name="mail-outline"
+                            size={20}
+                            color={theme.primary.main}
+                          />
                         }
-                        size={28}
-                        color={theme.primary.main}
+                      />
+
+                      {/* Password Input */}
+                      <Input
+                        label={t('login.password')}
+                        value={password}
+                        onChangeText={setPassword}
+                        error={errors.password}
+                        placeholder={t('login.passwordPlaceholder')}
+                        secureTextEntry={!showPassword}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        textContentType="password"
+                        autoComplete="password"
+                        accessibilityLabel="Password input"
+                        accessibilityHint="Enter your password"
+                        leftIcon={
+                          <Icon
+                            name="lock-closed-outline"
+                            size={20}
+                            color={theme.primary.main}
+                          />
+                        }
+                        rightIcon={
+                          <TouchableOpacity
+                            onPress={toggleShowPassword}
+                            activeOpacity={0.7}
+                            accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                            accessibilityHint="Toggles password visibility"
+                            accessibilityRole="button"
+                          >
+                            <Icon
+                              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                              size={20}
+                              color={theme.primary.main}
+                            />
+                          </TouchableOpacity>
+                        }
+                      />
+
+                      {/* Forgot Password */}
+                      <TouchableOpacity
+                        style={styles.forgotPasswordContainer}
+                        onPress={handleForgotPassword}
+                        activeOpacity={0.7}
+                        accessibilityLabel="Forgot password"
+                        accessibilityHint="Navigate to password reset"
+                        accessibilityRole="button"
+                      >
+                        <Text style={[styles.forgotPasswordText, { color: theme.primary.main }]}>
+                          {t('login.forgotPassword')}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {/* Login Button */}
+                      <Button
+                        title={t('login.loginButton')}
+                        onPress={handleSubmit}
+                        loading={isLoading}
+                        disabled={isSubmitDisabled}
+                        style={styles.loginButton}
+                        accessibilityLabel="Log in"
+                        accessibilityHint="Submits login form"
+                        accessibilityRole="button"
                       />
                     </Animated.View>
-                    <Text style={[styles.biometricText, { color: theme.primary.main }]}>
-                      {biometricType === 'FaceID'
-                        ? t('login.faceId')
-                        : biometricType === 'TouchID'
-                          ? t('login.touchId')
-                          : t('login.biometricLogin')}
-                    </Text>
-                  </TouchableOpacity>
-                )}
 
-                {/* Encryption Info */}
-                <View style={styles.encryptionBadge}>
-                  <Icon name="shield-checkmark" size={16} color={theme.accent.success} />
-                  <Text style={[styles.encryptionText, { color: theme.text.tertiary }]}>
-                    {t('login.encryption')}
-                  </Text>
-                </View>
-              </Animated.View>
-
-              {/* Footer - Sign Up Link */}
-              {onNavigateToRegister && (
-                <Animated.View
-                  style={[
-                    styles.footer,
-                    { opacity: footerOpacity },
-                  ]}
-                >
-                  <Text style={[styles.footerText, { color: theme.text.secondary }]}>
-                    {t('login.noAccount')}{' '}
-                    <Text
-                      style={[styles.signUpLink, { color: theme.primary.main }]}
-                      onPress={onNavigateToRegister}
-                      accessibilityLabel="Sign up"
-                      accessibilityHint="Navigate to registration screen"
-                      accessibilityRole="button"
+                    {/* Security Section */}
+                    <Animated.View
+                      style={[
+                        styles.securitySection,
+                        { opacity: footerOpacity },
+                      ]}
                     >
-                      {t('login.signUp')}
-                    </Text>
-                  </Text>
-                </Animated.View>
-              )}
+                      {/* Divider */}
+                      <View style={styles.securityDivider}>
+                        <View style={[styles.dividerLine, { backgroundColor: theme.ui.border }]} />
+                        <Text style={[styles.securityText, { color: theme.text.tertiary }]}>
+                          {t('login.secureConnection')}
+                        </Text>
+                        <View style={[styles.dividerLine, { backgroundColor: theme.ui.border }]} />
+                      </View>
+
+                      {/* Biometric Auth */}
+                      {biometricEnabled && (
+                        <TouchableOpacity
+                          style={styles.biometricContainer}
+                          onPress={handleBiometricAuth}
+                          activeOpacity={0.7}
+                          accessibilityLabel={`Login with ${biometricType === 'FaceID' ? t('login.faceId') : biometricType === 'TouchID' ? t('login.touchId') : t('login.biometricLogin')}`}
+                          accessibilityHint="Authenticate using biometric recognition"
+                          accessibilityRole="button"
+                        >
+                          <Animated.View
+                            style={[
+                              styles.biometricIconContainer,
+                              { backgroundColor: `${theme.primary.main}20` },
+                              { transform: [{ scale: pulseAnim }] },
+                            ]}
+                          >
+                            <Icon
+                              name={
+                                biometricType === 'FaceID'
+                                  ? 'scan-outline'
+                                  : biometricType === 'TouchID'
+                                    ? 'finger-print'
+                                    : 'shield-checkmark-outline'
+                              }
+                              size={28}
+                              color={theme.primary.main}
+                            />
+                          </Animated.View>
+                          <Text style={[styles.biometricText, { color: theme.primary.main }]}>
+                            {biometricType === 'FaceID'
+                              ? t('login.faceId')
+                              : biometricType === 'TouchID'
+                                ? t('login.touchId')
+                                : t('login.biometricLogin')}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Encryption Info */}
+                      <View style={styles.encryptionBadge}>
+                        <Icon name="shield-checkmark" size={16} color={theme.accent.success} />
+                        <Text style={[styles.encryptionText, { color: theme.text.tertiary }]}>
+                          {t('login.encryption')}
+                        </Text>
+                      </View>
+                    </Animated.View>
+
+                    {/* Footer - Sign Up Link */}
+                    {onNavigateToRegister && (
+                      <Animated.View
+                        style={[
+                          styles.footer,
+                          { opacity: footerOpacity },
+                        ]}
+                      >
+                        <Text style={[styles.footerText, { color: theme.text.secondary }]}>
+                          {t('login.noAccount')}{' '}
+                          <Text
+                            style={[styles.signUpLink, { color: theme.primary.main }]}
+                            onPress={onNavigateToRegister}
+                            accessibilityLabel="Sign up"
+                            accessibilityHint="Navigate to registration screen"
+                            accessibilityRole="button"
+                          >
+                            {t('login.signUp')}
+                          </Text>
+                        </Text>
+                      </Animated.View>
+                    )}
+                  </View>
+                </ResponsiveContainer>
+              </View>
             </ScrollView>
           </KeyboardAvoidingView>
         </SafeAreaView>
-      </View>
+        {
+          isDesktop && (
+            <View style={styles.absoluteToggles}>
+              <ThemeLanguageToggle />
+            </View>
+          )
+        }
+      </View >
     );
   }
 );

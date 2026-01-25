@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -10,22 +10,22 @@ import {
   StyleSheet,
   Platform,
   StatusBar,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../app/providers/ThemeProvider';
+import { ResponsiveContainer } from '../../shared/components';
 import { useInsights } from './insights.hooks';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription';
 import {
   ICONS,
-  MESSAGES,
 } from './insights.constants';
 import {
   formatTimeAgo,
   formatCount,
-  getCategoryInfo,
   generateExcerpt,
 } from './insights.utils';
 import type { InsightListItem } from './insights.types';
@@ -39,21 +39,22 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
   const { t } = useLocalization();
-  const styles = React.useMemo(() => getStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const columnCount = width > 1600 ? 3 : 2;
+  const styles = React.useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
   const { hasPremiumAccess } = useSubscriptionAccess();
 
-  // Always filter for premium insights only
   const {
     insights,
     loading,
     refreshing,
     error,
-    hasMore,
     refresh,
     loadMore,
     updateInsightInList,
   } = useInsights({
-    type: 'premium', // Always show premium
+    type: 'premium',
   });
 
   const handleInsightPress = (insight: InsightListItem) => {
@@ -66,11 +67,10 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
 
   const handleLike = async (insight: InsightListItem) => {
     if (!hasPremiumAccess) {
-      navigation.navigate('Paywall' as never);
+      (navigation as any).navigate('Paywall');
       return;
     }
 
-    // Optimistic update
     const newHasLiked = !insight.hasLiked;
     const newLikes = newHasLiked ? insight.likes + 1 : insight.likes - 1;
 
@@ -79,7 +79,6 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
       likes: newLikes,
     });
   };
-
 
   const renderInsightCard = ({ item }: { item: InsightListItem }) => {
     return (
@@ -96,69 +95,44 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
           style={StyleSheet.absoluteFill}
         />
 
-        {/* Header */}
         <View style={styles.insightCardHeader}>
           <View style={styles.insightCardLeft}>
-            {/* Symbol/Stock Badge */}
             {item.tags[0] && (
               <View style={styles.symbolBadge}>
                 <Text style={styles.symbolText}>{item.tags[0].toUpperCase()}</Text>
               </View>
             )}
 
-            {/* Premium Badge */}
-            <View
-              style={[
-                styles.typeBadge,
-                { backgroundColor: '#FBBF24' },
-              ]}
-            >
+            <View style={[styles.typeBadge, { backgroundColor: '#FBBF24' }]}>
               <Ionicons name="star" size={10} color="#fff" style={{ marginRight: 4 }} />
               <Text style={styles.typeBadgeText}>PREMIUM</Text>
             </View>
 
-            {/* Timestamp */}
             <Text style={styles.timestamp}>{formatTimeAgo(item.publishedAt || item.createdAt, t)}</Text>
           </View>
 
-          {/* More Button */}
-          <TouchableOpacity style={styles.moreButton} onPress={() => {/* Show options menu */ }}>
+          <TouchableOpacity style={styles.moreButton}>
             <Ionicons name={ICONS.more as any} size={20} color={isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"} />
           </TouchableOpacity>
         </View>
 
-        {/* Title */}
-        <Text style={styles.insightTitle} numberOfLines={3}>
-          {item.title}
-        </Text>
+        <Text style={styles.insightTitle} numberOfLines={3}>{item.title}</Text>
 
-        {/* Summary */}
         {(item.excerpt || item.content) && (
           <Text style={styles.insightExcerpt} numberOfLines={2}>
             {generateExcerpt(item.excerpt || item.content, 120)}
           </Text>
         )}
 
-        {/* Cover Image */}
         {item.coverImage && (
           <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: item.coverImage }}
-              style={styles.insightImage}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: item.coverImage }} style={styles.insightImage} resizeMode="cover" />
           </View>
         )}
 
-        {/* Footer with Engagement */}
         <View style={styles.insightFooter}>
           <View style={styles.engagementRow}>
-            {/* Like Button */}
-            <TouchableOpacity
-              style={styles.engagementButton}
-              onPress={() => handleLike(item)}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.engagementButton} onPress={() => handleLike(item)}>
               <Ionicons
                 name={(item.hasLiked ? ICONS.like : ICONS.likeOutline) as any}
                 size={20}
@@ -167,24 +141,14 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
               <Text style={styles.engagementCount}>{formatCount(item.likes)}</Text>
             </TouchableOpacity>
 
-            {/* InsightComment Count */}
-            <TouchableOpacity
-              style={styles.engagementButton}
-              onPress={() => handleInsightPress(item)}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.engagementButton} onPress={() => handleInsightPress(item)}>
               <Ionicons name={ICONS.commentOutline as any} size={20} color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} />
               <Text style={styles.engagementCount}>{formatCount(item.commentsCount)}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Bookmark Button */}
           <View style={styles.footerRight}>
-            <TouchableOpacity
-              style={styles.bookmarkButton}
-              onPress={() => {/* Toggle bookmark */ }}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.bookmarkButton}>
               <Ionicons
                 name={(item.hasBookmarked ? ICONS.bookmark : ICONS.bookmarkOutline) as any}
                 size={20}
@@ -194,7 +158,6 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
           </View>
         </View>
 
-        {/* Lock Indicator for Premium without Access */}
         {!hasPremiumAccess && (
           <View style={styles.lockBadge}>
             <Ionicons name="lock-closed" size={14} color="#FFF" />
@@ -206,21 +169,17 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
 
   const renderEmpty = () => {
     if (loading && !refreshing) return null;
-
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="star-outline" size={64} color={isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"} style={styles.emptyIcon} />
         <Text style={styles.emptyTitle}>{t('insights.noInsights')}</Text>
-        <Text style={styles.emptyText}>
-          {t('insights.noInsightsMessage')}
-        </Text>
+        <Text style={styles.emptyText}>{t('insights.noInsightsMessage')}</Text>
       </View>
     );
   };
 
   const renderFooter = () => {
     if (!loading || refreshing) return null;
-
     return (
       <View style={styles.loadMoreContainer}>
         <ActivityIndicator size="small" color={theme.primary.main} />
@@ -232,20 +191,14 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
   if (error && insights.length === 0) {
     return (
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t('insights.premiumInsights')}</Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="notifications-outline" size={22} color={isDark ? "#FFF" : "#000"} />
-            </TouchableOpacity>
+        {!hideHeader && (
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{t('insights.premiumInsights')}</Text>
           </View>
-        </View>
-
-        {/* Error State */}
+        )}
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={refresh}>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refresh({})}>
             <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
@@ -255,81 +208,57 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <LinearGradient
-        colors={isDark ? [theme.background.primary, '#1a2e1a', '#0a1a0a'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
-        style={StyleSheet.absoluteFill}
-      />
-
-      {/* Header - only show if not hidden */}
-      {!hideHeader && (
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t('insights.premiumInsights')}</Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="notifications-outline" size={22} color={isDark ? "#FFF" : "#000"} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
-      {/* Premium Access Banner */}
-      {!hasPremiumAccess && (
-        <TouchableOpacity
-          style={styles.premiumBanner}
-          onPress={() => navigation.navigate('Paywall' as never)}
-        >
-          <LinearGradient
-            colors={[theme.primary.main, theme.primary.dark]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={styles.bannerContent}>
-            <View style={styles.bannerLeft}>
-              <View style={styles.bannerIconContainer}>
-                <Ionicons name="lock-closed" size={18} color="#fff" />
-              </View>
-              <Text style={styles.bannerText}>
-                Upgrade to Premium to unlock exclusive insights
-              </Text>
+      <ResponsiveContainer>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        {!hideHeader && (
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{t('insights.premiumInsights')}</Text>
+            <View style={styles.headerActions}>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="notifications-outline" size={22} color={isDark ? "#FFF" : "#000"} />
+              </TouchableOpacity>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#fff" />
           </View>
-        </TouchableOpacity>
-      )}
+        )}
 
+        {!hasPremiumAccess && (
+          <TouchableOpacity style={styles.premiumBanner} onPress={() => (navigation as any).navigate('Paywall')}>
+            <LinearGradient colors={[theme.primary.main, theme.primary.dark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
+            <View style={styles.bannerContent}>
+              <View style={styles.bannerLeft}>
+                <View style={styles.bannerIconContainer}><Ionicons name="lock-closed" size={18} color="#fff" /></View>
+                <Text style={styles.bannerText}>Upgrade to Premium to unlock exclusive insights</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#fff" />
+            </View>
+          </TouchableOpacity>
+        )}
 
-      {/* Insights List */}
-      <FlatList
-        data={insights}
-        renderItem={renderInsightCard}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={ListHeaderComponent}
-        refreshControl={
-          <RefreshControl
-
-            refreshing={refreshing}
-            onRefresh={refresh}
-            tintColor={theme.primary.main}
-            colors={[theme.primary.main]}
-          />
-        }
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListEmptyComponent={renderEmpty}
-        ListFooterComponent={renderFooter}
-        showsVerticalScrollIndicator={false}
-      />
+        <FlatList
+          key={isDesktop ? `grid-${columnCount}` : 'list'}
+          data={insights}
+          renderItem={renderInsightCard}
+          keyExtractor={(item) => item._id}
+          numColumns={isDesktop ? columnCount : 1}
+          columnWrapperStyle={isDesktop && columnCount > 1 ? { gap: 24, paddingHorizontal: 24 } : null}
+          contentContainerStyle={[styles.listContent, isDesktop && { paddingHorizontal: 24 }]}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={ListHeaderComponent}
+        />
+      </ResponsiveContainer>
     </View>
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: theme.background.primary,
   },
   header: {
     flexDirection: 'row',
@@ -338,13 +267,11 @@ const getStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 16,
-    zIndex: 10,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '900',
     color: theme.text.primary,
-    letterSpacing: -0.5,
   },
   headerActions: {
     flexDirection: 'row',
@@ -357,19 +284,12 @@ const getStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-    borderWidth: 1,
-    borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
   },
   premiumBanner: {
     marginHorizontal: 20,
     borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 20,
-    elevation: 4,
-    shadowColor: theme.primary.main,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
   },
   bannerContent: {
     flexDirection: 'row',
@@ -388,7 +308,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: theme.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -403,14 +323,14 @@ const getStyles = (theme: any) => StyleSheet.create({
     paddingBottom: 40,
   },
   insightCard: {
-    marginHorizontal: 20,
+    flex: 1,
+    marginHorizontal: isDesktop ? 12 : 20,
     borderRadius: 24,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 24,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-    backgroundColor: 'transparent',
   },
   insightCardHeader: {
     flexDirection: 'row',
@@ -445,12 +365,10 @@ const getStyles = (theme: any) => StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
     color: '#FFF',
-    letterSpacing: 0.5,
   },
   timestamp: {
     fontSize: 12,
     color: 'rgba(255,255,255,0.4)',
-    fontWeight: '500',
   },
   moreButton: {
     padding: 4,
@@ -459,13 +377,11 @@ const getStyles = (theme: any) => StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: theme.text.primary,
-    lineHeight: 28,
     marginBottom: 10,
   },
   insightExcerpt: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
-    lineHeight: 22,
+    color: theme.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
     marginBottom: 16,
   },
   imageContainer: {
@@ -474,7 +390,6 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderRadius: 18,
     marginBottom: 16,
     overflow: 'hidden',
-    backgroundColor: theme.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
   },
   insightImage: {
     width: '100%',
@@ -484,7 +399,6 @@ const getStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 4,
   },
   engagementRow: {
     flexDirection: 'row',
@@ -510,8 +424,8 @@ const getStyles = (theme: any) => StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: theme.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   lockBadge: {
     position: 'absolute',
@@ -523,7 +437,6 @@ const getStyles = (theme: any) => StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2,
   },
   emptyContainer: {
     paddingTop: 100,
@@ -531,7 +444,6 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   emptyIcon: {
     marginBottom: 20,
-    opacity: 0.5,
   },
   emptyTitle: {
     fontSize: 18,
@@ -548,12 +460,10 @@ const getStyles = (theme: any) => StyleSheet.create({
   loadMoreContainer: {
     paddingVertical: 30,
     alignItems: 'center',
-    gap: 10,
   },
   loadingText: {
     fontSize: 12,
     color: 'rgba(255,255,255,0.4)',
-    fontWeight: '600',
   },
   errorContainer: {
     flex: 1,

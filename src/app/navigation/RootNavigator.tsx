@@ -10,9 +10,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SplashScreen } from '../../features/splash/SplashScreen';
 import { LoginScreen } from '../../features/auth/login';
 import { RegisterScreen } from '../../features/auth/register';
+import { VerificationScreen } from '../../features/auth/verification/VerificationScreen';
 import { ForgotPasswordScreen, ResetPasswordScreen } from '../../features/auth/forgot-password';
 import { ConversationScreen } from '../../features/chat/conversation-v2';
 import { SettingsScreen } from '../../features/settings/SettingsScreen';
+import { SecuritySettingsScreen } from '../../features/settings/SecuritySettingsScreen';
 import {
   SubscriptionScreen,
   PaywallScreen,
@@ -35,9 +37,10 @@ import {
   AdminSubscriptionPlansScreen,
   AdminDiscountCodesScreen,
   AdminBannersScreen,
+  AdminGroupChatScreen,
 } from '../../features/admin';
 import { TermsScreen } from '../../features/legal/TermsScreen';
-import { AboutScreen } from '../../features/about/AboutScreen';
+import { AboutScreen } from '../../features/about';
 import { NotificationsScreen } from '../../features/notifications';
 import { RootStackParamList, AuthStackParamList, MainStackParamList } from './types';
 import { useAuth } from '../auth';
@@ -84,9 +87,12 @@ export const RootNavigator: React.FC = () => {
    * Handle successful registration
    * Called by RegisterScreen after successful registration
    */
-  const handleRegisterSuccess = useCallback(() => {
-    // Auth state is already updated by register action
-    // Navigation will update automatically based on authState.isAuthenticated
+  const handleRegisterSuccess = useCallback((userId: string, email: string, navigation: any) => {
+    // Navigate to Verification screen
+    navigation.navigate('Auth', {
+      screen: 'Verification',
+      params: { userId, email }
+    });
   }, []);
 
   return (
@@ -128,11 +134,23 @@ export const RootNavigator: React.FC = () => {
                     )}
                   </AuthStack.Screen>
                   <AuthStack.Screen name="Register">
-                    {() => (
+                    {({ navigation: regNav }) => (
                       <RegisterScreen
-                        onRegisterSuccess={handleRegisterSuccess}
-                        onNavigateToLogin={() => navigation.navigate('Auth', {
-                          screen: 'Login',
+                        onRegisterSuccess={(userId: string, email: string) => handleRegisterSuccess(userId, email, regNav)}
+                        onNavigateToLogin={() => regNav.navigate('Login')}
+                      />
+                    )}
+                  </AuthStack.Screen>
+                  <AuthStack.Screen name="Verification">
+                    {({ route }) => (
+                      <VerificationScreen
+                        userId={route.params.userId}
+                        email={route.params.email}
+                        onVerificationSuccess={() => navigation.navigate('Auth', {
+                          screen: 'Login'
+                        })}
+                        onBackToLogin={() => navigation.navigate('Auth', {
+                          screen: 'Login'
                         })}
                       />
                     )}
@@ -198,9 +216,9 @@ export const RootNavigator: React.FC = () => {
                             screen: 'Settings',
                           })
                         }
-                        onNavigateToSubscription={() =>
+                        onNavigateToSubscription={(isSubscribed: boolean) =>
                           navigation.navigate('Main', {
-                            screen: 'Paywall',
+                            screen: isSubscribed ? 'Subscription' : 'Paywall',
                           })
                         }
                         onNavigateToTerms={() =>
@@ -245,8 +263,9 @@ export const RootNavigator: React.FC = () => {
                     {({ navigation: settingsNav }) => (
                       <SettingsScreen
                         onNavigateBack={() => settingsNav.goBack()}
-                        onNavigateToSubscription={() =>
-                          settingsNav.navigate('Paywall')
+                        onNavigateToSecurity={() => settingsNav.navigate('Security')}
+                        onNavigateToSubscription={(isSubscribed: boolean) =>
+                          settingsNav.navigate(isSubscribed ? 'Subscription' : 'Paywall')
                         }
                         onNavigateToTerms={() =>
                           navigation.navigate('Main', {
@@ -259,6 +278,14 @@ export const RootNavigator: React.FC = () => {
                         onLogout={() => {
                           // Logout is handled by ProfileScreen via authLogout()
                         }}
+                      />
+                    )}
+                  </MainStack.Screen>
+
+                  <MainStack.Screen name="Security">
+                    {({ navigation: securityNav }) => (
+                      <SecuritySettingsScreen
+                        onNavigateBack={() => securityNav.goBack()}
                       />
                     )}
                   </MainStack.Screen>
@@ -360,13 +387,19 @@ export const RootNavigator: React.FC = () => {
                       </AdminGuard>
                     )}
                   </MainStack.Screen>
+                  <MainStack.Screen name="AdminGroupChat">
+                    {({ navigation: adminNav }) => (
+                      <AdminGuard>
+                        <AdminGroupChatScreen onNavigateBack={() => adminNav.goBack()} />
+                      </AdminGuard>
+                    )}
+                  </MainStack.Screen>
                 </MainStack.Navigator>
               )}
             </RootStack.Screen>
-          )
-          }
-        </RootStack.Navigator >
+          )}
+        </RootStack.Navigator>
       )}
-    </NavigationContainer >
+    </NavigationContainer>
   );
 };

@@ -20,6 +20,8 @@ import { MarketScreen } from '../../features/market/MarketScreen';
 import { ChatListScreen } from '../../features/chat/list';
 import { ProfileScreen } from '../../features/profile/ProfileScreen';
 import { AdminDashboardScreen } from '../../features/admin';
+import { DesktopTopNav } from '../../features/home/components/DesktopTopNav';
+import { useWindowDimensions } from 'react-native';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -27,7 +29,7 @@ interface BottomTabNavigatorProps {
   onNavigateToChat: (conversationId: string) => void;
   onNavigateToInsightDetail: (insightId: string, title?: string) => void;
   onNavigateToSettings: () => void;
-  onNavigateToSubscription: () => void;
+  onNavigateToSubscription: (isSubscribed: boolean) => void;
   onNavigateToTerms: () => void;
   onNavigateToAbout: () => void;
   onNavigateToInsightRequests: () => void;
@@ -47,6 +49,8 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   const { state: authState } = useAuth();
   const { t } = useLocalization();
   const { theme } = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   // Get user from session
   const user = authState.session?.user;
@@ -107,129 +111,136 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   };
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.primary.main,
-        tabBarInactiveTintColor: theme.text.tertiary,
-        tabBarStyle: {
-          backgroundColor: theme.background.primary,
-          borderTopWidth: 0,
-          height: Platform.OS === 'ios' ? 76 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-          paddingTop: 8,
-          paddingHorizontal: 8,
-          position: 'absolute',
-          bottom: spacing.md,
-          left: spacing.md,
-          right: spacing.md,
-          borderRadius: 32,
-          elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.3,
-          shadowRadius: 20,
-          borderWidth: 1,
-          borderColor: theme.border.main + '20',
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
-          marginTop: 6,
-          letterSpacing: 0.3,
-        },
-        tabBarItemStyle: {
-          paddingVertical: 6,
-          gap: 4,
-        },
-        tabBarHideOnKeyboard: true,
-      }}
-      initialRouteName="HomeTab"
-    >
-      {/* Home Tab - Insights */}
-      <Tab.Screen
-        name="HomeTab"
-        options={{
-          tabBarLabel: t('tabs.home'),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="home-outline" color={color} focused={focused} />
-          ),
+    <View style={{ flex: 1 }}>
+      {isDesktop && <DesktopTopNav />}
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: theme.primary.main,
+          tabBarInactiveTintColor: theme.text.tertiary,
+          tabBarShowLabel: !isDesktop,
+          tabBarStyle: [
+            {
+              backgroundColor: theme.background.primary,
+              borderTopWidth: 0,
+              height: Platform.OS === 'ios' ? 76 : 64,
+              paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+              paddingTop: 8,
+              paddingHorizontal: 8,
+              position: 'absolute',
+              bottom: spacing.md,
+              left: spacing.md,
+              right: spacing.md,
+              borderRadius: 32,
+              elevation: 10,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.3,
+              shadowRadius: 20,
+              borderWidth: 1,
+              borderColor: theme.border.main + '20',
+            },
+            isDesktop && { display: 'none' }
+          ],
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '700',
+            marginTop: 6,
+            letterSpacing: 0.3,
+          },
+          tabBarItemStyle: {
+            paddingVertical: 6,
+            gap: 4,
+          },
+          tabBarHideOnKeyboard: true,
         }}
-        component={HomeScreen}
-      />
-
-      {/* Market Tab */}
-      <Tab.Screen
-        name="MarketTab"
-        options={{
-          tabBarLabel: t('tabs.market'),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="bar-chart-outline" color={color} focused={focused} />
-          ),
-        }}
-        component={MarketScreen}
-      />
-
-      {/* Chat Tab */}
-      <Tab.Screen
-        name="ChatTab"
-        options={{
-          tabBarLabel: t('tabs.chat'),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="chatbubbles-outline" color={color} focused={focused} />
-          ),
-        }}
+        initialRouteName="HomeTab"
       >
-        {() => (
-          <ChatListScreen
-            onNavigateToChat={onNavigateToChat}
-            onNavigateToNewChat={() => {
-              // TODO: Implement new chat creation
-              console.log('Navigate to new chat');
-            }}
-          />
-        )}
-      </Tab.Screen>
-
-      {/* Profile Tab */}
-      <Tab.Screen
-        name="ProfileTab"
-        options={{
-          tabBarLabel: t('tabs.profile'),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="person-outline" color={color} focused={focused} />
-          ),
-        }}
-      >
-        {() => (
-          <ProfileScreen
-            onNavigateBack={() => {
-              // No back action needed in tab context
-            }}
-            onNavigateToSettings={onNavigateToSettings}
-            onNavigateToSubscription={onNavigateToSubscription}
-            onNavigateToTerms={onNavigateToTerms}
-            onNavigateToAbout={onNavigateToAbout}
-            onNavigateToInsightRequests={onNavigateToInsightRequests}
-            onLogout={onLogout}
-          />
-        )}
-      </Tab.Screen>
-
-      {/* Admin Tab - Conditional */}
-      {isAdmin && (
+        {/* Home Tab - Insights */}
         <Tab.Screen
-          name="AdminTab"
+          name="HomeTab"
           options={{
-            tabBarLabel: t('tabs.admin'),
+            tabBarLabel: t('tabs.home'),
             tabBarIcon: ({ color, focused }) => (
-              <TabIcon name="shield-outline" color={color} focused={focused} />
+              <TabIcon name="home-outline" color={color} focused={focused} />
             ),
           }}
-          component={AdminDashboardScreen}
+          component={HomeScreen}
         />
-      )}
-    </Tab.Navigator>
+
+        {/* Market Tab */}
+        <Tab.Screen
+          name="MarketTab"
+          options={{
+            tabBarLabel: t('tabs.market'),
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon name="bar-chart-outline" color={color} focused={focused} />
+            ),
+          }}
+          component={MarketScreen}
+        />
+
+        {/* Chat Tab */}
+        <Tab.Screen
+          name="ChatTab"
+          options={{
+            tabBarLabel: t('tabs.chat'),
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon name="chatbubbles-outline" color={color} focused={focused} />
+            ),
+          }}
+        >
+          {() => (
+            <ChatListScreen
+              onNavigateToChat={onNavigateToChat}
+              onNavigateToNewChat={() => {
+                // TODO: Implement new chat creation
+                console.log('Navigate to new chat');
+              }}
+            />
+          )}
+        </Tab.Screen>
+
+        {/* Profile Tab */}
+        <Tab.Screen
+          name="ProfileTab"
+          options={{
+            tabBarLabel: t('tabs.profile'),
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon name="person-outline" color={color} focused={focused} />
+            ),
+          }}
+        >
+          {() => (
+            <ProfileScreen
+              onNavigateBack={() => {
+                // No back action needed in tab context
+              }}
+              onNavigateToSettings={onNavigateToSettings}
+              onNavigateToSubscription={onNavigateToSubscription}
+              onNavigateToTerms={onNavigateToTerms}
+              onNavigateToAbout={onNavigateToAbout}
+              onNavigateToInsightRequests={onNavigateToInsightRequests}
+              onLogout={onLogout}
+            />
+          )}
+        </Tab.Screen>
+
+        {/* Admin Tab - Conditional */}
+        {isAdmin && (
+          <Tab.Screen
+            name="AdminTab"
+            options={{
+              tabBarLabel: t('tabs.admin'),
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon name="shield-outline" color={color} focused={focused} />
+              ),
+            }}
+            component={AdminDashboardScreen}
+          />
+        )}
+      </Tab.Navigator>
+    </View>
   );
 };
 

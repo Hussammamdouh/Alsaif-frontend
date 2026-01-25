@@ -12,11 +12,10 @@ import {
   StyleSheet,
   RefreshControl,
   TouchableOpacity,
-  Dimensions,
-  Animated,
   LayoutAnimation,
   Platform,
-  UIManager
+  UIManager,
+  useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,9 +33,11 @@ import {
   formatChartData,
   formatPieChartData,
   generateChartColors,
+  AdminSidebar,
 } from '../components';
 import { CHART_COLORS } from '../admin.constants';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ResponsiveContainer } from '../../../shared/components';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -48,6 +49,8 @@ export const AdminAnalyticsScreen: React.FC = () => {
   const { t } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const [startDate, setStartDate] = useState(
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -117,6 +120,73 @@ export const AdminAnalyticsScreen: React.FC = () => {
   if (loading && !userGrowth.length) {
     return <LoadingState type="stats" count={6} />;
   }
+
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{isDesktop ? t('admin.analyticsOverview') : t('admin.analytics')}</Text>
+      </View>
+      <TouchableOpacity onPress={refresh} style={localStyles.iconBtn}>
+        <Ionicons name="refresh" size={22} color={theme.primary.main} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <>
+      <View style={localStyles.topControls}>
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onRangeChange={handleDateRangeChange}
+          label={t('admin.dateRange')}
+        />
+
+        <View style={localStyles.tabStrip}>
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
+              style={[localStyles.tabButton, activeTab === tab.id && localStyles.tabButtonActive]}
+              onPress={() => changeTab(tab.id as any)}
+            >
+              <Ionicons
+                name={(activeTab === tab.id ? tab.icon : tab.icon + '-outline') as any}
+                size={18}
+                color={activeTab === tab.id ? theme.primary.main : theme.text.tertiary}
+              />
+              {activeTab === tab.id && <Text style={localStyles.tabTextActive}>{tab.label}</Text>}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: 20 }]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refresh} tintColor={theme.primary.main} />
+        }
+      >
+        {error ? (
+          <EmptyState icon="alert-circle" title={t('common.error')} message={error} actionLabel={t('common.retry')} onActionPress={refresh} iconColor={theme.error.main} />
+        ) : (
+          <>
+            {activeTab === 'overview' && renderOverview()}
+            {activeTab === 'audience' && renderAudience()}
+            {activeTab === 'engagement' && renderEngagement()}
+            {activeTab === 'revenue' && renderRevenue()}
+            <View style={{ height: 60 }} />
+          </>
+        )}
+      </ScrollView>
+    </>
+  );
 
   const renderHeroStat = () => (
     <LinearGradient
@@ -469,67 +539,24 @@ export const AdminAnalyticsScreen: React.FC = () => {
     { id: 'revenue', label: t('admin.tabRevenue'), icon: 'cash' },
   ];
 
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.analytics')}</Text>
+        {isDesktop ? (
+          <View style={styles.desktopContentWrapper}>
+            <AdminSidebar />
+            <View style={styles.desktopMainContent}>
+              {renderHeader()}
+              {renderMainContent()}
+            </View>
           </View>
-          <TouchableOpacity onPress={refresh} style={localStyles.iconBtn}>
-            <Ionicons name="refresh" size={22} color={theme.primary.main} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={localStyles.topControls}>
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onRangeChange={handleDateRangeChange}
-            label={t('admin.dateRange')}
-          />
-
-          <View style={localStyles.tabStrip}>
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab.id}
-                style={[localStyles.tabButton, activeTab === tab.id && localStyles.tabButtonActive]}
-                onPress={() => changeTab(tab.id as any)}
-              >
-                <Ionicons
-                  name={(activeTab === tab.id ? tab.icon : tab.icon + '-outline') as any}
-                  size={18}
-                  color={activeTab === tab.id ? theme.primary.main : theme.text.tertiary}
-                />
-                {activeTab === tab.id && <Text style={localStyles.tabTextActive}>{tab.label}</Text>}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { paddingTop: 20 }]}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={refresh} tintColor={theme.primary.main} />
-          }
-        >
-          {error ? (
-            <EmptyState icon="alert-circle" title={t('common.error')} message={error} actionLabel={t('common.retry')} onActionPress={refresh} iconColor={theme.error.main} />
-          ) : (
-            <>
-              {activeTab === 'overview' && renderOverview()}
-              {activeTab === 'audience' && renderAudience()}
-              {activeTab === 'engagement' && renderEngagement()}
-              {activeTab === 'revenue' && renderRevenue()}
-              <View style={{ height: 60 }} />
-            </>
-          )}
-        </ScrollView>
+        ) : (
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderHeader()}
+            {renderMainContent()}
+          </ResponsiveContainer>
+        )}
       </View>
     </SafeAreaView>
   );

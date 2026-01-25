@@ -204,10 +204,14 @@ export const apiRequest = async <T = unknown>(
   console.log(`[ApiClient] Request: ${method} ${url}`, { requiresAuth, body });
 
   // Build headers
+  const isFormData = body instanceof FormData;
   const requestHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...headers,
   };
+
+  if (!isFormData && !requestHeaders['Content-Type']) {
+    requestHeaders['Content-Type'] = 'application/json';
+  }
 
   // Inject auth token if required
   if (requiresAuth) {
@@ -224,7 +228,7 @@ export const apiRequest = async <T = unknown>(
   const requestOptions: RequestInit = {
     method,
     headers: requestHeaders,
-    body: body ? JSON.stringify(body) : undefined,
+    body: isFormData ? (body as any) : body ? JSON.stringify(body) : undefined,
   };
 
   // Add timeout

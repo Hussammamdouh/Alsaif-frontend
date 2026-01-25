@@ -19,6 +19,7 @@ import {
   mapCheckoutResponse,
 } from './subscription.mapper';
 import { API_ENDPOINTS, MESSAGES } from './subscription.constants';
+import { mapStripeError } from './subscription.utils';
 
 /**
  * Hook to manage current user's subscription
@@ -226,8 +227,9 @@ export const useCheckout = () => {
         }
       } catch (err: any) {
         console.error('Error initiating checkout:', err);
-        setError(err.message || MESSAGES.ERROR_CHECKOUT);
-        Alert.alert('Error', err.message || MESSAGES.ERROR_CHECKOUT);
+        const userFriendlyError = mapStripeError(err);
+        setError(userFriendlyError);
+        Alert.alert('Payment Error', userFriendlyError);
         return false;
       } finally {
         setLoading(false);
@@ -264,8 +266,9 @@ export const useCheckout = () => {
         }
       } catch (err: any) {
         console.error('Error initiating renewal:', err);
-        setError(err.message || MESSAGES.ERROR_RENEW);
-        Alert.alert('Error', err.message || MESSAGES.ERROR_RENEW);
+        const userFriendlyError = mapStripeError(err);
+        setError(userFriendlyError);
+        Alert.alert('Payment Error', userFriendlyError);
         return false;
       } finally {
         setLoading(false);

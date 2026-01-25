@@ -114,9 +114,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               styles.bubbleTheirs,
               bubbleRadiusStyle,
               {
-                backgroundColor: theme.ui.card,
-                borderColor: theme.border.light,
-                borderWidth: isDark ? 1 : 0,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                borderColor: theme.ui.border,
+                borderWidth: 1,
               }
             ]}>
               <Contents message={message} isMine={false} theme={theme} isDark={isDark} onReplyPress={onReplyPress} />
@@ -135,8 +135,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                   style={[
                     styles.reactionBubble,
                     {
-                      backgroundColor: theme.ui.card,
-                      borderColor: hasReacted ? theme.primary.main : theme.border.light,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                      borderColor: hasReacted ? theme.primary.main : theme.ui.border,
                       borderWidth: 1,
                     },
                   ]}
@@ -184,7 +184,7 @@ const Contents: React.FC<{ message: Message; isMine: boolean; theme: any; isDark
         style={[
           styles.replyContainer,
           {
-            backgroundColor: isMine ? 'rgba(255,255,255,0.15)' : theme.background.secondary,
+            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
             borderLeftColor: isMine ? '#FFFFFF' : theme.primary.main,
           },
         ]}
@@ -199,10 +199,47 @@ const Contents: React.FC<{ message: Message; isMine: boolean; theme: any; isDark
       </TouchableOpacity>
     )}
 
-    {/* Message text */}
-    <Text style={[styles.text, { color: isMine ? '#FFFFFF' : theme.text.primary }]}>
-      {message.content.text}
-    </Text>
+    {/* Message content based on type */}
+    {message.type === 'image' && message.file?.url && (
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: message.file.url }}
+          style={styles.imageMessage}
+          resizeMode="cover"
+        />
+      </View>
+    )}
+
+    {message.type === 'file' && message.file && (
+      <View style={[
+        styles.fileContainer,
+        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }
+      ]}>
+        <Icon
+          name="document-text-outline"
+          size={24}
+          color={isMine ? '#FFFFFF' : theme.primary.main}
+        />
+        <View style={styles.fileInfo}>
+          <Text
+            style={[styles.fileName, { color: isMine ? '#FFFFFF' : theme.text.primary }]}
+            numberOfLines={1}
+          >
+            {message.file.name || 'document'}
+          </Text>
+          <Text style={[styles.fileSize, { color: isMine ? 'rgba(255,255,255,0.7)' : theme.text.tertiary }]}>
+            {message.file.size ? (message.file.size / 1024).toFixed(1) : '0'} KB
+          </Text>
+        </View>
+      </View>
+    )}
+
+    {/* Message text (if any) */}
+    {message.content.text ? (
+      <Text style={[styles.text, { color: isMine ? '#FFFFFF' : theme.text.primary, marginTop: message.type !== 'text' ? 8 : 0 }]}>
+        {message.content.text}
+      </Text>
+    ) : null}
 
     {/* Footer */}
     <View style={styles.footer}>
@@ -338,5 +375,34 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     marginLeft: 4,
+  },
+  imageContainer: {
+    width: 240,
+    height: 180,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  imageMessage: {
+    width: '100%',
+    height: '100%',
+  },
+  fileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 12,
+    gap: 12,
+    width: 200,
+  },
+  fileInfo: {
+    flex: 1,
+  },
+  fileName: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  fileSize: {
+    fontSize: 12,
   },
 });

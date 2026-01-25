@@ -16,11 +16,13 @@ import {
   StyleSheet,
   RefreshControl,
   Modal,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { createAdminStyles } from '../admin.styles';
+import { AdminSidebar } from '../components/AdminSidebar';
 import { useAdminUsers } from '../hooks';
 import {
   STATUS_COLORS,
@@ -47,11 +49,14 @@ import {
 import { Alert, Linking } from 'react-native';
 import { loadAuthSession } from '../../../app/auth/auth.storage';
 import { getApiBaseUrl } from '../../../core/config/env';
+import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminUsersScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { t } = useLocalization();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
 
@@ -425,405 +430,429 @@ export const AdminUsersScreen: React.FC = () => {
     );
   };
 
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{t('admin.users')}</Text>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TouchableOpacity onPress={openCreateModal} style={{ marginRight: 16 }}>
+          <Ionicons name="person-add" size={24} color={theme.primary.main} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={refresh} style={{ marginRight: 16 }}>
+          <Ionicons name="refresh" size={24} color={theme.primary.main} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleExportUsers}>
+          <Ionicons name="cloud-download-outline" size={24} color={theme.primary.main} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderUsersList = () => (
+    <>
+      {/* Search Bar & Advanced Filters */}
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder={t('admin.searchUsers')}
+        onFilterPress={() => setShowStatusFilter(true)}
+        loading={isLoading && users.length > 0}
+      />
+
+      {/* Role Filters */}
+      <FilterBar
+        options={FILTER_OPTIONS.map(opt => ({
+          label: t(opt.labelKey),
+          value: opt.value,
+          icon: opt.value === 'admin' ? 'shield-outline' : 'people-outline'
+        }))}
+        selectedValue={selectedFilter}
+        onSelect={handleFilterChange}
+        label={t('admin.filterByRole')}
+      />
+
+      {error ? (
+        <EmptyState
+          icon="alert-circle"
+          title={t('common.error')}
+          message={error}
+          actionLabel={t('common.retry')}
+          onActionPress={refresh}
+          iconColor={theme.error.main}
+        />
+      ) : filteredUsers.length === 0 ? (
+        <EmptyState
+          icon="people-outline"
+          title={t('admin.noUsersFound')}
+          message={t('admin.noUsersMessage')}
+          actionLabel=""
+          onActionPress={() => { }}
+          iconColor={theme.text.tertiary}
+        />
+      ) : (
+        <FlatList
+          data={filteredUsers}
+          renderItem={renderUserItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[localStyles.listContent, isDesktop && { paddingHorizontal: 32 }]}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+          ListFooterComponent={
+            pagination?.hasMore ? (
+              <TouchableOpacity
+                style={localStyles.loadMoreButton}
+                onPress={loadMore}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={theme.primary.main} />
+                ) : (
+                  <Text style={localStyles.loadMoreText}>{t('common.loadMore')}</Text>
+                )}
+              </TouchableOpacity>
+            ) : null
+          }
+        />
+      )}
+    </>
+  );
+
   if (isLoading && filteredUsers.length === 0) {
     return <LoadingState type="list" count={5} />;
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.users')}</Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={openCreateModal} style={{ marginRight: 16 }}>
-              <Ionicons name="person-add" size={24} color={theme.primary.main} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={refresh} style={{ marginRight: 16 }}>
-              <Ionicons name="refresh" size={24} color={theme.primary.main} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleExportUsers}>
-              <Ionicons name="cloud-download-outline" size={24} color={theme.primary.main} />
-            </TouchableOpacity>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+      {isDesktop ? (
+        <View style={styles.desktopContentWrapper}>
+          <AdminSidebar />
+          <View style={styles.desktopMainContent}>
+            {renderHeader()}
+            <View style={{ flex: 1, padding: 32 }}>
+              {renderUsersList()}
+            </View>
           </View>
         </View>
+      ) : (
+        <SafeAreaView style={styles.safeArea}>
+          {renderHeader()}
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderUsersList()}
+          </ResponsiveContainer>
+        </SafeAreaView>
+      )}
 
-        {/* Search Bar & Advanced Filters */}
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder={t('admin.searchUsers')}
-          onFilterPress={() => setShowStatusFilter(true)}
-          loading={isLoading && users.length > 0}
-        />
+      {/* Status Filter Action Sheet */}
+      <ActionSheet
+        visible={showStatusFilter}
+        onClose={() => setShowStatusFilter(false)}
+        title={t('admin.filterByStatus')}
+        options={[
+          {
+            label: t('admin.allStatuses'),
+            icon: 'apps-outline',
+            onPress: () => handleStatusFilterChange(undefined),
+          },
+          {
+            label: t('status.active'),
+            icon: 'checkmark-circle-outline',
+            onPress: () => handleStatusFilterChange(true),
+          },
+          {
+            label: t('status.suspended'),
+            icon: 'ban-outline',
+            onPress: () => handleStatusFilterChange(false),
+          },
+        ]}
+      />
 
-        {/* Role Filters */}
-        <FilterBar
-          options={FILTER_OPTIONS.map(opt => ({
-            label: t(opt.labelKey),
-            value: opt.value,
-            icon: opt.value === 'admin' ? 'shield-outline' : 'people-outline'
-          }))}
-          selectedValue={selectedFilter}
-          onSelect={handleFilterChange}
-          label={t('admin.filterByRole')}
-        />
+      {/* User Actions Action Sheet */}
+      <ActionSheet
+        visible={showActionSheet}
+        onClose={() => {
+          setShowActionSheet(false);
+        }}
+        title={selectedUser?.name || t('admin.userActions')}
+        options={[
+          {
+            label: t('admin.editUser'),
+            icon: 'create-outline',
+            onPress: openEditModal,
+          },
+          {
+            label: selectedUser?.isBannedFromInsights
+              ? t('admin.unbanFromInsights')
+              : t('admin.banFromInsights'),
+            icon: selectedUser?.isBannedFromInsights ? 'checkmark-circle' : 'close-circle',
+            onPress: async () => {
+              if (!selectedUser) return;
+              try {
+                await toggleInsightBan(selectedUser.id);
+                setShowActionSheet(false);
+                setSelectedUser(null);
+              } catch (err) {
+                // Error handled in hook
+              }
+            },
+          },
+          {
+            label: t('admin.suspendUser'),
+            icon: 'ban',
+            onPress: () => {
+              setShowActionSheet(false);
+              setShowSuspendModal(true);
+            },
+            destructive: true,
+          },
+          {
+            label: t('admin.deleteUser'),
+            icon: 'trash-outline',
+            onPress: () => {
+              setShowActionSheet(false);
+              setShowDeleteModal(true);
+            },
+            destructive: true,
+          },
+        ]}
+      />
 
-        {error ? (
-          <EmptyState
-            icon="alert-circle"
-            title={t('common.error')}
-            message={error}
-            actionLabel={t('common.retry')}
-            onActionPress={refresh}
-            iconColor={theme.error.main}
-          />
-        ) : filteredUsers.length === 0 ? (
-          <EmptyState
-            icon="people-outline"
-            title={t('admin.noUsersFound')}
-            message={t('admin.noUsersMessage')}
-            actionLabel=""
-            onActionPress={() => { }}
-            iconColor={theme.text.tertiary}
-          />
-        ) : (
-          <FlatList
-            data={filteredUsers}
-            renderItem={renderUserItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={localStyles.listContent}
-            refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
-            ListFooterComponent={
-              pagination?.hasMore ? (
+      {/* Suspend Confirmation Modal */}
+      <ConfirmationModal
+        visible={showSuspendModal}
+        onClose={() => {
+          setShowSuspendModal(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleSuspend}
+        title={t('admin.confirmSuspend')}
+        message={t('admin.confirmSuspendMessage')}
+        confirmText={t('admin.suspend')}
+        cancelText={t('common.cancel')}
+        destructive
+        icon="ban"
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        visible={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleDelete}
+        title={t('admin.deleteUser')}
+        message={t('admin.deleteUserMessage')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        destructive
+        icon="trash"
+      />
+
+      {/* Create User Modal */}
+      <Modal visible={showCreateModal} transparent animationType="slide">
+        <View style={localStyles.modalOverlay}>
+          <View style={localStyles.modalContainer}>
+            <View style={localStyles.modalContent}>
+              {/* Modal Header */}
+              <View style={localStyles.modalHeader}>
+                <Text style={localStyles.modalTitle}>{t('admin.createUser')}</Text>
                 <TouchableOpacity
-                  style={localStyles.loadMoreButton}
-                  onPress={loadMore}
-                  disabled={isLoading}
+                  style={localStyles.modalCloseButton}
+                  onPress={() => setShowCreateModal(false)}
                 >
-                  {isLoading ? (
-                    <ActivityIndicator color={theme.primary.main} />
+                  <Ionicons name="close" size={24} color={theme.text.tertiary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Error Banner */}
+              {formError ? (
+                <View style={localStyles.errorBanner}>
+                  <Ionicons name="alert-circle" size={20} color={theme.error.main} />
+                  <Text style={localStyles.errorBannerText}>{formError}</Text>
+                </View>
+              ) : null}
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Name Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('admin.name')} *</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('admin.namePlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formName}
+                    onChangeText={setFormName}
+                  />
+                </View>
+
+                {/* Email Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('admin.email')} *</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('admin.emailPlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formEmail}
+                    onChangeText={setFormEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* Password Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('admin.password')} *</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('admin.passwordPlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formPassword}
+                    onChangeText={setFormPassword}
+                    secureTextEntry
+                  />
+                </View>
+
+                {/* Nationality Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('register.nationality')}</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('register.nationalityPlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formNationality}
+                    onChangeText={setFormNationality}
+                  />
+                </View>
+
+                {/* Role Selection */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('admin.role')} *</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                    {renderRoleOption('user', t('role.user'))}
+                    {renderRoleOption('admin', t('role.admin'))}
+                  </View>
+                </View>
+
+                {/* Create Button */}
+                <TouchableOpacity
+                  style={localStyles.submitButton}
+                  onPress={handleCreateUser}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color={theme.primary.contrast} />
                   ) : (
-                    <Text style={localStyles.loadMoreText}>{t('common.loadMore')}</Text>
+                    <Text style={localStyles.submitButtonText}>
+                      {t('admin.createUser')}
+                    </Text>
                   )}
                 </TouchableOpacity>
-              ) : null
-            }
-          />
-        )}
-
-        {/* Status Filter Action Sheet */}
-        <ActionSheet
-          visible={showStatusFilter}
-          onClose={() => setShowStatusFilter(false)}
-          title={t('admin.filterByStatus')}
-          options={[
-            {
-              label: t('admin.allStatuses'),
-              icon: 'apps-outline',
-              onPress: () => handleStatusFilterChange(undefined),
-            },
-            {
-              label: t('status.active'),
-              icon: 'checkmark-circle-outline',
-              onPress: () => handleStatusFilterChange(true),
-            },
-            {
-              label: t('status.suspended'),
-              icon: 'ban-outline',
-              onPress: () => handleStatusFilterChange(false),
-            },
-          ]}
-        />
-
-        {/* User Actions Action Sheet */}
-        <ActionSheet
-          visible={showActionSheet}
-          onClose={() => {
-            setShowActionSheet(false);
-          }}
-          title={selectedUser?.name || t('admin.userActions')}
-          options={[
-            {
-              label: t('admin.editUser'),
-              icon: 'create-outline',
-              onPress: openEditModal,
-            },
-            {
-              label: selectedUser?.isBannedFromInsights
-                ? t('admin.unbanFromInsights')
-                : t('admin.banFromInsights'),
-              icon: selectedUser?.isBannedFromInsights ? 'checkmark-circle' : 'close-circle',
-              onPress: async () => {
-                if (!selectedUser) return;
-                try {
-                  await toggleInsightBan(selectedUser.id);
-                  setShowActionSheet(false);
-                  setSelectedUser(null);
-                } catch (err) {
-                  // Error handled in hook
-                }
-              },
-            },
-            {
-              label: t('admin.suspendUser'),
-              icon: 'ban',
-              onPress: () => {
-                setShowActionSheet(false);
-                setShowSuspendModal(true);
-              },
-              destructive: true,
-            },
-            {
-              label: t('admin.deleteUser'),
-              icon: 'trash-outline',
-              onPress: () => {
-                setShowActionSheet(false);
-                setShowDeleteModal(true);
-              },
-              destructive: true,
-            },
-          ]}
-        />
-
-        {/* Suspend Confirmation Modal */}
-        <ConfirmationModal
-          visible={showSuspendModal}
-          onClose={() => {
-            setShowSuspendModal(false);
-            setSelectedUser(null);
-          }}
-          onConfirm={handleSuspend}
-          title={t('admin.confirmSuspend')}
-          message={t('admin.confirmSuspendMessage')}
-          confirmText={t('admin.suspend')}
-          cancelText={t('common.cancel')}
-          destructive
-          icon="ban"
-        />
-
-        {/* Delete Confirmation Modal */}
-        <ConfirmationModal
-          visible={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setSelectedUser(null);
-          }}
-          onConfirm={handleDelete}
-          title={t('admin.deleteUser')}
-          message={t('admin.deleteUserMessage')}
-          confirmText={t('common.delete')}
-          cancelText={t('common.cancel')}
-          destructive
-          icon="trash"
-        />
-
-        {/* Create User Modal */}
-        <Modal visible={showCreateModal} transparent animationType="slide">
-          <View style={localStyles.modalOverlay}>
-            <View style={localStyles.modalContainer}>
-              <View style={localStyles.modalContent}>
-                {/* Modal Header */}
-                <View style={localStyles.modalHeader}>
-                  <Text style={localStyles.modalTitle}>{t('admin.createUser')}</Text>
-                  <TouchableOpacity
-                    style={localStyles.modalCloseButton}
-                    onPress={() => setShowCreateModal(false)}
-                  >
-                    <Ionicons name="close" size={24} color={theme.text.tertiary} />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Error Banner */}
-                {formError ? (
-                  <View style={localStyles.errorBanner}>
-                    <Ionicons name="alert-circle" size={20} color={theme.error.main} />
-                    <Text style={localStyles.errorBannerText}>{formError}</Text>
-                  </View>
-                ) : null}
-
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {/* Name Input */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('admin.name')} *</Text>
-                    <TextInput
-                      style={localStyles.formInput}
-                      placeholder={t('admin.namePlaceholder')}
-                      placeholderTextColor={theme.text.tertiary}
-                      value={formName}
-                      onChangeText={setFormName}
-                    />
-                  </View>
-
-                  {/* Email Input */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('admin.email')} *</Text>
-                    <TextInput
-                      style={localStyles.formInput}
-                      placeholder={t('admin.emailPlaceholder')}
-                      placeholderTextColor={theme.text.tertiary}
-                      value={formEmail}
-                      onChangeText={setFormEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-                  </View>
-
-                  {/* Password Input */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('admin.password')} *</Text>
-                    <TextInput
-                      style={localStyles.formInput}
-                      placeholder={t('admin.passwordPlaceholder')}
-                      placeholderTextColor={theme.text.tertiary}
-                      value={formPassword}
-                      onChangeText={setFormPassword}
-                      secureTextEntry
-                    />
-                  </View>
-
-                  {/* Nationality Input */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('register.nationality')}</Text>
-                    <TextInput
-                      style={localStyles.formInput}
-                      placeholder={t('register.nationalityPlaceholder')}
-                      placeholderTextColor={theme.text.tertiary}
-                      value={formNationality}
-                      onChangeText={setFormNationality}
-                    />
-                  </View>
-
-                  {/* Role Selection */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('admin.role')} *</Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
-                      {renderRoleOption('user', t('role.user'))}
-                      {renderRoleOption('admin', t('role.admin'))}
-                    </View>
-                  </View>
-
-                  {/* Create Button */}
-                  <TouchableOpacity
-                    style={localStyles.submitButton}
-                    onPress={handleCreateUser}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <ActivityIndicator size="small" color={theme.primary.contrast} />
-                    ) : (
-                      <Text style={localStyles.submitButtonText}>
-                        {t('admin.createUser')}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
+              </ScrollView>
             </View>
           </View>
-        </Modal>
+        </View>
+      </Modal>
 
-        {/* Edit User Modal */}
-        <Modal visible={showEditModal} transparent animationType="slide">
-          <View style={localStyles.modalOverlay}>
-            <View style={localStyles.modalContainer}>
-              <View style={localStyles.modalContent}>
-                {/* Modal Header */}
-                <View style={localStyles.modalHeader}>
-                  <Text style={localStyles.modalTitle}>{t('admin.editUser')}</Text>
-                  <TouchableOpacity
-                    style={localStyles.modalCloseButton}
-                    onPress={() => {
-                      setShowEditModal(false);
-                      setSelectedUser(null);
-                    }}
-                  >
-                    <Ionicons name="close" size={24} color={theme.text.tertiary} />
-                  </TouchableOpacity>
+      {/* Edit User Modal */}
+      <Modal visible={showEditModal} transparent animationType="slide">
+        <View style={localStyles.modalOverlay}>
+          <View style={localStyles.modalContainer}>
+            <View style={localStyles.modalContent}>
+              {/* Modal Header */}
+              <View style={localStyles.modalHeader}>
+                <Text style={localStyles.modalTitle}>{t('admin.editUser')}</Text>
+                <TouchableOpacity
+                  style={localStyles.modalCloseButton}
+                  onPress={() => {
+                    setShowEditModal(false);
+                    setSelectedUser(null);
+                  }}
+                >
+                  <Ionicons name="close" size={24} color={theme.text.tertiary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Error Banner */}
+              {formError ? (
+                <View style={localStyles.errorBanner}>
+                  <Ionicons name="alert-circle" size={20} color={theme.error.main} />
+                  <Text style={localStyles.errorBannerText}>{formError}</Text>
+                </View>
+              ) : null}
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Name Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('admin.name')} *</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('admin.namePlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formName}
+                    onChangeText={setFormName}
+                  />
                 </View>
 
-                {/* Error Banner */}
-                {formError ? (
-                  <View style={localStyles.errorBanner}>
-                    <Ionicons name="alert-circle" size={20} color={theme.error.main} />
-                    <Text style={localStyles.errorBannerText}>{formError}</Text>
-                  </View>
-                ) : null}
+                {/* Email Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('admin.email')} *</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('admin.emailPlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formEmail}
+                    onChangeText={setFormEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
 
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {/* Name Input */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('admin.name')} *</Text>
-                    <TextInput
-                      style={localStyles.formInput}
-                      placeholder={t('admin.namePlaceholder')}
-                      placeholderTextColor={theme.text.tertiary}
-                      value={formName}
-                      onChangeText={setFormName}
-                    />
-                  </View>
+                {/* Nationality Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('register.nationality')}</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('register.nationalityPlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formNationality}
+                    onChangeText={setFormNationality}
+                  />
+                </View>
 
-                  {/* Email Input */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('admin.email')} *</Text>
-                    <TextInput
-                      style={localStyles.formInput}
-                      placeholder={t('admin.emailPlaceholder')}
-                      placeholderTextColor={theme.text.tertiary}
-                      value={formEmail}
-                      onChangeText={setFormEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
+                {/* Role Selection */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('admin.role')} *</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                    {renderRoleOption('user', t('role.user'))}
+                    {renderRoleOption('admin', t('role.admin'))}
                   </View>
+                </View>
 
-                  {/* Nationality Input */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('register.nationality')}</Text>
-                    <TextInput
-                      style={localStyles.formInput}
-                      placeholder={t('register.nationalityPlaceholder')}
-                      placeholderTextColor={theme.text.tertiary}
-                      value={formNationality}
-                      onChangeText={setFormNationality}
-                    />
-                  </View>
-
-                  {/* Role Selection */}
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.formLabel}>{t('admin.role')} *</Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
-                      {renderRoleOption('user', t('role.user'))}
-                      {renderRoleOption('admin', t('role.admin'))}
-                    </View>
-                  </View>
-
-                  {/* Update Button */}
-                  <TouchableOpacity
-                    style={localStyles.submitButton}
-                    onPress={handleUpdateUser}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <ActivityIndicator size="small" color={theme.primary.contrast} />
-                    ) : (
-                      <Text style={localStyles.submitButtonText}>
-                        {t('admin.updateUser')}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
+                {/* Update Button */}
+                <TouchableOpacity
+                  style={localStyles.submitButton}
+                  onPress={handleUpdateUser}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color={theme.primary.contrast} />
+                  ) : (
+                    <Text style={localStyles.submitButtonText}>
+                      {t('admin.updateUser')}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
             </View>
           </View>
-        </Modal >
-      </View >
-    </SafeAreaView >
+        </View>
+      </Modal>
+    </View>
   );
 };
 

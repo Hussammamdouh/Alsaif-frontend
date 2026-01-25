@@ -10,10 +10,11 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   // Container
   container: {
     flex: 1,
-    backgroundColor: theme.background.primary,
+    backgroundColor: 'transparent',
   },
-  gradientBackground: {
+  desktopContentWrapper: {
     flex: 1,
+    flexDirection: 'row',
     backgroundColor: theme.background.primary,
   },
   safeArea: {
@@ -22,15 +23,47 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
 
   // Header
   header: {
+    height: 110,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 45,
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
     backgroundColor: theme.background.secondary,
     borderBottomWidth: 1,
-    borderBottomColor: theme.border.main,
+    borderBottomColor: theme.ui.border,
+  },
+  desktopSidebar: {
+    width: 280,
+    backgroundColor: theme.background.secondary,
+    borderRightWidth: 1,
+    borderRightColor: theme.ui.border,
+    paddingTop: 45,
+  },
+  sidebarItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 12,
+  },
+  sidebarItemActive: {
+    backgroundColor: theme.primary.main + '15',
+  },
+  sidebarItemLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.text.secondary,
+    marginLeft: 12,
+  },
+  sidebarItemLabelActive: {
+    color: theme.primary.main,
+  },
+  desktopMainContent: {
+    flex: 1,
+    backgroundColor: theme.background.primary,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -129,16 +162,16 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 120, // Increased for Floating Tab Bar safety
+    paddingBottom: 40,
   },
 
   // Card
   card: {
-    backgroundColor: 'transparent',
+    backgroundColor: theme.background.secondary,
     borderRadius: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: theme.border.main,
+    borderColor: theme.ui.border,
     overflow: 'hidden',
   },
   glassCard: {
@@ -194,21 +227,34 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.text.tertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
 
   // Dashboard Specific
   dashboardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 16,
     marginBottom: 24,
+  },
+  desktopStatCard: {
+    width: '48%', // 2 per row on smaller desktops
+    maxWidth: 350,
   },
   dashboardStatCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: theme.background.secondary,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: theme.border.main,
+    borderColor: theme.ui.border,
+    overflow: 'hidden',
   },
   dashboardStatLeft: {
     flex: 1,
@@ -243,6 +289,10 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
     marginBottom: 24,
+  },
+  desktopQuickAction: {
+    width: '23%', // 4 per row on desktop
+    minWidth: 180,
   },
   quickActionItem: {
     flex: 1,
@@ -326,6 +376,16 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   buttonTextSecondary: {
     color: theme.text.primary,
   },
+  loadMoreButton: {
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.primary.main,
+  },
 
   // Loading & Error States
   loadingContainer: {
@@ -377,6 +437,9 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontSize: 14,
     color: theme.text.secondary,
     textAlign: 'center',
+  },
+  emptyIcon: {
+    marginBottom: 16,
   },
 
   // Badge
@@ -484,6 +547,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
 
 // Export for backward compatibility (will be deprecated)
 export const adminStyles = createAdminStyles({
+  mode: 'dark',
   primary: { main: '#438730', dark: '#2d5a20', light: '#5fa948', contrast: '#FFFFFF', gradient: ['#438730', '#5fa948'] },
   background: { primary: '#121212', secondary: '#1e1e1e', tertiary: '#2a2a2a' },
   text: { primary: '#FFFFFF', secondary: '#B3B3B3', tertiary: '#808080', inverse: '#121212' },

@@ -16,6 +16,7 @@ import {
   Modal,
   StyleSheet,
   RefreshControl,
+  useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,7 +36,9 @@ import {
   EmptyState,
   ActionSheet,
   ConfirmationModal,
+  AdminSidebar,
 } from '../components';
+import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminSubscriptionsScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -43,6 +46,8 @@ export const AdminSubscriptionsScreen: React.FC = () => {
   const { t } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const {
     subscriptions,
@@ -264,115 +269,136 @@ export const AdminSubscriptionsScreen: React.FC = () => {
     return <LoadingState type="list" count={5} />;
   }
 
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{isDesktop ? t('admin.subscriptionsOverview') : t('admin.subscriptions')}</Text>
+      </View>
+      <TouchableOpacity style={[styles.addButton, { marginRight: isDesktop ? 20 : 0 }]} onPress={openGrantModal}>
+        <Ionicons name="add" size={24} color={theme.primary.contrast} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <>
+      <View style={[localStyles.searchContainer, isDesktop && { paddingHorizontal: 24 }]}>
+        <View style={localStyles.searchBar}>
+          <Ionicons
+            name="search"
+            size={20}
+            color={theme.text.tertiary}
+            style={{ marginRight: 8 }}
+          />
+          <TextInput
+            style={localStyles.searchInput}
+            placeholder={t('admin.searchSubscriptions')}
+            placeholderTextColor={theme.text.tertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={{ marginLeft: 8 }}>
+              <Ionicons name="close-circle" size={20} color={theme.text.tertiary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={localStyles.filterContainer}
+        contentContainerStyle={[localStyles.filterContent, isDesktop && { paddingHorizontal: 24 }]}
+      >
+        {SUBSCRIPTION_FILTER_OPTIONS.map((opt, index) => (
+          <TouchableOpacity
+            key={`filter-${index}`}
+            style={[
+              localStyles.filterChip,
+              selectedFilter === opt.value && localStyles.filterChipActive,
+            ]}
+            onPress={() => handleFilterChange(opt.value)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                localStyles.filterChipText,
+                selectedFilter === opt.value && localStyles.filterChipTextActive,
+              ]}
+            >
+              {t(opt.labelKey)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {error ? (
+        <EmptyState
+          icon="alert-circle"
+          title={t('common.error')}
+          message={error}
+          actionLabel={t('common.retry')}
+          onActionPress={refresh}
+          iconColor={theme.error.main}
+        />
+      ) : subscriptions.length === 0 ? (
+        <EmptyState
+          icon="card-outline"
+          title={t('admin.noSubscriptionsFound')}
+          message={t('admin.noSubscriptionsMessage')}
+          iconColor={theme.text.tertiary}
+        />
+      ) : (
+        <FlatList
+          data={subscriptions}
+          renderItem={renderSubscriptionCard}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[localStyles.listContent, isDesktop && { paddingHorizontal: 24 }]}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+          numColumns={isDesktop ? 2 : 1}
+          key={isDesktop ? 'desktop' : 'mobile'}
+          ListFooterComponent={
+            pagination?.hasNextPage ? (
+              <TouchableOpacity
+                style={localStyles.loadMoreButton}
+                onPress={loadMore}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={theme.primary.main} />
+                ) : (
+                  <Text style={localStyles.loadMoreText}>{t('common.loadMore')}</Text>
+                )}
+              </TouchableOpacity>
+            ) : null
+          }
+        />
+      )}
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.subscriptions')}</Text>
+        {isDesktop ? (
+          <View style={styles.desktopContentWrapper}>
+            <AdminSidebar />
+            <View style={styles.desktopMainContent}>
+              {renderHeader()}
+              {renderMainContent()}
+            </View>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={openGrantModal}>
-            <Ionicons name="add" size={24} color={theme.primary.contrast} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <View style={localStyles.searchContainer}>
-          <View style={localStyles.searchBar}>
-            <Ionicons
-              name="search"
-              size={20}
-              color={theme.text.tertiary}
-              style={{ marginRight: 8 }}
-            />
-            <TextInput
-              style={localStyles.searchInput}
-              placeholder={t('admin.searchSubscriptions')}
-              placeholderTextColor={theme.text.tertiary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')} style={{ marginLeft: 8 }}>
-                <Ionicons name="close-circle" size={20} color={theme.text.tertiary} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* Filter Tabs */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={localStyles.filterContainer}
-          contentContainerStyle={localStyles.filterContent}
-        >
-          {SUBSCRIPTION_FILTER_OPTIONS.map((opt, index) => (
-            <TouchableOpacity
-              key={`filter-${index}`}
-              style={[
-                localStyles.filterChip,
-                selectedFilter === opt.value && localStyles.filterChipActive,
-              ]}
-              onPress={() => handleFilterChange(opt.value)}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[
-                  localStyles.filterChipText,
-                  selectedFilter === opt.value && localStyles.filterChipTextActive,
-                ]}
-              >
-                {t(opt.labelKey)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Subscriptions List */}
-        {error ? (
-          <EmptyState
-            icon="alert-circle"
-            title={t('common.error')}
-            message={error}
-            actionLabel={t('common.retry')}
-            onActionPress={refresh}
-            iconColor={theme.error.main}
-          />
-        ) : subscriptions.length === 0 ? (
-          <EmptyState
-            icon="card-outline"
-            title={t('admin.noSubscriptionsFound')}
-            message={t('admin.noSubscriptionsMessage')}
-            iconColor={theme.text.tertiary}
-          />
         ) : (
-          <FlatList
-            data={subscriptions}
-            renderItem={renderSubscriptionCard}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={localStyles.listContent}
-            refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
-            ListFooterComponent={
-              pagination?.hasNextPage ? (
-                <TouchableOpacity
-                  style={localStyles.loadMoreButton}
-                  onPress={loadMore}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color={theme.primary.main} />
-                  ) : (
-                    <Text style={localStyles.loadMoreText}>{t('common.loadMore')}</Text>
-                  )}
-                </TouchableOpacity>
-              ) : null
-            }
-          />
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderHeader()}
+            {renderMainContent()}
+          </ResponsiveContainer>
         )}
 
         <ActionSheet
@@ -440,7 +466,7 @@ export const AdminSubscriptionsScreen: React.FC = () => {
           onRequestClose={() => setGrantModalVisible(false)}
         >
           <View style={localStyles.modalOverlay}>
-            <View style={localStyles.modalContainer}>
+            <View style={[localStyles.modalContainer, isDesktop && localStyles.desktopModalContent]}>
               <View style={localStyles.modalContent}>
                 {/* Modal Header */}
                 <View style={localStyles.modalHeader}>
@@ -732,6 +758,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 13,
     color: theme.error.main,
     marginTop: 4,
+  },
+  desktopModalContent: {
+    width: 600,
+    alignSelf: 'center',
+    marginVertical: 40,
+    borderRadius: 24,
+    minHeight: 'auto',
+    maxHeight: '90%',
   },
   // Modal Styles - Matching AdminUsersScreen and AdminInsightsScreen
   modalOverlay: {

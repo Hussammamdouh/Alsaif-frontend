@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,12 +22,16 @@ import { createAdminStyles } from '../admin.styles';
 import { useAdminAuditLogs } from '../hooks';
 import { SEVERITY_COLORS, ROLE_COLORS } from '../admin.constants';
 import type { AuditLog, AuditSeverity } from '../admin.types';
+import { ResponsiveContainer } from '../../../shared/components';
+import { AdminSidebar } from '../components';
 
 export const AdminAuditLogsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { t } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const { logs, pagination, filters, isLoading, error, setFilters, loadMore, refresh } =
     useAdminAuditLogs();
@@ -199,12 +204,12 @@ export const AdminAuditLogsScreen: React.FC = () => {
                 <View style={{ flexDirection: 'row', gap: 8, marginTop: 2 }}>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.cardSubtitle, { color: theme.error.main }]}>
-                      - {JSON.stringify(log.changes.before[key])}
+                      - {JSON.stringify(log.changes?.before?.[key])}
                     </Text>
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.cardSubtitle, { color: theme.success.main }]}>
-                      + {JSON.stringify(log.changes.after?.[key])}
+                      + {JSON.stringify(log.changes?.after?.[key])}
                     </Text>
                   </View>
                 </View>
@@ -263,99 +268,122 @@ export const AdminAuditLogsScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{isDesktop ? t('admin.auditLogsOverview') : t('admin.auditLogs')}</Text>
+      </View>
+      <TouchableOpacity onPress={refresh} activeOpacity={0.7}>
+        <Ionicons name="refresh" size={24} color={theme.primary.main} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <>
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={20} color={theme.text.secondary} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by actor ID..."
+            placeholderTextColor={theme.text.tertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterTabs}
+        contentContainerStyle={styles.filterTabsContent}
+      >
+        {renderSeverityFilter('', 'All')}
+        {renderSeverityFilter('info', 'Info')}
+        {renderSeverityFilter('warning', 'Warning')}
+        {renderSeverityFilter('error', 'Error')}
+        {renderSeverityFilter('critical', 'Critical')}
+      </ScrollView>
+
+      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+        {isLoading && logs.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.primary.main} />
+            <Text style={styles.loadingText}>{t('common.loading')}</Text>
+          </View>
+        ) : error && logs.length === 0 ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={64} color={theme.error.main} />
+            <Text style={styles.errorTitle}>{t('common.error')}</Text>
+            <Text style={styles.errorMessage}>{error}</Text>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={refresh}
+            >
+              <Text style={[styles.buttonText, styles.buttonTextPrimary]}>
+                {t('common.retry')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : logs.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons
+              name="document-text-outline"
+              size={64}
+              color={theme.text.tertiary}
+              style={styles.emptyIcon}
+            />
+            <Text style={styles.emptyTitle}>No Audit Logs Found</Text>
+            <Text style={styles.emptyMessage}>
+              No logs match your current filters
+            </Text>
+          </View>
+        ) : (
+          <>
+            {logs.map(renderLogCard)}
+            {pagination && pagination.hasMore && (
+              <TouchableOpacity
+                style={styles.loadMoreButton}
+                onPress={loadMore}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color={theme.primary.main} />
+                ) : (
+                  <Text style={styles.loadMoreText}>{t('common.loadMore')}</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+      </ScrollView>
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.auditLogs')}</Text>
+        {isDesktop ? (
+          <View style={styles.desktopContentWrapper}>
+            <AdminSidebar />
+            <View style={styles.desktopMainContent}>
+              {renderHeader()}
+              {renderMainContent()}
+            </View>
           </View>
-          <TouchableOpacity onPress={refresh} activeOpacity={0.7}>
-            <Ionicons name="refresh" size={24} color={theme.primary.main} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color={theme.text.secondary} style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search by actor ID..."
-              placeholderTextColor={theme.text.tertiary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterTabs}
-          contentContainerStyle={styles.filterTabsContent}
-        >
-          {renderSeverityFilter('', 'All')}
-          {renderSeverityFilter('info', 'Info')}
-          {renderSeverityFilter('warning', 'Warning')}
-          {renderSeverityFilter('error', 'Error')}
-          {renderSeverityFilter('critical', 'Critical')}
-        </ScrollView>
-
-        <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-          {isLoading && logs.length === 0 ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.primary.main} />
-              <Text style={styles.loadingText}>{t('common.loading')}</Text>
-            </View>
-          ) : error && logs.length === 0 ? (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={64} color={theme.error.main} />
-              <Text style={styles.errorTitle}>{t('common.error')}</Text>
-              <Text style={styles.errorMessage}>{error}</Text>
-              <TouchableOpacity
-                style={[styles.button, styles.buttonPrimary]}
-                onPress={refresh}
-              >
-                <Text style={[styles.buttonText, styles.buttonTextPrimary]}>
-                  {t('common.retry')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : logs.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons
-                name="document-text-outline"
-                size={64}
-                color={theme.text.tertiary}
-                style={styles.emptyIcon}
-              />
-              <Text style={styles.emptyTitle}>No Audit Logs Found</Text>
-              <Text style={styles.emptyMessage}>
-                No logs match your current filters
-              </Text>
-            </View>
-          ) : (
-            <>
-              {logs.map(renderLogCard)}
-              {pagination && pagination.hasMore && (
-                <TouchableOpacity
-                  style={styles.loadMoreButton}
-                  onPress={loadMore}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color={theme.primary.main} />
-                  ) : (
-                    <Text style={styles.loadMoreText}>{t('common.loadMore')}</Text>
-                  )}
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-        </ScrollView>
+        ) : (
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderHeader()}
+            {renderMainContent()}
+          </ResponsiveContainer>
+        )}
       </View>
     </SafeAreaView>
   );

@@ -5,6 +5,7 @@
 
 // Screens
 export * from './screens';
+export { AdminGroupChatScreen } from './AdminGroupChatScreen';
 
 // Hooks
 export * from './hooks';

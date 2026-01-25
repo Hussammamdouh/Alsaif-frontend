@@ -3,7 +3,7 @@
  * Shows group info, member list, and admin controls
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
@@ -22,10 +22,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { ResponsiveContainer } from '../../../shared/components';
 import { useChatSettings } from './chatSettings.hooks';
 import { ChatParticipant } from './chatSettings.types';
 
 const { width } = Dimensions.get('window');
+const isDesktop = width > 768;
 
 interface ChatSettingsScreenProps {
     chatId: string;
@@ -38,6 +40,7 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
 }) => {
     const { theme, isDark } = useTheme();
     const { t } = useLocalization();
+    const styles = useMemo(() => getStyles(theme, isDark), [theme, isDark]);
     const {
         settings,
         isLoading,
@@ -108,7 +111,6 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
     const renderMemberItem = useCallback(({ item }: { item: ChatParticipant }) => {
         const isAdmin = item.permission === 'admin';
         const canManage = settings?.isAdmin && !isAdmin;
-        const isSelf = item.id === settings?.participants.find(p => p.email === item.email)?.id; // Approximate check
 
         return (
             <View style={[styles.memberItem, {
@@ -174,149 +176,123 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
     }, [settings, theme, isUpdating, isDark, handleToggleSendPermission, handleKickMember, t]);
 
     const renderHeader = () => (
-        <View style={styles.headerContent}>
-            {/* Header Background */}
-            <LinearGradient
-                colors={isDark
-                    ? [theme.primary.dark, theme.background.primary]
-                    : [theme.primary.main, theme.background.primary]}
-                style={styles.headerGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-            />
+        <View style={styles.groupHeaderContainer}>
+            <View style={styles.groupCard}>
+                <View style={styles.groupInfoRow}>
+                    <LinearGradient
+                        colors={[theme.primary.light, theme.primary.main]}
+                        style={styles.largeGroupIcon}
+                    >
+                        <Icon name="people" size={32} color="#FFFFFF" />
+                    </LinearGradient>
 
-            {/* Back Button */}
-            <TouchableOpacity
-                onPress={onNavigateBack}
-                style={[styles.headerBackButton, { backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)' }]}
-            >
-                <Icon name="chevron-down" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
+                    <View style={styles.groupTextInfo}>
+                        <Text style={[styles.groupNameTitle, { color: theme.text.primary }]}>
+                            {settings?.name}
+                        </Text>
 
-            {/* Group Info Card */}
-            <View style={styles.groupCardWrapper}>
-                <View style={[styles.groupCard, {
-                    backgroundColor: isDark ? theme.background.secondary : '#FFFFFF',
-                    shadowColor: theme.shadow.color,
-                }]}>
-                    <View style={styles.groupIconContainer}>
-                        <LinearGradient
-                            colors={[theme.primary.light, theme.primary.main]}
-                            style={styles.largeGroupIcon}
-                        >
-                            <Icon name="people" size={40} color="#FFFFFF" />
-                        </LinearGradient>
-                        {settings?.isSystemGroup && settings?.tierGroup === 'premium' && (
-                            <View style={styles.premiumBadge}>
-                                <Icon name="star" size={12} color="#FFFFFF" />
-                            </View>
-                        )}
-                    </View>
-
-                    <Text style={[styles.groupNameTitle, { color: theme.text.primary }]}>
-                        {settings?.name}
-                    </Text>
-
-                    <View style={styles.statsRow}>
-                        <View style={[styles.statPill, { backgroundColor: theme.background.tertiary }]}>
-                            <Icon name="people-outline" size={14} color={theme.text.secondary} />
-                            <Text style={[styles.statText, { color: theme.text.secondary }]}>
-                                {t('chat.settings.memberCount', { count: settings?.participantCount || 0 })}
-                            </Text>
-                        </View>
-
-                        {settings?.tierGroup && (
-                            <View style={[styles.statPill, {
-                                backgroundColor: settings.tierGroup === 'premium' ? theme.warning.main + '20' : theme.primary.main + '20',
-                                marginLeft: 8
-                            }]}>
-                                <Text style={[styles.statText, {
-                                    color: settings.tierGroup === 'premium' ? theme.warning.main : theme.primary.main,
-                                    fontWeight: '700'
-                                }]}>
-                                    {settings.tierGroup === 'premium' ? 'PREMIUM' : 'FREE'}
+                        <View style={styles.statsRow}>
+                            <View style={[styles.statPill, { backgroundColor: theme.background.tertiary }]}>
+                                <Icon name="people-outline" size={12} color={theme.text.secondary} />
+                                <Text style={[styles.statText, { color: theme.text.secondary }]}>
+                                    {t('chat.settings.memberCount', { count: settings?.participantCount || 0 })}
                                 </Text>
                             </View>
-                        )}
+
+                            {settings?.tierGroup && (
+                                <View style={[styles.statPill, {
+                                    backgroundColor: settings.tierGroup === 'premium' ? theme.warning.main + '20' : theme.primary.main + '20',
+                                    marginLeft: 8
+                                }]}>
+                                    <Text style={[styles.statText, {
+                                        color: settings.tierGroup === 'premium' ? theme.warning.main : theme.primary.main,
+                                        fontWeight: '700'
+                                    }]}>
+                                        {settings.tierGroup === 'premium' ? 'PREMIUM' : 'FREE'}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            {/* Settings Content */}
-            {settings?.isAdmin && (
-                <View style={[styles.settingsSection, {
-                    backgroundColor: isDark ? theme.background.secondary : '#FFFFFF',
-                    borderColor: theme.border.light
-                }]}>
-                    <View style={styles.sectionHeaderRow}>
-                        <Icon name="settings-outline" size={18} color={theme.text.secondary} />
-                        <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>
-                            {t('chat.settings.adminControls')}
-                        </Text>
-                    </View>
-
-                    <View style={styles.settingRow}>
-                        <View style={styles.settingInfo}>
-                            <Text style={[styles.settingLabel, { color: theme.text.primary }]}>
-                                {t('chat.settings.onlyAdminsCanSend')}
-                            </Text>
-                            <Text style={[styles.settingDescription, { color: theme.text.tertiary }]}>
-                                {t('chat.settings.onlyAdminsCanSendDescription')}
+                {settings?.isAdmin && (
+                    <View style={[styles.settingsSection, {
+                        backgroundColor: isDark ? theme.background.secondary : '#FFFFFF',
+                        borderColor: theme.border.light,
+                        marginTop: 24,
+                        marginHorizontal: 0
+                    }]}>
+                        <View style={styles.sectionHeaderRow}>
+                            <Icon name="settings-outline" size={18} color={theme.text.secondary} />
+                            <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>
+                                {t('chat.settings.adminControls')}
                             </Text>
                         </View>
-                        <Switch
-                            value={settings?.settings.onlyAdminsCanSend || false}
-                            onValueChange={handleToggleAdminOnly}
-                            disabled={isUpdating}
-                            trackColor={{ false: theme.border.main, true: theme.primary.main }}
-                            thumbColor={'#FFFFFF'}
-                        />
+
+                        <View style={styles.settingRow}>
+                            <View style={styles.settingInfo}>
+                                <Text style={[styles.settingLabel, { color: theme.text.primary }]}>
+                                    {t('chat.settings.onlyAdminsCanSend')}
+                                </Text>
+                                <Text style={[styles.settingDescription, { color: theme.text.tertiary }]}>
+                                    {t('chat.settings.onlyAdminsCanSendDescription')}
+                                </Text>
+                            </View>
+                            <Switch
+                                value={settings?.settings.onlyAdminsCanSend || false}
+                                onValueChange={handleToggleAdminOnly}
+                                disabled={isUpdating}
+                                trackColor={{ false: theme.border.main, true: theme.primary.main }}
+                                thumbColor={'#FFFFFF'}
+                            />
+                        </View>
+                    </View>
+                )}
+
+                <View style={[styles.settingsSection, {
+                    backgroundColor: isDark ? theme.background.secondary : '#FFFFFF',
+                    borderColor: theme.border.light,
+                    marginTop: 16,
+                    marginHorizontal: 0
+                }]}>
+                    <View style={styles.sectionHeaderRow}>
+                        <Icon name="shield-outline" size={18} color={theme.text.secondary} />
+                        <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>
+                            {t('chat.settings.yourPermissions')}
+                        </Text>
+                    </View>
+
+                    <View style={styles.permissionRow}>
+                        <View style={[styles.statusItem, { backgroundColor: settings?.canSend ? theme.success.main + '15' : theme.error.main + '15' }]}>
+                            <Icon
+                                name={settings?.canSend ? 'checkmark-circle' : 'close-circle'}
+                                size={18}
+                                color={settings?.canSend ? theme.success.main : theme.error.main}
+                            />
+                            <Text style={[styles.statusText, { color: settings?.canSend ? theme.success.main : theme.error.main }]}>
+                                {settings?.canSend ? t('chat.settings.youCanSend') : t('chat.settings.youCannotSend')}
+                            </Text>
+                        </View>
+
+                        <View style={[styles.statusItem, { backgroundColor: theme.primary.main + '15' }]}>
+                            <Icon
+                                name={settings?.isAdmin ? 'shield-checkmark' : 'person'}
+                                size={18}
+                                color={theme.primary.main}
+                            />
+                            <Text style={[styles.statusText, { color: theme.primary.main }]}>
+                                {settings?.isAdmin ? t('chat.settings.youAreAdmin') : t('chat.settings.youAreMember')}
+                            </Text>
+                        </View>
                     </View>
                 </View>
-            )}
 
-            {/* Permissions Card */}
-            <View style={[styles.settingsSection, {
-                backgroundColor: isDark ? theme.background.secondary : '#FFFFFF',
-                borderColor: theme.border.light,
-                marginTop: 16
-            }]}>
-                <View style={styles.sectionHeaderRow}>
-                    <Icon name="shield-outline" size={18} color={theme.text.secondary} />
-                    <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>
-                        {t('chat.settings.yourPermissions')}
+                <View style={styles.listHeaderContainer}>
+                    <Text style={[styles.listHeaderTitle, { color: theme.text.primary }]}>
+                        {t('chat.settings.members')}
                     </Text>
                 </View>
-
-                <View style={styles.permissionRow}>
-                    <View style={[styles.statusItem, { backgroundColor: settings?.canSend ? theme.success.main + '15' : theme.error.main + '15' }]}>
-                        <Icon
-                            name={settings?.canSend ? 'checkmark-circle' : 'close-circle'}
-                            size={18}
-                            color={settings?.canSend ? theme.success.main : theme.error.main}
-                        />
-                        <Text style={[styles.statusText, { color: settings?.canSend ? theme.success.main : theme.error.main }]}>
-                            {settings?.canSend ? t('chat.settings.youCanSend') : t('chat.settings.youCannotSend')}
-                        </Text>
-                    </View>
-
-                    <View style={[styles.statusItem, { backgroundColor: theme.primary.main + '15' }]}>
-                        <Icon
-                            name={settings?.isAdmin ? 'shield-checkmark' : 'person'}
-                            size={18}
-                            color={theme.primary.main}
-                        />
-                        <Text style={[styles.statusText, { color: theme.primary.main }]}>
-                            {settings?.isAdmin ? t('chat.settings.youAreAdmin') : t('chat.settings.youAreMember')}
-                        </Text>
-                    </View>
-                </View>
-            </View>
-
-            <View style={styles.listHeaderContainer}>
-                <Text style={[styles.listHeaderTitle, { color: theme.text.primary }]}>
-                    {t('chat.settings.members')}
-                </Text>
             </View>
         </View>
     );
@@ -348,82 +324,89 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
             <StatusBar barStyle="light-content" />
 
-            <FlatList
-                data={settings?.participants || []}
-                renderItem={renderMemberItem}
-                keyExtractor={(item) => item.id}
-                ListHeaderComponent={renderHeader}
-                contentContainerStyle={styles.listContent}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isLoading}
-                        onRefresh={refresh}
-                        tintColor={theme.primary.main}
-                    />
-                }
-                showsVerticalScrollIndicator={false}
-            />
+            {/* Immersive Desktop Header */}
+            <View style={[styles.headerDesktop, { backgroundColor: theme.background.secondary, height: isDesktop ? 110 : 80, borderBottomColor: theme.ui.border }]}>
+                <TouchableOpacity
+                    onPress={onNavigateBack}
+                    style={styles.backButtonDesktop}
+                >
+                    <Icon name="chevron-back" size={24} color={theme.text.primary} />
+                    <Text style={[styles.backTextDesktop, { color: theme.text.primary }]}>{t('chat.settings.title')}</Text>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.desktopContentWrapper}>
+                <FlatList
+                    data={settings?.participants || []}
+                    renderItem={renderMemberItem}
+                    keyExtractor={(item) => item.id}
+                    ListHeaderComponent={renderHeader}
+                    contentContainerStyle={styles.listContent}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isLoading}
+                            onRefresh={refresh}
+                            tintColor={theme.primary.main}
+                        />
+                    }
+                    showsVerticalScrollIndicator={false}
+                />
+            </View>
         </View>
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
     },
-    headerGradient: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 200,
+    headerDesktop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 45,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.ui.border,
+        zIndex: 100,
     },
-    headerContent: {
+    backButtonDesktop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    backTextDesktop: {
+        fontSize: 18,
+        fontWeight: '700',
+    },
+    desktopContentWrapper: {
+        flex: 1,
+    },
+    groupHeaderContainer: {
+        backgroundColor: theme.background.secondary,
         marginBottom: 8,
-        paddingTop: Platform.OS === 'ios' ? 40 : 20,
     },
-    headerBackButton: {
-        position: 'absolute',
-        top: Platform.OS === 'ios' ? 50 : 30,
-        left: 20,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        justifyContent: 'center',
+    groupInfoRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        zIndex: 10,
+        gap: 16,
     },
-    groupCardWrapper: {
-        alignItems: 'center',
-        marginTop: 60,
-        paddingHorizontal: 16,
-        marginBottom: 20,
+    groupTextInfo: {
+        flex: 1,
     },
     groupCard: {
         width: '100%',
-        borderRadius: 24,
         padding: 24,
-        alignItems: 'center',
-        elevation: 8,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
     },
     groupIconContainer: {
         position: 'relative',
         marginBottom: 16,
     },
     largeGroupIcon: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
     },
     premiumBadge: {
         position: 'absolute',
@@ -439,16 +422,14 @@ const styles = StyleSheet.create({
         borderColor: '#FFFFFF',
     },
     groupNameTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: '800',
-        textAlign: 'center',
-        marginBottom: 12,
+        marginBottom: 4,
         letterSpacing: -0.5,
     },
     statsRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
     },
     statPill: {
         flexDirection: 'row',
@@ -526,15 +507,16 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingBottom: 40,
+        backgroundColor: theme.background.primary,
     },
     memberItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: 16,
-        marginVertical: 6,
-        padding: 12,
-        borderRadius: 16,
-        borderWidth: 1,
+        marginHorizontal: 0,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.ui.border,
     },
     memberInfo: {
         flexDirection: 'row',

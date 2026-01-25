@@ -24,6 +24,8 @@ export interface UserProfile {
   deletionRequestedAt?: string | null;
   scheduledDeletionDate?: string | null;
   deletionReason?: string | null;
+  country?: string | null;
+  nationality?: string | null;
 }
 
 export interface SubscriptionInfo {
@@ -45,6 +47,8 @@ export interface ProfileState {
 export interface UpdateProfileRequest {
   name?: string;
   avatar?: string;
+  country?: string;
+  nationality?: string;
 }
 
 export interface UpdateProfileResponse {

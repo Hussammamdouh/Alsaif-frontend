@@ -15,6 +15,7 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
+  useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,7 +31,9 @@ import {
   ActionSheet,
   ConfirmationModal,
   StatCard,
+  AdminSidebar,
 } from '../components';
+import { ResponsiveContainer } from '../../../shared/components';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#FF9800',
@@ -46,6 +49,8 @@ export const AdminModerationScreen: React.FC = () => {
   const { t } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
   const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showActionSheet, setShowActionSheet] = useState(false);
@@ -266,133 +271,158 @@ export const AdminModerationScreen: React.FC = () => {
     return <LoadingState type="list" count={5} />;
   }
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.moderation')}</Text>
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{isDesktop ? t('admin.moderationOverview') : t('admin.moderation')}</Text>
+      </View>
+      <TouchableOpacity onPress={refresh} style={{ marginRight: isDesktop ? 20 : 0 }}>
+        <Ionicons name="refresh" size={24} color={theme.primary.main} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={localStyles.statsScroll}
+        contentContainerStyle={[localStyles.statsContainer, isDesktop && { paddingHorizontal: 24, paddingVertical: 16 }]}
+      >
+        <StatCard
+          title={t('admin.pendingReview')}
+          value={stats?.queue?.pending || 0}
+          icon="time-outline"
+          color={theme.primary.main}
+        />
+        <StatCard
+          title={t('admin.flaggedItems')}
+          value={stats?.flagged?.pending || 0}
+          icon="flag-outline"
+          color={theme.error.main}
+        />
+        <StatCard
+          title={t('admin.criticalFlags')}
+          value={stats?.flagged?.critical || 0}
+          icon="alert-circle-outline"
+          color={theme.error.dark}
+        />
+        <StatCard
+          title={t('admin.resolvedToday')}
+          value={stats?.resolvedToday || 0}
+          icon="checkmark-done-outline"
+          color={theme.success.main}
+        />
+      </ScrollView>
+
+      <View style={[localStyles.tabsContainer, isDesktop && { paddingHorizontal: 24 }]}>
+        {TABS.map((tab) => (
+          <TouchableOpacity
+            key={tab.id}
+            style={[
+              localStyles.tab,
+              activeTab === tab.id && localStyles.activeTab,
+            ]}
+            onPress={() => setActiveTab(tab.id as any)}
+          >
+            <Ionicons
+              name={tab.icon as any}
+              size={20}
+              color={activeTab === tab.id ? theme.primary.main : theme.text.tertiary}
+            />
+            <Text
+              style={[
+                localStyles.tabLabel,
+                activeTab === tab.id && localStyles.activeTabLabel,
+              ]}
+            >
+              {tab.label}
+            </Text>
+            {activeTab === tab.id && <View style={localStyles.tabIndicator} />}
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={[localStyles.filtersContainer, isDesktop && { paddingHorizontal: 24 }]}>
+        <View style={localStyles.searchHeader}>
+          <View style={localStyles.searchWrapper}>
+            <Ionicons name="search" size={20} color={theme.text.tertiary} />
+            <TextInput
+              style={localStyles.searchInput}
+              placeholder={activeTab === 'queue' ? t('admin.searchQueue') : t('admin.searchFlags')}
+              placeholderTextColor={theme.text.tertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </View>
-          <TouchableOpacity onPress={refresh}>
-            <Ionicons name="refresh" size={24} color={theme.primary.main} />
+          <TouchableOpacity style={localStyles.filterBtn}>
+            <Ionicons name="options-outline" size={20} color={theme.text.primary} />
           </TouchableOpacity>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={localStyles.statsScroll}
-          contentContainerStyle={localStyles.statsContainer}
-        >
-          <StatCard
-            title={t('admin.pendingReview')}
-            value={stats?.queue?.pending || 0}
-            icon="time-outline"
-            color={theme.primary.main}
-          />
-          <StatCard
-            title={t('admin.flaggedItems')}
-            value={stats?.flagged?.pending || 0}
-            icon="flag-outline"
-            color={theme.error.main}
-          />
-          <StatCard
-            title={t('admin.criticalFlags')}
-            value={stats?.flagged?.critical || 0}
-            icon="alert-circle-outline"
-            color={theme.error.dark}
-          />
-          <StatCard
-            title={t('admin.resolvedToday')}
-            value={stats?.resolvedToday || 0}
-            icon="checkmark-done-outline"
-            color={theme.success.main}
-          />
-        </ScrollView>
+        <FilterBar
+          options={activeTab === 'queue' ? queueStatusOptions : flaggedStatusOptions}
+          selectedValue={((activeTab === 'queue' ? queueStatus : flaggedStatus) || '') as any}
+          onSelect={(value) => {
+            const filterValue = value === '' ? undefined : value as any;
+            return activeTab === 'queue' ? setQueueStatusFilter(filterValue) : setFlaggedStatusFilter(filterValue);
+          }}
+          label={t('admin.status')}
+        />
+      </View>
 
-        <View style={localStyles.tabsContainer}>
-          {TABS.map((tab) => (
-            <TouchableOpacity
-              key={tab.id}
-              style={[
-                localStyles.tab,
-                activeTab === tab.id && localStyles.activeTab,
-              ]}
-              onPress={() => setActiveTab(tab.id as any)}
-            >
-              <Ionicons
-                name={tab.icon as any}
-                size={20}
-                color={activeTab === tab.id ? theme.primary.main : theme.text.tertiary}
-              />
-              <Text
-                style={[
-                  localStyles.tabLabel,
-                  activeTab === tab.id && localStyles.activeTabLabel,
-                ]}
-              >
-                {tab.label}
-              </Text>
-              {activeTab === tab.id && <View style={localStyles.tabIndicator} />}
-            </TouchableOpacity>
-          ))}
-        </View>
+      {error ? (
+        <EmptyState
+          icon="alert-circle"
+          title={t('common.error')}
+          message={error}
+          actionLabel={t('common.retry')}
+          onActionPress={refresh}
+          iconColor={theme.error.main}
+        />
+      ) : (activeTab === 'queue' ? moderationQueue : flaggedContent).length === 0 ? (
+        <EmptyState
+          icon={activeTab === 'queue' ? "list-outline" : "shield-checkmark-outline"}
+          title={activeTab === 'queue' ? t('admin.emptyQueue') : t('admin.noFlaggedContent')}
+          message={t('admin.moderationClear')}
+          iconColor={theme.success.main}
+        />
+      ) : (
+        <FlatList
+          data={activeTab === 'queue' ? moderationQueue : flaggedContent}
+          renderItem={activeTab === 'queue' ? renderModerationItem : renderFlaggedItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={[styles.scrollContent, isDesktop && { paddingHorizontal: 24 }]}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
+          numColumns={isDesktop ? 2 : 1}
+          key={isDesktop ? 'desktop' : 'mobile'}
+        />
+      )}
+    </>
+  );
 
-        <View style={localStyles.filtersContainer}>
-          <View style={localStyles.searchHeader}>
-            <View style={localStyles.searchWrapper}>
-              <Ionicons name="search" size={20} color={theme.text.tertiary} />
-              <TextInput
-                style={localStyles.searchInput}
-                placeholder={activeTab === 'queue' ? t('admin.searchQueue') : t('admin.searchFlags')}
-                placeholderTextColor={theme.text.tertiary}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {isDesktop ? (
+          <View style={styles.desktopContentWrapper}>
+            <AdminSidebar />
+            <View style={styles.desktopMainContent}>
+              {renderHeader()}
+              {renderMainContent()}
             </View>
-            <TouchableOpacity style={localStyles.filterBtn}>
-              <Ionicons name="options-outline" size={20} color={theme.text.primary} />
-            </TouchableOpacity>
           </View>
-
-          <FilterBar
-            options={activeTab === 'queue' ? queueStatusOptions : flaggedStatusOptions}
-            selectedValue={(activeTab === 'queue' ? queueStatus : flaggedStatus) || ''}
-            onSelect={(value) => {
-              const filterValue = value === '' ? undefined : value as any;
-              return activeTab === 'queue' ? setQueueStatusFilter(filterValue) : setFlaggedStatusFilter(filterValue);
-            }}
-            label={t('admin.status')}
-          />
-        </View>
-
-        {error ? (
-          <EmptyState
-            icon="alert-circle"
-            title={t('common.error')}
-            message={error}
-            actionLabel={t('common.retry')}
-            onActionPress={refresh}
-            iconColor={theme.error.main}
-          />
-        ) : (activeTab === 'queue' ? moderationQueue : flaggedContent).length === 0 ? (
-          <EmptyState
-            icon={activeTab === 'queue' ? "list-outline" : "shield-checkmark-outline"}
-            title={activeTab === 'queue' ? t('admin.emptyQueue') : t('admin.noFlaggedContent')}
-            message={t('admin.moderationClear')}
-            iconColor={theme.success.main}
-          />
         ) : (
-          <FlatList
-            data={activeTab === 'queue' ? moderationQueue : flaggedContent}
-            renderItem={activeTab === 'queue' ? renderModerationItem : renderFlaggedItem}
-            keyExtractor={(item) => item._id}
-            contentContainerStyle={styles.scrollContent}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
-          />
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderHeader()}
+            {renderMainContent()}
+          </ResponsiveContainer>
         )}
 
         <ActionSheet

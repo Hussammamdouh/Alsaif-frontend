@@ -3,7 +3,7 @@
  * Premium Redesign with glassmorphism, gradients, and refined typography
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
     View,
     Text,
@@ -22,6 +22,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { ResponsiveContainer } from '../../../shared/components';
 import { spacing } from '../../../core/theme/spacing';
 import { fontSizes, fontWeights } from '../../../core/theme/typography';
 import { apiClient } from '../../../core/services/api/apiClient';
@@ -47,8 +48,9 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
     onClose,
     onChatCreated,
 }) => {
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
+    const styles = useMemo(() => getStyles(theme, isDark), [theme, isDark]);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [users, setUsers] = useState<User[]>([]);
@@ -164,138 +166,149 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
     return (
         <Modal
             visible={isVisible}
-            animationType="slide"
-            transparent={false}
+            animationType="fade"
+            transparent={true}
             onRequestClose={handleClose}
         >
-            <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-                {/* Premium Header */}
-                <LinearGradient
-                    colors={['#1e293b', '#0f172a']}
-                    style={styles.headerGradient}
-                >
-                    <View style={styles.header}>
-                        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                            <Icon name="close" size={28} color="#FFFFFF" />
-                        </TouchableOpacity>
-                        <Text style={styles.headerTitle}>{t('chatList.newChat')}</Text>
-                        <View style={styles.headerActions}>
-                            <TouchableOpacity style={styles.actionIcon}>
-                                <Icon name="ellipsis-horizontal" size={24} color="#FFFFFF" />
+            <View style={styles.modalOverlay}>
+                <View style={[styles.centeredCardContainer, { backgroundColor: theme.background.primary }]}>
+                    <View style={[styles.headerSection, { backgroundColor: theme.background.secondary }]}>
+                        <View style={styles.header}>
+                            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                                <Icon name="close" size={24} color={theme.text.primary} />
                             </TouchableOpacity>
+                            <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('chatList.newChat')}</Text>
+                            <View style={styles.headerActions} />
                         </View>
-                    </View>
 
-                    {/* Integrated Search Bar */}
-                    <View style={styles.searchSection}>
-                        <View style={[styles.searchBar, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-                            <Icon name="search" size={20} color="rgba(255,255,255,0.4)" style={styles.searchIcon} />
-                            <TextInput
-                                style={[styles.searchInput, { color: '#FFFFFF', textAlign: isRTL ? 'right' : 'left' }]}
-                                placeholder={t('chatList.searchUsers')}
-                                placeholderTextColor="rgba(255,255,255,0.4)"
-                                value={searchQuery}
-                                onChangeText={setSearchQuery}
-                                autoFocus
-                                selectionColor={theme.primary.main}
-                            />
-                            {isLoading && <ActivityIndicator size="small" color={theme.primary.main} />}
-                        </View>
-                    </View>
-                </LinearGradient>
-
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.content}
-                >
-                    {/* User List */}
-                    <FlatList
-                        data={users}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderUserItem}
-                        contentContainerStyle={styles.listContent}
-                        ListEmptyComponent={() => (
-                            <View style={styles.emptyContainer}>
-                                <View style={[styles.emptyIconCircle, { backgroundColor: theme.background.secondary }]}>
-                                    <Icon name="people-outline" size={48} color={theme.text.tertiary} />
-                                </View>
-                                <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>
-                                    {searchQuery.length < 2 ? t('chatList.startTyping') : t('chatList.noUsersFound')}
-                                </Text>
-                                <Text style={[styles.emptySubtitle, { color: theme.text.tertiary }]}>
-                                    {searchQuery.length < 2
-                                        ? 'Search for advisors or fellow investors'
-                                        : 'Check the spelling or try another name'}
-                                </Text>
+                        {/* Integrated Search Bar */}
+                        <View style={styles.searchSection}>
+                            <View style={[styles.searchBar, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+                                <Icon name="search" size={20} color={theme.text.tertiary} style={styles.searchIcon} />
+                                <TextInput
+                                    style={[styles.searchInput, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}
+                                    placeholder={t('chatList.searchUsers')}
+                                    placeholderTextColor={theme.text.tertiary}
+                                    value={searchQuery}
+                                    onChangeText={setSearchQuery}
+                                    autoFocus
+                                    selectionColor={theme.primary.main}
+                                />
+                                {isLoading && <ActivityIndicator size="small" color={theme.primary.main} />}
                             </View>
+                        </View>
+                    </View>
+
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        style={styles.content}
+                    >
+                        {/* User List */}
+                        <FlatList
+                            data={users}
+                            keyExtractor={(item) => item.id}
+                            renderItem={renderUserItem}
+                            contentContainerStyle={styles.listContent}
+                            ListEmptyComponent={() => (
+                                <View style={styles.emptyContainer}>
+                                    <View style={[styles.emptyIconCircle, { backgroundColor: theme.background.secondary }]}>
+                                        <Icon name="people-outline" size={48} color={theme.text.tertiary} />
+                                    </View>
+                                    <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>
+                                        {searchQuery.length < 2 ? t('chatList.startTyping') : t('chatList.noUsersFound')}
+                                    </Text>
+                                    <Text style={[styles.emptySubtitle, { color: theme.text.tertiary }]}>
+                                        {searchQuery.length < 2
+                                            ? 'Search for advisors or fellow investors'
+                                            : 'Check the spelling or try another name'}
+                                    </Text>
+                                </View>
+                            )}
+                            showsVerticalScrollIndicator={false}
+                        />
+
+                        {/* Premium Footer with Integrated Message Box */}
+                        {selectedUser && (
+                            <LinearGradient
+                                colors={['transparent', theme.background.primary]}
+                                style={styles.footerGradient}
+                                pointerEvents="box-none"
+                            >
+                                <View style={[styles.footer, {
+                                    backgroundColor: theme.ui.card,
+                                    borderTopColor: theme.border.main + '20',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: -10 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 15,
+                                    elevation: 15
+                                }]}>
+                                    <View style={styles.selectedUserBanner}>
+                                        <Text style={[styles.selectedLabel, { color: theme.text.secondary }]}>
+                                            Starting conversation with
+                                        </Text>
+                                        <Text style={[styles.selectedName, { color: theme.primary.main }]}>
+                                            {selectedUser.name}
+                                        </Text>
+                                    </View>
+
+                                    <View style={[styles.messageInputWrapper, { backgroundColor: theme.background.primary }]}>
+                                        <TextInput
+                                            style={[styles.messageInput, { color: theme.text.primary, maxHeight: 120 }]}
+                                            placeholder={t('chatList.initialMessagePlaceholder')}
+                                            placeholderTextColor={theme.text.tertiary}
+                                            value={initialMessage}
+                                            onChangeText={setInitialMessage}
+                                            multiline
+                                        />
+                                        <TouchableOpacity
+                                            style={[styles.sendButton, { backgroundColor: theme.primary.main }]}
+                                            onPress={handleStartChat}
+                                            disabled={isCreating}
+                                        >
+                                            {isCreating ? (
+                                                <ActivityIndicator color="#FFFFFF" size="small" />
+                                            ) : (
+                                                <Icon name="send" size={20} color="#FFFFFF" />
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </LinearGradient>
                         )}
-                        showsVerticalScrollIndicator={false}
-                    />
-
-                    {/* Premium Footer with Integrated Message Box */}
-                    {selectedUser && (
-                        <LinearGradient
-                            colors={['transparent', theme.background.primary]}
-                            style={styles.footerGradient}
-                            pointerEvents="box-none"
-                        >
-                            <View style={[styles.footer, {
-                                backgroundColor: theme.ui.card,
-                                borderTopColor: theme.border.main + '20',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: -10 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 15,
-                                elevation: 15
-                            }]}>
-                                <View style={styles.selectedUserBanner}>
-                                    <Text style={[styles.selectedLabel, { color: theme.text.secondary }]}>
-                                        Starting conversation with
-                                    </Text>
-                                    <Text style={[styles.selectedName, { color: theme.primary.main }]}>
-                                        {selectedUser.name}
-                                    </Text>
-                                </View>
-
-                                <View style={[styles.messageInputWrapper, { backgroundColor: theme.background.primary }]}>
-                                    <TextInput
-                                        style={[styles.messageInput, { color: theme.text.primary, maxHeight: 120 }]}
-                                        placeholder={t('chatList.initialMessagePlaceholder')}
-                                        placeholderTextColor={theme.text.tertiary}
-                                        value={initialMessage}
-                                        onChangeText={setInitialMessage}
-                                        multiline
-                                    />
-                                    <TouchableOpacity
-                                        style={[styles.sendButton, { backgroundColor: theme.primary.main }]}
-                                        onPress={handleStartChat}
-                                        disabled={isCreating}
-                                    >
-                                        {isCreating ? (
-                                            <ActivityIndicator color="#FFFFFF" size="small" />
-                                        ) : (
-                                            <Icon name="send" size={20} color="#FFFFFF" />
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </LinearGradient>
-                    )}
-                </KeyboardAvoidingView>
+                    </KeyboardAvoidingView>
+                </View>
             </View>
         </Modal>
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
     },
-    headerGradient: {
-        paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: spacing.md,
+    },
+    centeredCardContainer: {
+        width: '100%',
+        maxWidth: 600,
+        maxHeight: '85%',
+        borderRadius: 24,
+        overflow: 'hidden',
+        elevation: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+    },
+    headerSection: {
+        paddingTop: spacing.lg,
         paddingBottom: spacing.lg,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
     },
     header: {
         flexDirection: 'row',
@@ -305,9 +318,8 @@ const styles = StyleSheet.create({
         marginBottom: spacing.lg,
     },
     headerTitle: {
-        fontSize: fontSizes.xl,
+        fontSize: fontSizes.lg,
         fontWeight: fontWeights.bold as any,
-        color: '#FFFFFF',
         letterSpacing: 0.5,
     },
     closeButton: {
@@ -316,7 +328,6 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
     },
     headerActions: {
         width: 44,
@@ -341,7 +352,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         height: 54,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: theme.ui.border,
     },
     searchIcon: {
         marginRight: spacing.sm,
@@ -400,7 +411,7 @@ const styles = StyleSheet.create({
         height: 14,
         borderRadius: 7,
         borderWidth: 3,
-        borderColor: '#FFFFFF',
+        borderColor: theme.background.primary,
     },
     userInfo: {
         flex: 1,
@@ -494,7 +505,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.05)',
+        borderColor: theme.ui.border,
     },
     messageInput: {
         flex: 1,

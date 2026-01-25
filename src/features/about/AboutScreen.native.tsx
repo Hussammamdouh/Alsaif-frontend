@@ -10,21 +10,24 @@ import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../../app/navigation/types';
 import Pdf from 'react-native-pdf';
 import { Asset } from 'expo-asset';
 
 export const AboutScreen = () => {
-    const { theme, isDark } = useTheme();
-    const { t, language } = useLocalization();
-    const navigation = useNavigation();
-    const [showPdf, setShowPdf] = useState(false);
-    const [pdfLoading, setPdfLoading] = useState(true);
+    const { theme } = useTheme();
+    const { t } = useLocalization();
+    const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
     // PDF path - using require for local asset
-    const pdfSource = require('../../../assets/FinancialRecommendation Approval -  سيف علي محمد الجابري.pdf');
+    const pdfSource = require('../../../assets/financial_license.pdf');
 
     const openPDF = () => {
-        setShowPdf(true);
+        navigation.navigate('PdfViewer', {
+            url: pdfSource,
+            title: t('about.license')
+        });
     };
 
     return (
@@ -113,52 +116,6 @@ export const AboutScreen = () => {
                     </Text>
                 </View>
             </ScrollView>
-
-            {/* PDF Modal */}
-            <Modal
-                visible={showPdf}
-                animationType="slide"
-                onRequestClose={() => setShowPdf(false)}
-            >
-                <SafeAreaView style={[styles.pdfContainer, { backgroundColor: theme.background.primary }]}>
-                    {/* PDF Header */}
-                    <View style={[styles.pdfHeader, { borderBottomColor: theme.border.main }]}>
-                        <TouchableOpacity onPress={() => setShowPdf(false)} style={styles.closeButton}>
-                            <Icon name="close" size={28} color={theme.text.primary} />
-                        </TouchableOpacity>
-                        <Text style={[styles.pdfTitle, { color: theme.text.primary }]}>
-                            {t('about.license')}
-                        </Text>
-                        <View style={{ width: 28 }} />
-                    </View>
-
-                    {/* PDF Viewer */}
-                    <View style={styles.pdfWrapper}>
-                        {pdfLoading && (
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color={theme.primary.main} />
-                                <Text style={[styles.loadingText, { color: theme.text.secondary }]}>
-                                    {language === 'ar' ? 'جاري تحميل المستند...' : 'Loading document...'}
-                                </Text>
-                            </View>
-                        )}
-                        <Pdf
-                            trustAllCerts={false}
-                            source={pdfSource}
-                            style={[styles.pdf, { backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5' }]}
-                            onLoadComplete={() => setPdfLoading(false)}
-                            onError={(error) => {
-                                console.error('PDF Error:', error);
-                                setPdfLoading(false);
-                            }}
-                            enablePaging={true}
-                            horizontal={false}
-                            fitPolicy={0}
-                            spacing={10}
-                        />
-                    </View>
-                </SafeAreaView>
-            </Modal>
         </SafeAreaView>
     );
 };
@@ -254,41 +211,5 @@ const styles = StyleSheet.create({
     versionText: {
         fontSize: 13,
         marginBottom: 4,
-    },
-    pdfContainer: {
-        flex: 1,
-    },
-    pdfHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-    },
-    closeButton: {
-        padding: 4,
-    },
-    pdfTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-    },
-    pdfWrapper: {
-        flex: 1,
-    },
-    pdf: {
-        flex: 1,
-        width: Dimensions.get('window').width,
-    },
-    loadingContainer: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 10,
-    },
-    loadingText: {
-        marginTop: 16,
-        fontSize: 14,
     },
 });

@@ -13,11 +13,12 @@ import {
   Platform,
   Animated,
   Easing,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { Input, Button } from '../../../shared/components';
+import { Input, Button, ThemeLanguageToggle, ResponsiveContainer } from '../../../shared/components';
 import { styles } from './reset-password.styles';
 import { useResetPasswordForm } from './reset-password.hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
@@ -35,7 +36,10 @@ interface ResetPasswordScreenProps {
 export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = React.memo(
   ({ email, onBackToLogin, onResetSuccess }) => {
     const { theme } = useTheme();
-    const { t } = useLocalization();
+    const { t, isRTL } = useLocalization();
+
+    const { width } = useWindowDimensions();
+    const isDesktop = width > 768;
     const {
       formState,
       showPassword,
@@ -157,6 +161,11 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = React.mem
 
     return (
       <View style={[styles.gradient, { backgroundColor: theme.background.primary }]}>
+        {isDesktop && (
+          <View style={[styles.absoluteToggles, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <ThemeLanguageToggle />
+          </View>
+        )}
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <KeyboardAvoidingView
             style={styles.container}
@@ -168,250 +177,256 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = React.mem
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-              {/* Header with Icon */}
-              <Animated.View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: `${theme.primary.main}15` },
-                  {
-                    opacity: iconOpacity,
-                    transform: [{ scale: Animated.multiply(iconScale, pulseAnim) }],
-                  },
-                ]}
-              >
-                <Icon
-                  name={formState.resetSuccess ? 'checkmark-circle-outline' : 'shield-checkmark-outline'}
-                  size={40}
-                  color={theme.primary.main}
-                />
-              </Animated.View>
-
-              <Animated.View
-                style={[
-                  styles.header,
-                  {
-                    opacity: headerOpacity,
-                    transform: [{ translateY: headerTranslateY }],
-                  },
-                ]}
-              >
-                <Text style={styles.title}>
-                  {formState.resetSuccess ? t('resetPassword.successTitle1') : t('resetPassword.title1')}
-                </Text>
-                <Text style={styles.subtitle}>
-                  {formState.resetSuccess
-                    ? t('resetPassword.successSubtitle')
-                    : t('resetPassword.subtitle')}
-                </Text>
-                {!formState.resetSuccess && email && (
-                  <Text style={styles.emailText}>{email}</Text>
-                )}
-              </Animated.View>
-
-              {/* Success State */}
-              {formState.resetSuccess ? (
-                <Animated.View
-                  style={[
-                    styles.successContainer,
-                    {
-                      opacity: contentOpacity,
-                      transform: [{ translateY: contentTranslateY }],
-                    },
-                  ]}
-                >
-                  <View style={styles.successIconContainer}>
-                    <Icon
-                      name="checkmark"
-                      size={32}
-                      color={theme.background.primary}
-                    />
-                  </View>
-
-                  <Text style={styles.successTitle}>{t('resetPassword.allSet')}</Text>
-                  <Text style={styles.successText}>
-                    {t('resetPassword.allSetSubtitle')}
-                  </Text>
-
-                  {/* Login Button */}
-                  <Button
-                    title={t('forgotPassword.backToLogin')}
-                    onPress={handleGoToLogin}
-                    style={styles.loginButton}
-                    accessibilityLabel="Back to login"
-                    accessibilityHint="Navigate to login screen"
-                    accessibilityRole="button"
-                  />
-                </Animated.View>
-              ) : (
-                /* Form */
-                <Animated.View
-                  style={[
-                    styles.formContainer,
-                    {
-                      opacity: contentOpacity,
-                      transform: [{ translateY: contentTranslateY }],
-                    },
-                  ]}
-                >
-                  {/* General Error */}
-                  {formState.errors.general && (
-                    <View style={styles.errorContainer}>
+              <View style={isDesktop ? [styles.desktopWrapper, { flex: 0, minHeight: '100%', paddingVertical: 20 }] : null}>
+                <ResponsiveContainer maxWidth={isDesktop ? 1200 : 480}>
+                  <View style={isDesktop ? [styles.loginCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border, alignSelf: 'center' }] : null}>
+                    {/* Header with Icon */}
+                    <Animated.View
+                      style={[
+                        styles.iconContainer,
+                        { backgroundColor: `${theme.primary.main}15` },
+                        {
+                          opacity: iconOpacity,
+                          transform: [{ scale: Animated.multiply(iconScale, pulseAnim) }],
+                        },
+                      ]}
+                    >
                       <Icon
-                        name="warning-outline"
-                        size={20}
-                        color={theme.accent.error}
-                        style={styles.errorIcon}
+                        name={formState.resetSuccess ? 'checkmark-circle-outline' : 'shield-checkmark-outline'}
+                        size={40}
+                        color={theme.primary.main}
                       />
-                      <Text style={styles.errorText}>{formState.errors.general}</Text>
-                    </View>
-                  )}
+                    </Animated.View>
 
-                  {/* Verification Code Input */}
-                  <Input
-                    label={t('resetPassword.verificationCode')}
-                    placeholder={t('resetPassword.codePlaceholder')}
-                    value={formState.data.code}
-                    onChangeText={setCode}
-                    error={formState.errors.code}
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    editable={!formState.isLoading}
-                    accessibilityLabel="Verification code input"
-                    accessibilityHint="Enter the 6-digit code sent to your email"
-                    leftIcon={
-                      <Icon
-                        name="keypad-outline"
-                        size={20}
-                        color={theme.text.tertiary}
-                      />
-                    }
-                  />
-                  <Text style={styles.codeHelper}>
-                    {t('resetPassword.codeHelper')}
-                  </Text>
-
-                  {/* New Password Input */}
-                  <Input
-                    label={t('resetPassword.newPassword')}
-                    placeholder={t('resetPassword.passwordPlaceholder')}
-                    value={formState.data.password}
-                    onChangeText={setPassword}
-                    error={formState.errors.password}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                    autoComplete="password-new"
-                    editable={!formState.isLoading}
-                    accessibilityLabel="New password input"
-                    accessibilityHint="Enter your new password with uppercase, lowercase, number, and special character"
-                    leftIcon={
-                      <Icon
-                        name="lock-closed-outline"
-                        size={20}
-                        color={theme.text.tertiary}
-                      />
-                    }
-                    rightIcon={
-                      <TouchableOpacity
-                        onPress={toggleShowPassword}
-                        accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
-                        accessibilityHint="Toggles password visibility"
-                        accessibilityRole="button"
-                      >
-                        <Icon
-                          name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                          size={20}
-                          color={theme.text.tertiary}
-                        />
-                      </TouchableOpacity>
-                    }
-                  />
-
-                  {/* Password Requirements */}
-                  {formState.data.password && !formState.errors.password && (
-                    <View style={styles.requirementsContainer}>
-                      <Text style={styles.requirementText}>
-                        {t('resetPassword.passwordRequirementsMet')}
+                    <Animated.View
+                      style={[
+                        styles.header,
+                        {
+                          opacity: headerOpacity,
+                          transform: [{ translateY: headerTranslateY }],
+                        },
+                      ]}
+                    >
+                      <Text style={styles.title}>
+                        {formState.resetSuccess ? t('resetPassword.successTitle1') : t('resetPassword.title1')}
                       </Text>
-                    </View>
-                  )}
+                      <Text style={styles.subtitle}>
+                        {formState.resetSuccess
+                          ? t('resetPassword.successSubtitle')
+                          : t('resetPassword.subtitle')}
+                      </Text>
+                      {!formState.resetSuccess && email && (
+                        <Text style={styles.emailText}>{email}</Text>
+                      )}
+                    </Animated.View>
 
-                  {/* Confirm Password Input */}
-                  <Input
-                    label={t('register.confirmPassword')}
-                    placeholder={t('resetPassword.confirmPlaceholder')}
-                    value={formState.data.confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    error={formState.errors.confirmPassword}
-                    secureTextEntry={!showConfirmPassword}
-                    autoCapitalize="none"
-                    autoComplete="password-new"
-                    editable={!formState.isLoading}
-                    accessibilityLabel="Confirm password input"
-                    accessibilityHint="Re-enter your password to confirm"
-                    leftIcon={
-                      <Icon
-                        name="lock-closed-outline"
-                        size={20}
-                        color={theme.text.tertiary}
-                      />
-                    }
-                    rightIcon={
-                      <TouchableOpacity
-                        onPress={toggleShowConfirmPassword}
-                        accessibilityLabel={showConfirmPassword ? 'Hide password' : 'Show password'}
-                        accessibilityHint="Toggles password visibility"
-                        accessibilityRole="button"
+                    {/* Success State */}
+                    {formState.resetSuccess ? (
+                      <Animated.View
+                        style={[
+                          styles.successContainer,
+                          {
+                            opacity: contentOpacity,
+                            transform: [{ translateY: contentTranslateY }],
+                          },
+                        ]}
                       >
-                        <Icon
-                          name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
-                          size={20}
-                          color={theme.text.tertiary}
+                        <View style={styles.successIconContainer}>
+                          <Icon
+                            name="checkmark"
+                            size={32}
+                            color={theme.background.primary}
+                          />
+                        </View>
+
+                        <Text style={styles.successTitle}>{t('resetPassword.allSet')}</Text>
+                        <Text style={styles.successText}>
+                          {t('resetPassword.allSetSubtitle')}
+                        </Text>
+
+                        {/* Login Button */}
+                        <Button
+                          title={t('forgotPassword.backToLogin')}
+                          onPress={handleGoToLogin}
+                          style={styles.loginButton}
+                          accessibilityLabel="Back to login"
+                          accessibilityHint="Navigate to login screen"
+                          accessibilityRole="button"
                         />
-                      </TouchableOpacity>
-                    }
-                  />
+                      </Animated.View>
+                    ) : (
+                      /* Form */
+                      <Animated.View
+                        style={[
+                          styles.formContainer,
+                          {
+                            opacity: contentOpacity,
+                            transform: [{ translateY: contentTranslateY }],
+                          },
+                        ]}
+                      >
+                        {/* General Error */}
+                        {formState.errors.general && (
+                          <View style={styles.errorContainer}>
+                            <Icon
+                              name="warning-outline"
+                              size={20}
+                              color={theme.accent.error}
+                              style={styles.errorIcon}
+                            />
+                            <Text style={styles.errorText}>{formState.errors.general}</Text>
+                          </View>
+                        )}
 
-                  {/* Submit Button */}
-                  <Button
-                    title={t('resetPassword.resetButton')}
-                    onPress={handleSubmit}
-                    loading={formState.isLoading}
-                    disabled={isSubmitDisabled}
-                    style={styles.submitButton}
-                    accessibilityLabel="Reset password"
-                    accessibilityHint="Submits new password"
-                    accessibilityRole="button"
-                  />
-                </Animated.View>
-              )}
+                        {/* Verification Code Input */}
+                        <Input
+                          label={t('resetPassword.verificationCode')}
+                          placeholder={t('resetPassword.codePlaceholder')}
+                          value={formState.data.code}
+                          onChangeText={setCode}
+                          error={formState.errors.code}
+                          keyboardType="number-pad"
+                          maxLength={6}
+                          editable={!formState.isLoading}
+                          accessibilityLabel="Verification code input"
+                          accessibilityHint="Enter the 6-digit code sent to your email"
+                          leftIcon={
+                            <Icon
+                              name="keypad-outline"
+                              size={20}
+                              color={theme.text.tertiary}
+                            />
+                          }
+                        />
+                        <Text style={styles.codeHelper}>
+                          {t('resetPassword.codeHelper')}
+                        </Text>
 
-              {/* Back to Login Link */}
-              {!formState.resetSuccess && (
-                <Animated.View
-                  style={[
-                    styles.footer,
-                    {
-                      opacity: footerOpacity,
-                    },
-                  ]}
-                >
-                  <TouchableOpacity
-                    onPress={onBackToLogin}
-                    accessibilityLabel="Back to login"
-                    accessibilityHint="Navigate back to login screen"
-                    accessibilityRole="button"
-                  >
-                    <Text style={styles.backToLoginText}>
-                      {t('forgotPassword.rememberPassword')}{' '}
-                      <Text style={styles.loginLink}>{t('forgotPassword.backToLogin')}</Text>
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              )}
+                        {/* New Password Input */}
+                        <Input
+                          label={t('resetPassword.newPassword')}
+                          placeholder={t('resetPassword.passwordPlaceholder')}
+                          value={formState.data.password}
+                          onChangeText={setPassword}
+                          error={formState.errors.password}
+                          secureTextEntry={!showPassword}
+                          autoCapitalize="none"
+                          autoComplete="password-new"
+                          editable={!formState.isLoading}
+                          accessibilityLabel="New password input"
+                          accessibilityHint="Enter your new password with uppercase, lowercase, number, and special character"
+                          leftIcon={
+                            <Icon
+                              name="lock-closed-outline"
+                              size={20}
+                              color={theme.text.tertiary}
+                            />
+                          }
+                          rightIcon={
+                            <TouchableOpacity
+                              onPress={toggleShowPassword}
+                              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                              accessibilityHint="Toggles password visibility"
+                              accessibilityRole="button"
+                            >
+                              <Icon
+                                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                                size={20}
+                                color={theme.text.tertiary}
+                              />
+                            </TouchableOpacity>
+                          }
+                        />
+
+                        {/* Password Requirements */}
+                        {formState.data.password && !formState.errors.password && (
+                          <View style={styles.requirementsContainer}>
+                            <Text style={styles.requirementText}>
+                              {t('resetPassword.passwordRequirementsMet')}
+                            </Text>
+                          </View>
+                        )}
+
+                        {/* Confirm Password Input */}
+                        <Input
+                          label={t('register.confirmPassword')}
+                          placeholder={t('resetPassword.confirmPlaceholder')}
+                          value={formState.data.confirmPassword}
+                          onChangeText={setConfirmPassword}
+                          error={formState.errors.confirmPassword}
+                          secureTextEntry={!showConfirmPassword}
+                          autoCapitalize="none"
+                          autoComplete="password-new"
+                          editable={!formState.isLoading}
+                          accessibilityLabel="Confirm password input"
+                          accessibilityHint="Re-enter your password to confirm"
+                          leftIcon={
+                            <Icon
+                              name="lock-closed-outline"
+                              size={20}
+                              color={theme.text.tertiary}
+                            />
+                          }
+                          rightIcon={
+                            <TouchableOpacity
+                              onPress={toggleShowConfirmPassword}
+                              accessibilityLabel={showConfirmPassword ? 'Hide password' : 'Show password'}
+                              accessibilityHint="Toggles password visibility"
+                              accessibilityRole="button"
+                            >
+                              <Icon
+                                name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                                size={20}
+                                color={theme.text.tertiary}
+                              />
+                            </TouchableOpacity>
+                          }
+                        />
+
+                        {/* Submit Button */}
+                        <Button
+                          title={t('resetPassword.resetButton')}
+                          onPress={handleSubmit}
+                          loading={formState.isLoading}
+                          disabled={isSubmitDisabled}
+                          style={styles.submitButton}
+                          accessibilityLabel="Reset password"
+                          accessibilityHint="Submits new password"
+                          accessibilityRole="button"
+                        />
+                      </Animated.View>
+                    )}
+
+                    {/* Back to Login Link */}
+                    {!formState.resetSuccess && (
+                      <Animated.View
+                        style={[
+                          styles.footer,
+                          {
+                            opacity: footerOpacity,
+                          },
+                        ]}
+                      >
+                        <TouchableOpacity
+                          onPress={onBackToLogin}
+                          accessibilityLabel="Back to login"
+                          accessibilityHint="Navigate back to login screen"
+                          accessibilityRole="button"
+                        >
+                          <Text style={styles.backToLoginText}>
+                            {t('forgotPassword.rememberPassword')}{' '}
+                            <Text style={styles.loginLink}>{t('forgotPassword.backToLogin')}</Text>
+                          </Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </View>
+                </ResponsiveContainer>
+              </View>
             </ScrollView>
           </KeyboardAvoidingView>
         </SafeAreaView>
-      </View>
+      </View >
     );
   }
 );

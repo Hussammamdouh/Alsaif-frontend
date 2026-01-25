@@ -13,11 +13,12 @@ import {
   Platform,
   Animated,
   Easing,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { Input, Button } from '../../../shared/components';
+import { Input, Button, ThemeLanguageToggle, ResponsiveContainer } from '../../../shared/components';
 import { styles } from './forgot-password.styles';
 import { useForgotPasswordForm } from './forgot-password.hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
@@ -34,13 +35,16 @@ interface ForgotPasswordScreenProps {
 export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = React.memo(
   ({ onBackToLogin, onResetEmailSent }) => {
     const { theme } = useTheme();
-    const { t } = useLocalization();
+    const { t, isRTL } = useLocalization();
     const {
       formState,
       setEmail,
       submitForgotPassword,
       isSubmitDisabled,
     } = useForgotPasswordForm();
+
+    const { width } = useWindowDimensions();
+    const isDesktop = width > 768;
 
     // Animation values
     const iconScale = useRef(new Animated.Value(0)).current;
@@ -149,6 +153,11 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = React.m
 
     return (
       <View style={[styles.gradient, { backgroundColor: theme.background.primary }]}>
+        {isDesktop && (
+          <View style={[styles.absoluteToggles, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <ThemeLanguageToggle />
+          </View>
+        )}
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <KeyboardAvoidingView
             style={styles.container}
@@ -160,171 +169,177 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = React.m
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-              {/* Header with Icon */}
-              <Animated.View
-                style={[
-                  styles.header,
-                  {
-                    opacity: headerOpacity,
-                    transform: [{ translateY: headerTranslateY }],
-                  },
-                ]}
-              >
-                <Animated.View
-                  style={[
-                    styles.iconContainer,
-                    { backgroundColor: `${theme.primary.main}15` },
-                    {
-                      opacity: iconOpacity,
-                      transform: [{ scale: Animated.multiply(iconScale, pulseAnim) }],
-                    },
-                  ]}
-                >
-                  <Icon
-                    name="lock-closed-outline"
-                    size={40}
-                    color={theme.primary.main}
-                  />
-                </Animated.View>
-
-                <Text style={[styles.title, { color: theme.text.primary }]}>{t('forgotPassword.title')}</Text>
-                <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
-                  {formState.emailSent
-                    ? t('forgotPassword.successSubtitle')
-                    : t('forgotPassword.subtitle')}
-                </Text>
-              </Animated.View>
-
-              {/* Success State */}
-              {formState.emailSent ? (
-                <Animated.View
-                  style={[
-                    styles.successContainer,
-                    {
-                      backgroundColor: `${theme.accent.success}15`,
-                      borderLeftColor: theme.accent.success,
-                    },
-                    {
-                      opacity: contentOpacity,
-                      transform: [{ translateY: contentTranslateY }],
-                    },
-                  ]}
-                >
-                  <View style={[styles.successIconContainer, { backgroundColor: theme.accent.success }]}>
-                    <Icon
-                      name="checkmark-circle"
-                      size={32}
-                      color={theme.background.primary}
-                    />
-                  </View>
-
-                  <Text style={[styles.successTitle, { color: theme.text.primary }]}>{t('forgotPassword.successTitle')}</Text>
-                  <Text style={[styles.successText, { color: theme.text.secondary }]}>
-                    {t('forgotPassword.successMessage')}{'\n'}
-                    <Text style={{ fontWeight: '600' }}>{formState.data.email}</Text>
-                  </Text>
-
-                  {/* Resend Button */}
-                  <TouchableOpacity
-                    style={styles.resendButton}
-                    onPress={handleResend}
-                    disabled={formState.isLoading}
-                    accessibilityLabel="Resend email"
-                    accessibilityHint="Sends another password reset email"
-                    accessibilityRole="button"
-                  >
-                    <Text style={[styles.resendButtonText, { color: theme.primary.main }]}>
-                      {t('forgotPassword.resendText')}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              ) : (
-                /* Form */
-                <Animated.View
-                  style={[
-                    styles.formContainer,
-                    {
-                      opacity: contentOpacity,
-                      transform: [{ translateY: contentTranslateY }],
-                    },
-                  ]}
-                >
-                  {/* General Error */}
-                  {formState.errors.general && (
-                    <View
+              <View style={isDesktop ? [styles.desktopWrapper, { flex: 0, minHeight: '100%', paddingVertical: 20 }] : null}>
+                <ResponsiveContainer maxWidth={isDesktop ? 1200 : 480}>
+                  <View style={isDesktop ? [styles.loginCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border, alignSelf: 'center' }] : null}>
+                    {/* Header with Icon */}
+                    <Animated.View
                       style={[
-                        styles.errorContainer,
+                        styles.header,
                         {
-                          backgroundColor: `${theme.accent.error}15`,
-                          borderLeftColor: theme.accent.error,
+                          opacity: headerOpacity,
+                          transform: [{ translateY: headerTranslateY }],
                         },
                       ]}
                     >
-                      <Icon name="warning-outline" size={20} color={theme.accent.error} style={styles.errorIcon} />
-                      <Text style={[styles.errorText, { color: theme.accent.error }]}>{formState.errors.general}</Text>
-                    </View>
-                  )}
+                      <Animated.View
+                        style={[
+                          styles.iconContainer,
+                          { backgroundColor: `${theme.primary.main}15` },
+                          {
+                            opacity: iconOpacity,
+                            transform: [{ scale: Animated.multiply(iconScale, pulseAnim) }],
+                          },
+                        ]}
+                      >
+                        <Icon
+                          name="lock-closed-outline"
+                          size={40}
+                          color={theme.primary.main}
+                        />
+                      </Animated.View>
 
-                  {/* Email Input */}
-                  <Input
-                    label={t('login.email')}
-                    placeholder={t('forgotPassword.emailPlaceholder')}
-                    value={formState.data.email}
-                    onChangeText={setEmail}
-                    error={formState.errors.email}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    autoCorrect={false}
-                    editable={!formState.isLoading}
-                    accessibilityLabel="Email address input"
-                    accessibilityHint="Enter your email to receive password reset instructions"
-                    leftIcon={
-                      <Icon
-                        name="mail-outline"
-                        size={20}
-                        color={theme.primary.main}
-                      />
-                    }
-                  />
+                      <Text style={[styles.title, { color: theme.text.primary }]}>{t('forgotPassword.title')}</Text>
+                      <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
+                        {formState.emailSent
+                          ? t('forgotPassword.successSubtitle')
+                          : t('forgotPassword.subtitle')}
+                      </Text>
+                    </Animated.View>
 
-                  {/* Submit Button */}
-                  <Button
-                    title={t('forgotPassword.sendLink')}
-                    onPress={handleSubmit}
-                    loading={formState.isLoading}
-                    disabled={isSubmitDisabled}
-                    style={styles.submitButton}
-                    accessibilityLabel="Send reset link"
-                    accessibilityHint="Sends password reset email"
-                    accessibilityRole="button"
-                  />
-                </Animated.View>
-              )}
+                    {/* Success State */}
+                    {formState.emailSent ? (
+                      <Animated.View
+                        style={[
+                          styles.successContainer,
+                          {
+                            backgroundColor: `${theme.accent.success}15`,
+                            borderLeftColor: theme.accent.success,
+                          },
+                          {
+                            opacity: contentOpacity,
+                            transform: [{ translateY: contentTranslateY }],
+                          },
+                        ]}
+                      >
+                        <View style={[styles.successIconContainer, { backgroundColor: theme.accent.success }]}>
+                          <Icon
+                            name="checkmark-circle"
+                            size={32}
+                            color={theme.background.primary}
+                          />
+                        </View>
 
-              {/* Back to Login Link */}
-              <Animated.View
-                style={[
-                  styles.footer,
-                  { opacity: contentOpacity },
-                ]}
-              >
-                <TouchableOpacity
-                  onPress={onBackToLogin}
-                  accessibilityLabel="Back to login"
-                  accessibilityHint="Navigate back to login screen"
-                  accessibilityRole="button"
-                >
-                  <Text style={[styles.backToLoginText, { color: theme.text.secondary }]}>
-                    {t('forgotPassword.rememberPassword')}{' '}
-                    <Text style={[styles.loginLink, { color: theme.primary.main }]}>{t('forgotPassword.backToLogin')}</Text>
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
+                        <Text style={[styles.successTitle, { color: theme.text.primary }]}>{t('forgotPassword.successTitle')}</Text>
+                        <Text style={[styles.successText, { color: theme.text.secondary }]}>
+                          {t('forgotPassword.successMessage')}{'\n'}
+                          <Text style={{ fontWeight: '600' }}>{formState.data.email}</Text>
+                        </Text>
+
+                        {/* Resend Button */}
+                        <TouchableOpacity
+                          style={styles.resendButton}
+                          onPress={handleResend}
+                          disabled={formState.isLoading}
+                          accessibilityLabel="Resend email"
+                          accessibilityHint="Sends another password reset email"
+                          accessibilityRole="button"
+                        >
+                          <Text style={[styles.resendButtonText, { color: theme.primary.main }]}>
+                            {t('forgotPassword.resendText')}
+                          </Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    ) : (
+                      /* Form */
+                      <Animated.View
+                        style={[
+                          styles.formContainer,
+                          {
+                            opacity: contentOpacity,
+                            transform: [{ translateY: contentTranslateY }],
+                          },
+                        ]}
+                      >
+                        {/* General Error */}
+                        {formState.errors.general && (
+                          <View
+                            style={[
+                              styles.errorContainer,
+                              {
+                                backgroundColor: `${theme.accent.error}15`,
+                                borderLeftColor: theme.accent.error,
+                              },
+                            ]}
+                          >
+                            <Icon name="warning-outline" size={20} color={theme.accent.error} style={styles.errorIcon} />
+                            <Text style={[styles.errorText, { color: theme.accent.error }]}>{formState.errors.general}</Text>
+                          </View>
+                        )}
+
+                        {/* Email Input */}
+                        <Input
+                          label={t('login.email')}
+                          placeholder={t('forgotPassword.emailPlaceholder')}
+                          value={formState.data.email}
+                          onChangeText={setEmail}
+                          error={formState.errors.email}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoComplete="email"
+                          autoCorrect={false}
+                          editable={!formState.isLoading}
+                          accessibilityLabel="Email address input"
+                          accessibilityHint="Enter your email to receive password reset instructions"
+                          leftIcon={
+                            <Icon
+                              name="mail-outline"
+                              size={20}
+                              color={theme.primary.main}
+                            />
+                          }
+                        />
+
+                        {/* Submit Button */}
+                        <Button
+                          title={t('forgotPassword.sendLink')}
+                          onPress={handleSubmit}
+                          loading={formState.isLoading}
+                          disabled={isSubmitDisabled}
+                          style={styles.submitButton}
+                          accessibilityLabel="Send reset link"
+                          accessibilityHint="Sends password reset email"
+                          accessibilityRole="button"
+                        />
+                      </Animated.View>
+                    )}
+
+                    {/* Back to Login Link */}
+                    <Animated.View
+                      style={[
+                        styles.footer,
+                        { opacity: contentOpacity },
+                      ]}
+                    >
+                      <TouchableOpacity
+                        onPress={onBackToLogin}
+                        accessibilityLabel="Back to login"
+                        accessibilityHint="Navigate back to login screen"
+                        accessibilityRole="button"
+                      >
+                        <Text style={[styles.backToLoginText, { color: theme.text.secondary }]}>
+                          {t('forgotPassword.rememberPassword')}{' '}
+                          <Text style={[styles.loginLink, { color: theme.primary.main }]}>{t('forgotPassword.backToLogin')}</Text>
+                        </Text>
+                      </TouchableOpacity>
+                    </Animated.View>
+                  </View>
+                </ResponsiveContainer>
+              </View>
             </ScrollView>
           </KeyboardAvoidingView>
         </SafeAreaView>
-      </View>
+      </View >
     );
   }
 );

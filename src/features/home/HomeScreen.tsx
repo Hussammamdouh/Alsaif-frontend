@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,6 +21,7 @@ import { PremiumInsightsListScreen } from '../insights/PremiumInsightsListScreen
 import { DisclosureListScreen } from '../disclosure';
 import { InsightRequestModal } from '../insights/requests/InsightRequestModal';
 import { useTheme } from '../../app/providers/ThemeProvider';
+import { ResponsiveContainer } from '../../shared/components';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription/useSubscriptionAccess';
 import { useIsAdmin } from '../../app/auth/auth.hooks';
@@ -35,7 +37,10 @@ export const HomeScreen: React.FC = React.memo(() => {
   const { hasPremiumAccess } = useSubscriptionAccess();
   const isAdmin = useIsAdmin();
   const { count: unreadNotifications } = useUnreadBadge();
-  const styles = React.useMemo(() => getStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const styles = React.useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
+
   const [activeTab, setActiveTab] = useState<TabType>('disclosures');
   const [showRequestModal, setShowRequestModal] = useState(false);
 
@@ -63,157 +68,180 @@ export const HomeScreen: React.FC = React.memo(() => {
     <BannerCarousel type={activeTab} />
   );
 
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background.primary }]}
-      edges={['top']}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>
-          {t('insights.title')}
-        </Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: theme.background.tertiary, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
-            onPress={() => navigation.navigate('Notifications', {})}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="notifications-outline" size={22} color={theme.text.primary} />
-            {unreadNotifications > 0 ? (
-              <View style={[styles.badge, { backgroundColor: theme.accent.error }]}>
-                <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
-              </View>
-            ) : null}
-          </TouchableOpacity>
-          {hasPremiumAccess && (
-            <>
-              <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: theme.background.tertiary, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
-                onPress={() => navigation.navigate('InsightRequests')}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="list-outline" size={22} color={theme.text.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: theme.primary.main, borderColor: 'transparent' }]}
-                onPress={handleAddRequest}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="add" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      </View>
-
-      {/* Top Tabs - Sticky */}
-      <View style={[styles.tabsContainer, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main }]}>
-        <View style={styles.tabsInner}>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'disclosures' && styles.tabActive,
-            ]}
-            onPress={() => handleTabChange('disclosures')}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                { color: theme.text.secondary },
-                activeTab === 'disclosures' && [styles.tabTextActive, { color: theme.primary.main }],
-              ]}
-            >
-              {t('tabs.disclosures')}
-            </Text>
-            {activeTab === 'disclosures' && (
-              <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'free' && styles.tabActive,
-            ]}
-            onPress={() => handleTabChange('free')}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                { color: theme.text.secondary },
-                activeTab === 'free' && [styles.tabTextActive, { color: theme.primary.main }],
-              ]}
-            >
-              {t('insights.freeInsights')}
-            </Text>
-            {activeTab === 'free' && (
-              <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'premium' && styles.tabActive,
-            ]}
-            onPress={() => handleTabChange('premium')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.tabContent}>
-              <Text
-                style={[
-                  styles.tabText,
-                  { color: theme.text.secondary },
-                  activeTab === 'premium' && [styles.tabTextActive, { color: theme.primary.main }],
-                ]}
-              >
-                {t('insights.premiumInsights')}
-              </Text>
-              <View style={[styles.premiumBadge, { backgroundColor: theme.primary.main }]}>
-                <Text style={styles.premiumBadgeText}>PRO</Text>
-              </View>
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>
+        {t('insights.title')}
+      </Text>
+      <View style={styles.headerActions}>
+        <TouchableOpacity
+          style={[styles.iconButton, { backgroundColor: theme.background.tertiary, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
+          onPress={() => navigation.navigate('Notifications', {})}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="notifications-outline" size={22} color={theme.text.primary} />
+          {unreadNotifications > 0 ? (
+            <View style={[styles.badge, { backgroundColor: theme.accent.error }]}>
+              <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
             </View>
-            {activeTab === 'premium' && (
-              <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Content - Banners scroll with insights */}
-      <View style={styles.content}>
-        {activeTab === 'disclosures' ? (
-          <DisclosureListScreen
-            hideHeader
-            ListHeaderComponent={renderBannerHeader()}
-          />
-        ) : activeTab === 'free' ? (
-          <InsightsListScreen
-            hideHeader
-            ListHeaderComponent={renderBannerHeader()}
-          />
-        ) : (
-          <PremiumInsightsListScreen
-            hideHeader
-            ListHeaderComponent={renderBannerHeader()}
-          />
+          ) : null}
+        </TouchableOpacity>
+        {hasPremiumAccess && (
+          <>
+            <TouchableOpacity
+              style={[styles.iconButton, { backgroundColor: theme.background.tertiary, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
+              onPress={() => navigation.navigate('InsightRequests')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="list-outline" size={22} color={theme.text.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.iconButton, { backgroundColor: theme.primary.main, borderColor: 'transparent' }]}
+              onPress={handleAddRequest}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </>
         )}
       </View>
+    </View>
+  );
+
+  const renderTabs = () => (
+    <View style={[styles.tabsContainer, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main }]}>
+      <View style={styles.tabsInner}>
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === 'disclosures' && styles.tabActive,
+          ]}
+          onPress={() => handleTabChange('disclosures')}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              { color: theme.text.secondary },
+              activeTab === 'disclosures' && [styles.tabTextActive, { color: theme.primary.main }],
+            ]}
+          >
+            {t('tabs.disclosures')}
+          </Text>
+          {activeTab === 'disclosures' && (
+            <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === 'free' && styles.tabActive,
+          ]}
+          onPress={() => handleTabChange('free')}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              { color: theme.text.secondary },
+              activeTab === 'free' && [styles.tabTextActive, { color: theme.primary.main }],
+            ]}
+          >
+            {t('insights.freeInsights')}
+          </Text>
+          {activeTab === 'free' && (
+            <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === 'premium' && styles.tabActive,
+          ]}
+          onPress={() => handleTabChange('premium')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.tabContent}>
+            <Text
+              style={[
+                styles.tabText,
+                { color: theme.text.secondary },
+                activeTab === 'premium' && [styles.tabTextActive, { color: theme.primary.main }],
+              ]}
+            >
+              {t('insights.premiumInsights')}
+            </Text>
+            <View style={[styles.premiumBadge, { backgroundColor: theme.primary.main }]}>
+              <Text style={styles.premiumBadgeText}>PRO</Text>
+            </View>
+          </View>
+          {activeTab === 'premium' && (
+            <View style={[styles.tabIndicator, { backgroundColor: theme.primary.main }]} />
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <View style={styles.content}>
+      {activeTab === 'disclosures' ? (
+        <DisclosureListScreen
+          hideHeader
+          ListHeaderComponent={renderBannerHeader()}
+        />
+      ) : activeTab === 'free' ? (
+        <InsightsListScreen
+          hideHeader
+          ListHeaderComponent={renderBannerHeader()}
+        />
+      ) : (
+        <PremiumInsightsListScreen
+          hideHeader
+          ListHeaderComponent={renderBannerHeader()}
+        />
+      )}
+    </View>
+  );
+
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+      {isDesktop ? (
+        <View style={styles.desktopContainer}>
+          <View style={styles.desktopMainColumn}>
+            {!isDesktop && renderHeader()}
+            {renderTabs()}
+            <View style={styles.desktopContent}>
+              {renderMainContent()}
+            </View>
+          </View>
+        </View>
+      ) : (
+        <SafeAreaView
+          style={[styles.container, { backgroundColor: theme.background.primary }]}
+          edges={['top']}
+        >
+          <ResponsiveContainer>
+            {renderHeader()}
+            {renderTabs()}
+            {renderMainContent()}
+          </ResponsiveContainer>
+        </SafeAreaView>
+      )}
 
       <InsightRequestModal
         isVisible={showRequestModal}
         onClose={() => setShowRequestModal(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 });
 
 HomeScreen.displayName = 'HomeScreen';
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -263,21 +291,26 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   tabsContainer: {
     borderBottomWidth: 1,
+    backgroundColor: theme.background.primary,
   },
   tabsInner: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    justifyContent: isDesktop ? 'flex-start' : 'center',
+    gap: isDesktop ? 32 : 0,
   },
   tab: {
-    flex: 1,
+    flex: isDesktop ? 0 : 1,
     paddingVertical: 16,
+    paddingHorizontal: isDesktop ? 12 : 0,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    minWidth: isDesktop ? 120 : 0,
   },
   tabActive: {
-    // Active styles handled by indicator
+    borderBottomWidth: 3,
+    borderBottomColor: theme.primary.main,
   },
   tabContent: {
     flexDirection: 'row',
@@ -313,5 +346,22 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  desktopContainer: {
+    flex: 1,
+    backgroundColor: theme.background.primary,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  desktopMainColumn: {
+    flex: 1,
+    backgroundColor: theme.background.secondary,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: theme.border.main,
+  },
+  desktopContent: {
+    flex: 1,
+    backgroundColor: theme.background.primary,
   },
 });

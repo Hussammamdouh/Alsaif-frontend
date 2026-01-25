@@ -18,6 +18,7 @@ import { useTheme } from '../../../app/providers/ThemeProvider';
 import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { spacing } from '../../../core/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
+import { ResponsiveContainer } from '../../../shared/components';
 
 interface DisclosureListScreenProps {
     hideHeader?: boolean;
@@ -267,49 +268,51 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-            {/* Custom Interactive Header */}
-            {!hideHeader && (
-                <View style={[styles.fixedHeader, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main }]}>
-                    <Text style={[styles.fixedHeaderTitle, { color: theme.text.primary }]}>
-                        {t('disclosures.title')}
-                    </Text>
-                    <View style={styles.headerActions}>
-                        <TouchableOpacity style={styles.iconButton} onPress={toggleLanguage}>
-                            <Text style={{ color: theme.primary.main, fontWeight: 'bold' }}>{language === 'ar' ? 'EN' : 'عربي'}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconButton} onPress={toggleTheme}>
-                            <Ionicons name={isDark ? "sunny" : "moon"} size={22} color={theme.text.primary} />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
-
-            <FlatList
-                data={disclosures}
-                renderItem={renderItem}
-                keyExtractor={(item) => item._id}
-                ListHeaderComponent={
-                    <>
-                        {ListHeaderComponent}
-                        {renderFilterTabs()}
-                    </>
-                }
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />
-                }
-                contentContainerStyle={[styles.listContent, !hideHeader && { paddingTop: 70 }]}
-                ListEmptyComponent={
-                    !loading ? (
-                        <View style={styles.emptyContainer}>
-                            <Ionicons name="document-text-outline" size={48} color={theme.text.tertiary} />
-                            <Text style={{ color: theme.text.secondary, marginTop: spacing.md }}>
-                                {t('common.noData')}
-                            </Text>
+            <ResponsiveContainer>
+                {/* Custom Interactive Header */}
+                {!hideHeader && (
+                    <View style={[styles.fixedHeader, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main }]}>
+                        <Text style={[styles.fixedHeaderTitle, { color: theme.text.primary }]}>
+                            {t('disclosures.title')}
+                        </Text>
+                        <View style={styles.headerActions}>
+                            <TouchableOpacity style={styles.iconButton} onPress={toggleLanguage}>
+                                <Text style={{ color: theme.primary.main, fontWeight: 'bold' }}>{language === 'ar' ? 'EN' : 'عربي'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.iconButton} onPress={toggleTheme}>
+                                <Ionicons name={isDark ? "sunny" : "moon"} size={22} color={theme.text.primary} />
+                            </TouchableOpacity>
                         </View>
-                    ) : null
-                }
-            />
-            {renderPdfSelectionModal()}
+                    </View>
+                )}
+
+                <FlatList
+                    data={disclosures}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item._id}
+                    ListHeaderComponent={
+                        <>
+                            {ListHeaderComponent}
+                            {renderFilterTabs()}
+                        </>
+                    }
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />
+                    }
+                    contentContainerStyle={[styles.listContent, !hideHeader && { paddingTop: 70 }]}
+                    ListEmptyComponent={
+                        !loading ? (
+                            <View style={styles.emptyContainer}>
+                                <Ionicons name="document-text-outline" size={48} color={theme.text.tertiary} />
+                                <Text style={{ color: theme.text.secondary, marginTop: spacing.md }}>
+                                    {t('common.noData')}
+                                </Text>
+                            </View>
+                        ) : null
+                    }
+                />
+                {renderPdfSelectionModal()}
+            </ResponsiveContainer>
         </View>
     );
 };

@@ -9,17 +9,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../../app/navigation/types';
+import { Asset } from 'expo-asset';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export const AboutScreen = () => {
     const { theme } = useTheme();
-    const { t, language } = useLocalization();
-    const navigation = useNavigation();
+    const { t } = useLocalization();
+    const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
-    // For web, open PDF in new window (same as disclosure pattern)
+    // For web, we navigate to PdfViewerScreen which handles the iframe/proxy
     const openPDF = () => {
-        const pdfPath = '/assets/FinancialRecommendation%20Approval%20-%20%D8%B3%D9%8A%D9%81%20%D8%B9%D9%84%D9%8A%20%D9%85%D8%AD%D9%85%D8%AF%20%D8%A7%D9%84%D8%AC%D8%A7%D8%A8%D8%B1%D9%8A.pdf';
-        window.open(pdfPath, '_blank');
+        // Use require to get the asset handle, then resolve its URI
+        const asset = Asset.fromModule(require('../../../assets/financial_license.pdf'));
+
+        // On web, asset.uri is the URL to the bundled file
+        const url = asset.uri;
+
+        navigation.navigate('PdfViewer', {
+            url: url,
+            title: t('about.license')
+        });
     };
 
     return (

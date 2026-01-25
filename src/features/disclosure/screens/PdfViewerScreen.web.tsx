@@ -11,6 +11,7 @@ import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../app/navigation/types';
 import { useTheme } from '../../../app/providers/ThemeProvider';
+import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing } from '../../../core/theme/spacing';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +20,7 @@ type PdfViewerRouteProp = RouteProp<MainStackParamList, 'PdfViewer'>;
 
 export const PdfViewerScreen: React.FC = () => {
     const { theme, isDark } = useTheme();
+    const { language } = useLocalization();
     const route = useRoute<PdfViewerRouteProp>();
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
     const insets = useSafeAreaInsets();
@@ -27,14 +29,21 @@ export const PdfViewerScreen: React.FC = () => {
 
     const { url, title } = route.params;
 
-    // Use Google Docs viewer to proxy the PDF (bypasses X-Frame-Options)
-    const googleDocsUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(url)}`;
+    // Check if the URL is on a different origin (needs proxy) or local/same-origin (direct)
+    const isRemote = typeof url === 'string' && url.startsWith('http') && !url.includes(window.location.host);
+    const isLocal = !isRemote;
+
+    // Use Google Docs viewer to proxy the PDF (bypasses X-Frame-Options) for remote URLs
+    // Local assets can be rendered directly by modern browsers in an iframe
+    const viewerUrl = isLocal
+        ? url
+        : `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(url)}`;
 
     const handleShare = async () => {
         if (typeof navigator !== 'undefined' && navigator.clipboard) {
             try {
                 await navigator.clipboard.writeText(url);
-                alert('تم نسخ الرابط');
+                alert(language === 'ar' ? 'تم نسخ الرابط' : 'Link copied');
             } catch (e) {
                 console.error('Copy failed:', e);
             }
@@ -90,7 +99,7 @@ export const PdfViewerScreen: React.FC = () => {
                     <View style={styles.loadingOverlay}>
                         <ActivityIndicator size="large" color={theme.primary.main} />
                         <Text style={[styles.loadingText, { color: theme.text.secondary }]}>
-                            جاري تحميل المستند...
+                            {language === 'ar' ? 'جاري تحميل المستند...' : 'Loading document...'}
                         </Text>
                     </View>
                 )}
@@ -99,21 +108,23 @@ export const PdfViewerScreen: React.FC = () => {
                     <View style={styles.errorContainer}>
                         <Ionicons name="alert-circle-outline" size={48} color={theme.error?.main || '#f44336'} />
                         <Text style={[styles.errorText, { color: theme.text.secondary }]}>
-                            تعذر تحميل المستند
+                            {language === 'ar' ? 'تعذر تحميل المستند' : 'Could not load document'}
                         </Text>
                         <TouchableOpacity
                             style={[styles.actionButton, { backgroundColor: theme.primary.main }]}
                             onPress={handleOpenExternal}
                         >
                             <Ionicons name="open-outline" size={20} color="#fff" />
-                            <Text style={styles.actionButtonText}>فتح في نافذة جديدة</Text>
+                            <Text style={styles.actionButtonText}>
+                                {language === 'ar' ? 'فتح في نافذة جديدة' : 'Open in new window'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
                     <>
-                        {/* Google Docs viewer iframe */}
+                        {/* Viewer iframe */}
                         <iframe
-                            src={googleDocsUrl}
+                            src={viewerUrl}
                             style={{
                                 width: '100%',
                                 height: '100%',
@@ -133,14 +144,18 @@ export const PdfViewerScreen: React.FC = () => {
                                 onPress={handleOpenExternal}
                             >
                                 <Ionicons name="open-outline" size={18} color="#fff" />
-                                <Text style={styles.bottomButtonText}>فتح في نافذة جديدة</Text>
+                                <Text style={styles.bottomButtonText}>
+                                    {language === 'ar' ? 'فتح في نافذة جديدة' : 'Open in new window'}
+                                </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.bottomButton, { backgroundColor: theme.background.tertiary }]}
                                 onPress={handleDownload}
                             >
                                 <Ionicons name="download-outline" size={18} color={theme.text.primary} />
-                                <Text style={[styles.bottomButtonText, { color: theme.text.primary }]}>تحميل</Text>
+                                <Text style={[styles.bottomButtonText, { color: theme.text.primary }]}>
+                                    {language === 'ar' ? 'تحميل' : 'Download'}
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </>

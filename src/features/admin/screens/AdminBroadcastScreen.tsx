@@ -15,6 +15,7 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
+  useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,12 +33,16 @@ import type { BroadcastTarget, NotificationPriority } from '../admin.types';
 import { LoadingState } from '../components/LoadingState';
 import { EmptyState } from '../components/EmptyState';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { AdminSidebar } from '../components';
+import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminBroadcastScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { t } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const { history, isLoading, isSending, error, broadcast, loadHistory } = useAdminBroadcast();
 
@@ -366,196 +371,216 @@ export const AdminBroadcastScreen: React.FC = () => {
     [theme]
   );
 
+  const renderHeader = () => (
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+      <View style={styles.headerLeft}>
+        {!isDesktop && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{isDesktop ? t('admin.broadcastOverview') : t('admin.broadcast')}</Text>
+      </View>
+    </View>
+  );
+
+  const renderMainContent = () => (
+    <FlatList
+      data={history}
+      renderItem={renderHistoryItem}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor={theme.primary.main}
+        />
+      }
+      ListHeaderComponent={
+        <>
+          {/* Broadcast Form */}
+          <View style={localStyles.formCard}>
+            <Text style={localStyles.sectionTitle}>
+              {t('admin.sendNotification')}
+            </Text>
+
+            {/* Error Banner */}
+            {formError ? (
+              <View style={localStyles.errorBanner}>
+                <Ionicons name="alert-circle" size={20} color={theme.error.main} />
+                <Text style={localStyles.errorBannerText}>{formError}</Text>
+              </View>
+            ) : null}
+
+            {/* Success Banner */}
+            {successMessage ? (
+              <View style={localStyles.successBanner}>
+                <Ionicons name="checkmark-circle" size={20} color={theme.success.main} />
+                <Text style={localStyles.successBannerText}>{successMessage}</Text>
+              </View>
+            ) : null}
+
+            {/* Title Input */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>{t('admin.notificationTitle')} *</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder={t('admin.notificationTitlePlaceholder')}
+                placeholderTextColor={theme.text.tertiary}
+                value={title}
+                onChangeText={setTitle}
+                maxLength={VALIDATION_RULES.BROADCAST_TITLE_MAX}
+              />
+              <Text
+                style={[
+                  styles.cardSubtitle,
+                  { textAlign: 'right', marginTop: 4 },
+                ]}
+              >
+                {title.length}/{VALIDATION_RULES.BROADCAST_TITLE_MAX}
+              </Text>
+            </View>
+
+            {/* Message Input */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>{t('admin.notificationMessage')} *</Text>
+              <TextInput
+                style={[styles.formInput, styles.formTextArea]}
+                placeholder={t('admin.notificationMessagePlaceholder')}
+                placeholderTextColor={theme.text.tertiary}
+                value={body}
+                onChangeText={setBody}
+                multiline
+                numberOfLines={5}
+                maxLength={VALIDATION_RULES.BROADCAST_BODY_MAX}
+              />
+              <Text
+                style={[
+                  styles.cardSubtitle,
+                  { textAlign: 'right', marginTop: 4 },
+                ]}
+              >
+                {body.length}/{VALIDATION_RULES.BROADCAST_BODY_MAX}
+              </Text>
+            </View>
+
+            {/* Target Audience */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>{t('admin.targetAudience')} *</Text>
+              {renderTargetOption('all', 'people')}
+              {renderTargetOption('premium', 'star')}
+              {renderTargetOption('basic', 'person')}
+              {renderTargetOption('active', 'pulse')}
+              {renderTargetOption('admins', 'shield')}
+            </View>
+
+            {/* Priority */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>{t('admin.priority')} *</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {Object.values(NOTIFICATION_PRIORITIES).map((priorityValue) =>
+                  renderPriorityOption(priorityValue as NotificationPriority)
+                )}
+              </View>
+            </View>
+
+            {/* Action URL */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>{t('admin.actionUrl')}</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder={t('admin.actionUrlPlaceholder')}
+                placeholderTextColor={theme.text.tertiary}
+                value={actionUrl}
+                onChangeText={setActionUrl}
+                autoCapitalize="none"
+              />
+            </View>
+
+            {/* Image URL */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>{t('admin.imageUrl')}</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder={t('admin.imageUrlPlaceholder')}
+                placeholderTextColor={theme.text.tertiary}
+                value={imageUrl}
+                onChangeText={setImageUrl}
+                autoCapitalize="none"
+              />
+            </View>
+
+            {/* Send Button */}
+            <TouchableOpacity
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={handleSendPress}
+              disabled={isSending}
+            >
+              {isSending ? (
+                <ActivityIndicator size="small" color={theme.primary.contrast} />
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="send" size={20} color={theme.primary.contrast} style={{ marginRight: 8 }} />
+                  <Text style={[styles.buttonText, styles.buttonTextPrimary]}>
+                    {t('admin.sendBroadcast')}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Section Header for History */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('admin.recentBroadcasts')}</Text>
+          </View>
+        </>
+      }
+      ListEmptyComponent={
+        isLoading && history.length === 0 ? (
+          <LoadingState type="list" count={5} />
+        ) : error && history.length === 0 ? (
+          <View style={[styles.errorContainer, { minHeight: 200 }]}>
+            <Ionicons name="alert-circle" size={64} color={theme.error.main} />
+            <Text style={styles.errorTitle}>{t('common.error')}</Text>
+            <Text style={styles.errorMessage}>{error}</Text>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonPrimary]}
+              onPress={() => loadHistory()}
+            >
+              <Text style={[styles.buttonText, styles.buttonTextPrimary]}>
+                {t('common.retry')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <EmptyState
+            icon="megaphone-outline"
+            title={t('admin.noBroadcastHistory')}
+            message={t('admin.noBroadcastMessage')}
+          />
+        )
+      }
+    />
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('admin.broadcast')}</Text>
+        {isDesktop ? (
+          <View style={styles.desktopContentWrapper}>
+            <AdminSidebar />
+            <View style={styles.desktopMainContent}>
+              {renderHeader()}
+              {renderMainContent()}
+            </View>
           </View>
-        </View>
-
-        <FlatList
-          data={history}
-          renderItem={renderHistoryItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={theme.primary.main}
-            />
-          }
-          ListHeaderComponent={
-            <>
-              {/* Broadcast Form */}
-              <View style={localStyles.formCard}>
-                <Text style={localStyles.sectionTitle}>
-                  {t('admin.sendNotification')}
-                </Text>
-
-                {/* Error Banner */}
-                {formError ? (
-                  <View style={localStyles.errorBanner}>
-                    <Ionicons name="alert-circle" size={20} color={theme.error.main} />
-                    <Text style={localStyles.errorBannerText}>{formError}</Text>
-                  </View>
-                ) : null}
-
-                {/* Success Banner */}
-                {successMessage ? (
-                  <View style={localStyles.successBanner}>
-                    <Ionicons name="checkmark-circle" size={20} color={theme.success.main} />
-                    <Text style={localStyles.successBannerText}>{successMessage}</Text>
-                  </View>
-                ) : null}
-
-                {/* Title Input */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>{t('admin.notificationTitle')} *</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder={t('admin.notificationTitlePlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
-                    value={title}
-                    onChangeText={setTitle}
-                    maxLength={VALIDATION_RULES.BROADCAST_TITLE_MAX}
-                  />
-                  <Text
-                    style={[
-                      styles.cardSubtitle,
-                      { textAlign: 'right', marginTop: 4 },
-                    ]}
-                  >
-                    {title.length}/{VALIDATION_RULES.BROADCAST_TITLE_MAX}
-                  </Text>
-                </View>
-
-                {/* Message Input */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>{t('admin.notificationMessage')} *</Text>
-                  <TextInput
-                    style={[styles.formInput, styles.formTextArea]}
-                    placeholder={t('admin.notificationMessagePlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
-                    value={body}
-                    onChangeText={setBody}
-                    multiline
-                    numberOfLines={5}
-                    maxLength={VALIDATION_RULES.BROADCAST_BODY_MAX}
-                  />
-                  <Text
-                    style={[
-                      styles.cardSubtitle,
-                      { textAlign: 'right', marginTop: 4 },
-                    ]}
-                  >
-                    {body.length}/{VALIDATION_RULES.BROADCAST_BODY_MAX}
-                  </Text>
-                </View>
-
-                {/* Target Audience */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>{t('admin.targetAudience')} *</Text>
-                  {renderTargetOption('all', 'people')}
-                  {renderTargetOption('premium', 'star')}
-                  {renderTargetOption('basic', 'person')}
-                  {renderTargetOption('active', 'pulse')}
-                  {renderTargetOption('admins', 'shield')}
-                </View>
-
-                {/* Priority */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>{t('admin.priority')} *</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                    {Object.values(NOTIFICATION_PRIORITIES).map((priorityValue) =>
-                      renderPriorityOption(priorityValue as NotificationPriority)
-                    )}
-                  </View>
-                </View>
-
-                {/* Action URL */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>{t('admin.actionUrl')}</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder={t('admin.actionUrlPlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
-                    value={actionUrl}
-                    onChangeText={setActionUrl}
-                    autoCapitalize="none"
-                  />
-                </View>
-
-                {/* Image URL */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>{t('admin.imageUrl')}</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder={t('admin.imageUrlPlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
-                    value={imageUrl}
-                    onChangeText={setImageUrl}
-                    autoCapitalize="none"
-                  />
-                </View>
-
-                {/* Send Button */}
-                <TouchableOpacity
-                  style={[styles.button, styles.buttonPrimary]}
-                  onPress={handleSendPress}
-                  disabled={isSending}
-                >
-                  {isSending ? (
-                    <ActivityIndicator size="small" color={theme.primary.contrast} />
-                  ) : (
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="send" size={20} color={theme.primary.contrast} style={{ marginRight: 8 }} />
-                      <Text style={[styles.buttonText, styles.buttonTextPrimary]}>
-                        {t('admin.sendBroadcast')}
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              {/* Section Header for History */}
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{t('admin.recentBroadcasts')}</Text>
-              </View>
-            </>
-          }
-          ListEmptyComponent={
-            isLoading && history.length === 0 ? (
-              <LoadingState type="list" count={5} />
-            ) : error && history.length === 0 ? (
-              <View style={[styles.errorContainer, { minHeight: 200 }]}>
-                <Ionicons name="alert-circle" size={64} color={theme.error.main} />
-                <Text style={styles.errorTitle}>{t('common.error')}</Text>
-                <Text style={styles.errorMessage}>{error}</Text>
-                <TouchableOpacity
-                  style={[styles.button, styles.buttonPrimary]}
-                  onPress={() => loadHistory()}
-                >
-                  <Text style={[styles.buttonText, styles.buttonTextPrimary]}>
-                    {t('common.retry')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <EmptyState
-                icon="megaphone-outline"
-                title={t('admin.noBroadcastHistory')}
-                message={t('admin.noBroadcastMessage')}
-              />
-            )
-          }
-        />
+        ) : (
+          <ResponsiveContainer style={{ flex: 1 }}>
+            {renderHeader()}
+            {renderMainContent()}
+          </ResponsiveContainer>
+        )}
 
         {/* Confirmation Modal */}
         <ConfirmationModal

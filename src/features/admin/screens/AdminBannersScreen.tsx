@@ -19,6 +19,7 @@ import {
     Switch,
     ActivityIndicator,
     Image,
+    useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,14 +28,8 @@ import { useTheme, useLocalization } from '../../../app/providers';
 import { createAdminStyles } from '../admin.styles';
 import { useBanners } from '../hooks';
 import { Banner } from '../../../core/services/api/adminEnhancements.service';
-import {
-    FilterBar,
-    SearchBar,
-    LoadingState,
-    EmptyState,
-    ActionSheet,
-    ConfirmationModal,
-} from '../components';
+import { ActionSheet, AdminSidebar, ConfirmationModal, EmptyState, FilterBar, LoadingState, SearchBar } from '../components';
+import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminBannersScreen: React.FC = () => {
     const navigation = useNavigation();
@@ -42,6 +37,8 @@ export const AdminBannersScreen: React.FC = () => {
     const { t } = useLocalization();
     const styles = useMemo(() => createAdminStyles(theme), [theme]);
     const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+    const { width } = useWindowDimensions();
+    const isDesktop = width >= 1024;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [showActionSheet, setShowActionSheet] = useState(false);
@@ -205,58 +202,81 @@ export const AdminBannersScreen: React.FC = () => {
         return <LoadingState type="list" count={5} />;
     }
 
+    const renderHeader = () => (
+        <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
+            <View style={styles.headerLeft}>
+                {!isDesktop && (
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+                    </TouchableOpacity>
+                )}
+                <Text style={styles.headerTitle}>{isDesktop ? t('admin.bannersOverview') : t('admin.bannerManagement')}</Text>
+            </View>
+            <TouchableOpacity
+                style={localStyles.addButtonHeader}
+                onPress={openCreateModal}
+                activeOpacity={0.7}
+            >
+                <Ionicons name="add" size={24} color={theme.primary.contrast} />
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderMainContent = () => (
+        <>
+            <SearchBar
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t('admin.searchQueue')}
+                loading={loading}
+            />
+
+            {error ? (
+                <EmptyState
+                    icon="alert-circle"
+                    title={t('common.error')}
+                    message={error}
+                    actionLabel={t('common.retry')}
+                    onActionPress={refresh}
+                    iconColor={theme.error.main}
+                />
+            ) : filteredBanners.length === 0 ? (
+                <EmptyState
+                    icon="image-outline"
+                    title={t('admin.noBannersFound')}
+                    message={t('admin.noBannersMessage')}
+                    actionLabel={t('admin.createBanner')}
+                    onActionPress={openCreateModal}
+                    iconColor={theme.primary.main}
+                />
+            ) : (
+                <FlatList
+                    data={filteredBanners}
+                    renderItem={renderBannerItem}
+                    keyExtractor={(item) => item._id || item.id!}
+                    contentContainerStyle={localStyles.listContent}
+                    refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
+                />
+            )}
+        </>
+    );
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                <View style={styles.header}>
-                    <View style={styles.headerLeft}>
-                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
-                        </TouchableOpacity>
-                        <Text style={styles.headerTitle}>{t('admin.bannerManagement')}</Text>
+                {isDesktop ? (
+                    <View style={styles.desktopContentWrapper}>
+                        <AdminSidebar />
+                        <View style={styles.desktopMainContent}>
+                            {renderHeader()}
+                            {renderMainContent()}
+                        </View>
                     </View>
-                    <TouchableOpacity
-                        style={localStyles.addButtonHeader}
-                        onPress={openCreateModal}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="add" size={24} color={theme.primary.contrast} />
-                    </TouchableOpacity>
-                </View>
-
-                <SearchBar
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    placeholder={t('admin.searchQueue')}
-                    loading={loading}
-                />
-
-                {error ? (
-                    <EmptyState
-                        icon="alert-circle"
-                        title={t('common.error')}
-                        message={error}
-                        actionLabel={t('common.retry')}
-                        onActionPress={refresh}
-                        iconColor={theme.error.main}
-                    />
-                ) : filteredBanners.length === 0 ? (
-                    <EmptyState
-                        icon="image-outline"
-                        title={t('admin.noBannersFound')}
-                        message={t('admin.noBannersMessage')}
-                        actionLabel={t('admin.createBanner')}
-                        onActionPress={openCreateModal}
-                        iconColor={theme.primary.main}
-                    />
                 ) : (
-                    <FlatList
-                        data={filteredBanners}
-                        renderItem={renderBannerItem}
-                        keyExtractor={(item) => item._id || item.id!}
-                        contentContainerStyle={localStyles.listContent}
-                        refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
-                    />
+                    <ResponsiveContainer style={{ flex: 1 }}>
+                        {renderHeader()}
+                        {renderMainContent()}
+                    </ResponsiveContainer>
                 )}
 
                 <ActionSheet
@@ -313,7 +333,7 @@ export const AdminBannersScreen: React.FC = () => {
                     <View style={localStyles.modalOverlay}>
                         <KeyboardAvoidingView
                             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                            style={localStyles.modalContent}
+                            style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}
                         >
                             <View style={localStyles.modalHeader}>
                                 <Text style={localStyles.modalTitle}>
@@ -631,5 +651,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         color: theme.primary.contrast,
         fontSize: 16,
         fontWeight: '700',
+    },
+    desktopModalContent: {
+        alignSelf: 'center',
+        width: 600,
+        minHeight: 'auto',
+        maxHeight: '90%',
+        borderRadius: 24,
+        marginBottom: 0,
+        bottom: 'auto',
     },
 });

@@ -20,6 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
+import { ResponsiveContainer } from '../../shared/components';
 
 const { width, height } = Dimensions.get('window');
 
@@ -73,70 +74,72 @@ export const PaywallScreen: React.FC = () => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Section */}
-        <View style={styles.hero}>
-          <LinearGradient
-            colors={isDark ? [theme.primary.main + '30', 'transparent'] : ['rgba(0,0,0,0.03)', 'transparent']}
-            style={styles.heroGradient}
-          />
+        <ResponsiveContainer>
+          {/* Hero Section */}
+          <View style={styles.hero}>
+            <LinearGradient
+              colors={isDark ? [theme.primary.main + '30', 'transparent'] : ['rgba(0,0,0,0.03)', 'transparent']}
+              style={styles.heroGradient}
+            />
 
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <View style={[styles.closeButtonInner, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}>
-              <Ionicons name="close" size={24} color={isDark ? "#FFF" : "#000"} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.header}>
-            <View style={styles.badge}>
-              <Ionicons name="star" size={14} color="#FBBF24" />
-              <Text style={styles.badgeText}>{t('paywall.badge')}</Text>
-            </View>
-            <Text style={styles.title}>{t('paywall.title')}</Text>
-            <Text style={styles.subtitle}>
-              {t('paywall.subtitle')}
-            </Text>
-          </View>
-        </View>
-
-        {/* Features List */}
-        <View style={styles.featuresContainer}>
-          {features.map((feature, index) => (
-            <View key={index} style={styles.featureCard}>
-              <LinearGradient
-                colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']}
-                style={styles.cardGradient}
-              />
-              <View style={[styles.iconContainer, { backgroundColor: feature.color + '20' }]}>
-                <Ionicons name={feature.icon as any} size={24} color={feature.color} />
+            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+              <View style={[styles.closeButtonInner, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}>
+                <Ionicons name="close" size={24} color={isDark ? "#FFF" : "#000"} />
               </View>
-              <View style={styles.featureTextContainer}>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureDesc}>{feature.desc}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
+            </TouchableOpacity>
 
-        {/* Trust Section */}
-        <View style={styles.trustSection}>
-          <View style={styles.divider} />
-          <View style={styles.trustRow}>
-            <View style={styles.trustItem}>
-              <Ionicons name="lock-closed-outline" size={16} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.trustText}>{t('paywall.secure')}</Text>
-            </View>
-            <View style={styles.trustItem}>
-              <Ionicons name="calendar-outline" size={16} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.trustText}>{t('paywall.cancelAnytime')}</Text>
-            </View>
-            <View style={styles.trustItem}>
-              <Ionicons name="shield-outline" size={16} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.trustText}>{t('paywall.verified')}</Text>
+            <View style={styles.header}>
+              <View style={styles.badge}>
+                <Ionicons name="star" size={14} color="#FBBF24" />
+                <Text style={styles.badgeText}>{t('paywall.badge')}</Text>
+              </View>
+              <Text style={styles.title}>{t('paywall.title')}</Text>
+              <Text style={styles.subtitle}>
+                {t('paywall.subtitle')}
+              </Text>
             </View>
           </View>
-        </View>
 
-        <View style={styles.bottomSpacer} />
+          {/* Features List */}
+          <View style={styles.featuresContainer}>
+            {features.map((feature, index) => (
+              <View key={index} style={styles.featureCard}>
+                <LinearGradient
+                  colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']}
+                  style={styles.cardGradient}
+                />
+                <View style={[styles.iconContainer, { backgroundColor: feature.color + '20' }]}>
+                  <Ionicons name={feature.icon as any} size={24} color={feature.color} />
+                </View>
+                <View style={styles.featureTextContainer}>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureDesc}>{feature.desc}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Trust Section */}
+          <View style={styles.trustSection}>
+            <View style={styles.divider} />
+            <View style={styles.trustRow}>
+              <View style={styles.trustItem}>
+                <Ionicons name="lock-closed-outline" size={16} color="rgba(255,255,255,0.6)" />
+                <Text style={styles.trustText}>{t('paywall.secure')}</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <Ionicons name="calendar-outline" size={16} color="rgba(255,255,255,0.6)" />
+                <Text style={styles.trustText}>{t('paywall.cancelAnytime')}</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <Ionicons name="shield-outline" size={16} color="rgba(255,255,255,0.6)" />
+                <Text style={styles.trustText}>{t('paywall.verified')}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.bottomSpacer} />
+        </ResponsiveContainer>
       </ScrollView>
 
       {/* Floating CTA Area */}

@@ -13,6 +13,7 @@ import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../app/navigation/types';
 import { useTheme } from '../../../app/providers/ThemeProvider';
+import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing } from '../../../core/theme/spacing';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,6 +23,7 @@ type PdfViewerRouteProp = RouteProp<MainStackParamList, 'PdfViewer'>;
 
 export const PdfViewerScreen: React.FC = () => {
     const { theme, isDark } = useTheme();
+    const { language } = useLocalization();
     const route = useRoute<PdfViewerRouteProp>();
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
     const insets = useSafeAreaInsets();
@@ -80,7 +82,7 @@ export const PdfViewerScreen: React.FC = () => {
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color={theme.primary.main} />
                         <Text style={[styles.loadingText, { color: theme.text.secondary }]}>
-                            جاري تحميل المستند...
+                            {language === 'ar' ? 'جاري تحميل المستند...' : 'Loading document...'}
                         </Text>
                     </View>
                 )}
@@ -89,19 +91,21 @@ export const PdfViewerScreen: React.FC = () => {
                     <View style={styles.errorContainer}>
                         <Ionicons name="alert-circle-outline" size={48} color={theme.error?.main || '#f44336'} />
                         <Text style={[styles.errorText, { color: theme.text.secondary }]}>
-                            تعذر تحميل المستند
+                            {language === 'ar' ? 'تعذر تحميل المستند' : 'Could not load document'}
                         </Text>
                         <TouchableOpacity
                             style={[styles.retryButton, { backgroundColor: theme.primary.main }]}
                             onPress={handleOpenExternal}
                         >
-                            <Text style={styles.retryText}>فتح في المتصفح</Text>
+                            <Text style={styles.retryText}>
+                                {language === 'ar' ? 'فتح في المتصفح' : 'Open in browser'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
                     <Pdf
                         trustAllCerts={false}
-                        source={{ uri: url, cache: true }}
+                        source={typeof url === 'string' ? { uri: url, cache: true } : url}
                         style={[styles.pdf, { backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5' }]}
                         onLoadComplete={(numberOfPages) => {
                             setLoading(false);

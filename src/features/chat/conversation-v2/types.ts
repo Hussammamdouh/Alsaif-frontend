@@ -44,11 +44,14 @@ export interface Message {
   conversationId: string;
   sender: User;
   content: {
-    type: MessageType;
     text?: string;
-    fileName?: string;
-    fileUrl?: string;
-    fileSize?: number;
+  };
+  type: MessageType;
+  file?: {
+    url: string;
+    name?: string;
+    size?: number;
+    mimeType?: string;
   };
   createdAt: string;
   updatedAt?: string;

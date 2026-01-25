@@ -139,6 +139,11 @@ export enum AuthActionType {
 
   // Error Handling
   CLEAR_ERROR = 'CLEAR_ERROR',
+
+  // Verification
+  VERIFY_START = 'VERIFY_START',
+  VERIFY_SUCCESS = 'VERIFY_SUCCESS',
+  VERIFY_ERROR = 'VERIFY_ERROR',
 }
 
 /**
@@ -162,7 +167,10 @@ export type AuthAction =
   | { type: AuthActionType.UPDATE_SESSION; payload: Partial<AuthSession> }
   | { type: AuthActionType.ENABLE_BIOMETRIC; payload: BiometricType }
   | { type: AuthActionType.DISABLE_BIOMETRIC }
-  | { type: AuthActionType.CLEAR_ERROR };
+  | { type: AuthActionType.CLEAR_ERROR }
+  | { type: AuthActionType.VERIFY_START }
+  | { type: AuthActionType.VERIFY_SUCCESS; payload: AuthSession }
+  | { type: AuthActionType.VERIFY_ERROR; payload: string };
 
 /**
  * Auth Context Value
@@ -181,7 +189,7 @@ export interface AuthContextValue {
     nationality: string,
     phoneNumber?: string,
     country?: string
-  ) => Promise<void>;
+  ) => Promise<User>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<void>;
 
@@ -189,6 +197,10 @@ export interface AuthContextValue {
   enableBiometric: () => Promise<void>;
   disableBiometric: () => Promise<void>;
   loginWithBiometric: () => Promise<void>;
+
+  // Verification
+  verifyAccount: (userId: string, code: string) => Promise<void>;
+  resendVerificationCode: (userId: string) => Promise<void>;
 
   // Utilities
   clearError: () => void;

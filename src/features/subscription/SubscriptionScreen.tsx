@@ -63,12 +63,13 @@ export const SubscriptionScreen: React.FC = () => {
 
     const tierColor = TIER_COLORS[subscription.tier] || TIER_COLORS.free;
     const tierIcon = TIER_ICONS[subscription.tier] || TIER_ICONS.free;
-    const statusColor = STATUS_COLORS[subscription.status] || STATUS_COLORS.none;
+
+    const tierName = t(`tier.${subscription.tier}`);
 
     return (
       <View style={styles.currentPlanCard}>
         <View style={[styles.planBadge, { backgroundColor: tierColor }]}>
-          <Text style={styles.planBadgeText}>{subscription.tier}</Text>
+          <Text style={styles.planBadgeText}>{tierName}</Text>
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -76,35 +77,35 @@ export const SubscriptionScreen: React.FC = () => {
             <Ionicons name={tierIcon as any} size={28} color={tierColor} />
           </View>
           <Text style={styles.planName}>
-            {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)} Plan
+            {tierName}
           </Text>
         </View>
 
         <Text style={[styles.planStatus, styles[`status${subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}` as keyof typeof styles] || {}]}>
-          {subscription.status === 'active' && '✓ Active Subscription'}
-          {subscription.status === 'expired' && '✕ Subscription Expired'}
-          {subscription.status === 'cancelled' && '✕ Subscription Cancelled'}
+          {subscription.status === 'active' && `✓ ${t('status.active')} ${t('profile.subscription')}`}
+          {subscription.status === 'expired' && `✕ ${t('status.expired')}`}
+          {subscription.status === 'cancelled' && `✕ ${t('status.cancelled')}`}
         </Text>
 
         <View style={styles.planDetails}>
           {subscription.status === 'active' && subscription.endDate && (
             <>
               <View style={styles.planDetailRow}>
-                <Text style={styles.planDetailLabel}>Expires</Text>
+                <Text style={styles.planDetailLabel}>{t('profile.expiresOn')}</Text>
                 <Text style={styles.planDetailValue}>
-                  {formatDate(subscription.endDate)} ({formatRelativeTime(subscription.endDate)})
+                  {formatDate(subscription.endDate)}
                 </Text>
               </View>
               <View style={styles.planDetailRow}>
-                <Text style={styles.planDetailLabel}>Days Remaining</Text>
+                <Text style={styles.planDetailLabel}>{t('admin.daysRemaining')}</Text>
                 <Text style={[styles.planDetailValue, { color: subscription.isExpiringSoon ? '#ff9500' : '#000' }]}>
-                  {subscription.daysRemaining} days
+                  {subscription.daysRemaining} {t('time.daysAgo').replace(' ago', '').replace('منذ ', '')}
                 </Text>
               </View>
               <View style={styles.planDetailRow}>
-                <Text style={styles.planDetailLabel}>Auto-Renew</Text>
+                <Text style={styles.planDetailLabel}>{t('profile.autoRenewal')}</Text>
                 <Text style={styles.planDetailValue}>
-                  {subscription.autoRenew ? 'Enabled' : 'Disabled'}
+                  {subscription.autoRenew ? t('common.yes') : t('common.no')}
                 </Text>
               </View>
             </>
@@ -112,7 +113,7 @@ export const SubscriptionScreen: React.FC = () => {
 
           {subscription.source && (
             <View style={styles.planDetailRow}>
-              <Text style={styles.planDetailLabel}>Source</Text>
+              <Text style={styles.planDetailLabel}>{t('admin.status')}</Text>
               <Text style={styles.planDetailValue}>
                 {subscription.source.charAt(0).toUpperCase() + subscription.source.slice(1)}
               </Text>
@@ -130,7 +131,7 @@ export const SubscriptionScreen: React.FC = () => {
       <View style={styles.warningBanner}>
         <Ionicons name="warning" size={24} color="#ff9500" style={styles.warningIcon} />
         <Text style={styles.warningText}>
-          Your subscription expires in {subscription.daysRemaining} days. Renew now to continue enjoying premium features.
+          {t('notifications.event.subscription:expiring-soon')}
         </Text>
       </View>
     );
@@ -303,9 +304,9 @@ export const SubscriptionScreen: React.FC = () => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Subscription</Text>
+        <Text style={styles.headerTitle}>{t('profile.subscription')}</Text>
         <Text style={styles.headerSubtitle}>
-          Manage your subscription and billing
+          {t('profile.manageSubscription')}
         </Text>
       </View>
 
@@ -322,7 +323,7 @@ export const SubscriptionScreen: React.FC = () => {
       {(subscription?.canUpgrade || subscription?.canRenew) && (
         <>
           <Text style={styles.sectionTitle}>
-            {subscription.canRenew ? 'Renew Subscription' : 'Upgrade to Premium'}
+            {subscription.canRenew ? t('plans.renewSubscription') || 'Renew Subscription' : t('plans.upgradeToPremium') || 'Upgrade to Premium'}
           </Text>
 
           {renderBillingCycleSelector()}

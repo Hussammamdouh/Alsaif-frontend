@@ -15,3 +15,4 @@ export { PaginationControls } from './PaginationControls';
 export { SearchBar } from './SearchBar';
 export { EmptyState } from './EmptyState';
 export { LoadingState } from './LoadingState';
+export { AdminSidebar } from './AdminSidebar';

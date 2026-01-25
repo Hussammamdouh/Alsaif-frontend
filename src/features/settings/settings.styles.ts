@@ -97,16 +97,28 @@ export const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  desktopModalOverlay: {
     justifyContent: 'center',
     alignItems: 'center',
+    padding: theme.spacing.xl,
   },
   modalContent: {
     backgroundColor: theme.colors.background.primary,
-    borderRadius: theme.borderRadius.lg,
+    borderTopLeftRadius: theme.borderRadius['2xl'],
+    borderTopRightRadius: theme.borderRadius['2xl'],
     padding: theme.spacing.lg,
-    width: '90%',
-    maxWidth: 400,
+    width: '100%',
+  },
+  desktopModalContent: {
+    width: '100%',
+    maxWidth: 500,
+    borderRadius: theme.borderRadius['2xl'],
+    height: 'auto',
+    maxHeight: '90%',
+    padding: theme.spacing.xl,
     ...theme.shadows.lg,
   },
   modalHeader: {
@@ -346,7 +358,6 @@ export const styles = StyleSheet.create({
   passwordStrengthFill: {
     height: '100%',
     borderRadius: 2,
-    transition: 'width 0.3s ease',
   },
   passwordStrengthLabel: {
     ...theme.typography.caption,

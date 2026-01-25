@@ -11,6 +11,7 @@ import {
   AuthSession,
   AuthTokens,
   UserRole,
+  User,
 } from './auth.types';
 import {
   saveAuthSession,
@@ -27,8 +28,17 @@ import {
 import { bootstrapApp, bootstrapWithBiometric } from './auth.bootstrap';
 
 // Import auth services
-import { login as loginApi, logout as logoutApi, refreshToken as refreshTokenApi } from '../../core/services/auth/authService';
+import { login as loginApi, logout as logoutApi, refreshToken as refreshTokenApi, verify as verifyApi, resendVerificationCode as resendApi } from '../../core/services/auth/authService';
 import { register as registerApi } from '../../core/services/auth/register.service';
+
+/**
+ * Maps catch errors to user-friendly messages
+ */
+const mapAuthError = (error: any, fallback: string): string => {
+  if (error?.response?.data?.message) return error.response.data.message;
+  if (error?.message) return error.message;
+  return fallback;
+};
 
 /**
  * Bootstrap Action
@@ -105,10 +115,7 @@ export const login = async (
 
     dispatch({ type: AuthActionType.LOGIN_SUCCESS, payload: session });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Login failed. Please try again.';
+    const message = mapAuthError(error, 'Login failed. Please try again.');
     dispatch({ type: AuthActionType.LOGIN_ERROR, payload: message });
     throw error;
   }
@@ -133,7 +140,34 @@ export const registerUser = async (
     // Call API
     const response = await registerApi({ fullName, email, password, nationality, phoneNumber, country });
 
-    // Create session
+    const user: User = {
+      ...response.user,
+      role: response.user.role as UserRole
+    };
+
+    dispatch({ type: AuthActionType.REGISTER_SUCCESS, payload: { user } as any });
+
+    return user;
+  } catch (error) {
+    const message = mapAuthError(error, 'Registration failed. Please try again.');
+    dispatch({ type: AuthActionType.REGISTER_ERROR, payload: message });
+    throw error;
+  }
+};
+
+/**
+ * Verify Account Action
+ */
+export const verifyAccount = async (
+  dispatch: Dispatch<AuthAction>,
+  userId: string,
+  code: string
+) => {
+  dispatch({ type: AuthActionType.VERIFY_START });
+
+  try {
+    const response = await verifyApi(userId, code);
+
     const now = Date.now();
     const session: AuthSession = {
       user: {
@@ -147,16 +181,25 @@ export const registerUser = async (
       expiresAt: now + response.tokens.expiresIn * 1000,
     };
 
-    // Save to secure storage
     await saveAuthSession(session, false);
-
-    dispatch({ type: AuthActionType.REGISTER_SUCCESS, payload: session });
+    dispatch({ type: AuthActionType.VERIFY_SUCCESS, payload: session });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Registration failed. Please try again.';
-    dispatch({ type: AuthActionType.REGISTER_ERROR, payload: message });
+    const message = mapAuthError(error, 'Verification failed');
+    dispatch({ type: AuthActionType.VERIFY_ERROR, payload: message });
+    throw error;
+  }
+};
+
+/**
+ * Resend Verification Code Action
+ */
+export const resendVerificationCode = async (
+  _dispatch: Dispatch<AuthAction>,
+  userId: string
+) => {
+  try {
+    await resendApi(userId);
+  } catch (error) {
     throw error;
   }
 };

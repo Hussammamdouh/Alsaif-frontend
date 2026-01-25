@@ -77,8 +77,8 @@ export const useInsights = (initialParams: InsightsQueryParams = {}) => {
     }
   }, [loading, hasMore, page, fetchInsights]);
 
-  const refresh = useCallback(() => {
-    fetchInsights({}, true);
+  const refresh = useCallback((params: InsightsQueryParams = {}) => {
+    fetchInsights(params, true);
   }, [fetchInsights]);
 
   const updateInsightInList = useCallback((insightId: string, updates: Partial<InsightListItem>) => {

@@ -18,6 +18,7 @@ import { NewsArticle } from '../news.api'; // Reordered
 import { useTheme } from '../../../app/providers/ThemeProvider';
 import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { spacing } from '../../../core/theme/spacing';
+import { ResponsiveContainer } from '../../../shared/components';
 
 interface NewsListScreenProps {
     hideHeader?: boolean;
@@ -83,23 +84,25 @@ export const NewsListScreen: React.FC<NewsListScreenProps> = ({ hideHeader, List
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-            <FlatList
-                data={news}
-                renderItem={renderItem}
-                keyExtractor={(item) => item._id}
-                ListHeaderComponent={ListHeaderComponent}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />
-                }
-                contentContainerStyle={styles.listContent}
-                ListEmptyComponent={
-                    !loading ? (
-                        <View style={styles.emptyContainer}>
-                            <Text style={{ color: theme.text.secondary }}>{t('common.noData')}</Text>
-                        </View>
-                    ) : null
-                }
-            />
+            <ResponsiveContainer>
+                <FlatList
+                    data={news}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item._id}
+                    ListHeaderComponent={ListHeaderComponent}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />
+                    }
+                    contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={
+                        !loading ? (
+                            <View style={styles.emptyContainer}>
+                                <Text style={{ color: theme.text.secondary }}>{t('common.noData')}</Text>
+                            </View>
+                        ) : null
+                    }
+                />
+            </ResponsiveContainer>
         </View>
     );
 };

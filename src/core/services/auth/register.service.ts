@@ -23,7 +23,6 @@ export interface RegisterCredentials {
  */
 export interface RegisterResponse {
   user: User;
-  tokens: AuthTokens;
   message: string;
 }
 
@@ -48,9 +47,6 @@ interface BackendRegisterResponse {
     role: string;
     isActive: boolean;
   };
-  token: string; // For backward compatibility
-  accessToken: string;
-  refreshToken: string;
 }
 
 /**
@@ -80,7 +76,7 @@ export const register = async (
     );
 
     // Transform backend response to match app's expected format
-    const { user, accessToken, refreshToken } = response.data;
+    const { user } = response.data;
 
     return {
       user: {
@@ -89,12 +85,7 @@ export const register = async (
         name: user.name,
         role: user.role,
       },
-      tokens: {
-        accessToken,
-        refreshToken,
-        expiresIn: 900, // 15 minutes (900 seconds) - matches backend JWT expiration
-      },
-      message: response.message || 'Registration successful! Welcome to Vertex Capital.',
+      message: response.message || 'Registration successful! Please verify your account.',
     };
   } catch (error: any) {
     // Transform API error to AuthError

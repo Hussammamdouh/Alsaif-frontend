@@ -14,9 +14,20 @@ export const createStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: theme.background.primary,
+    backgroundColor: theme.background.secondary,
     borderBottomWidth: 1,
-    borderBottomColor: theme.border.main,
+    borderBottomColor: theme.ui.border,
+  },
+  dashboardHeader: {
+    height: 110,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 45,
+    paddingHorizontal: 20,
+    backgroundColor: theme.background.secondary,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.ui.border,
   },
   headerTitleContainer: {
     flexDirection: 'row',
@@ -60,9 +71,9 @@ export const createStyles = (theme: any) => StyleSheet.create({
 
   // Category Filter
   categoryFilterContainer: {
-    backgroundColor: theme.background.primary,
+    backgroundColor: theme.background.secondary,
     borderBottomWidth: 1,
-    borderBottomColor: theme.border.main,
+    borderBottomColor: theme.ui.border,
   },
   categoryFilterContent: {
     paddingHorizontal: 20,
@@ -93,7 +104,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
   sectionHeader: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: theme.background.secondary,
+    backgroundColor: theme.background.tertiary,
   },
   sectionHeaderText: {
     fontSize: 12,
@@ -105,11 +116,11 @@ export const createStyles = (theme: any) => StyleSheet.create({
 
   // Notification Item
   notificationItem: {
-    backgroundColor: theme.background.primary,
+    backgroundColor: theme.background.secondary,
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: theme.border.main,
+    borderBottomColor: theme.ui.border,
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
@@ -128,11 +139,6 @@ export const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   notificationTextContainer: {
     flex: 1,
@@ -245,7 +251,14 @@ export const createStyles = (theme: any) => StyleSheet.create({
     padding: 6,
     marginLeft: 8,
     borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  desktopContentWrapper: {
+    flex: 1,
     backgroundColor: theme.background.secondary,
+  },
+  listContent: {
+    paddingBottom: 40,
   },
 
   // Empty State
