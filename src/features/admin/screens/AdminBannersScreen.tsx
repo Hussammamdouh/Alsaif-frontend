@@ -54,6 +54,7 @@ export const AdminBannersScreen: React.FC = () => {
     const [formType, setFormType] = useState<'free' | 'premium' | 'both'>('both');
     const [formOrder, setFormOrder] = useState('0');
     const [formIsActive, setFormIsActive] = useState(true);
+    const [formDisplayDuration, setFormDisplayDuration] = useState('');
     const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
 
     const {
@@ -74,6 +75,7 @@ export const AdminBannersScreen: React.FC = () => {
         setFormType('both');
         setFormOrder('0');
         setFormIsActive(true);
+        setFormDisplayDuration('');
         setSelectedBanner(null);
     }, []);
 
@@ -91,6 +93,7 @@ export const AdminBannersScreen: React.FC = () => {
         setFormType(banner.type || 'both');
         setFormOrder(String(banner.order || '0'));
         setFormIsActive(banner.isActive !== false);
+        setFormDisplayDuration(banner.displayDurationDays ? String(banner.displayDurationDays) : '');
         setShowFormModal(true);
     }, []);
 
@@ -138,6 +141,7 @@ export const AdminBannersScreen: React.FC = () => {
                 type: formType,
                 order: Number(formOrder),
                 isActive: formIsActive,
+                displayDurationDays: formDisplayDuration ? Number(formDisplayDuration) : undefined,
             };
 
             if (selectedBanner) {
@@ -431,6 +435,18 @@ export const AdminBannersScreen: React.FC = () => {
                                     </View>
                                 </View>
 
+                                <View style={localStyles.formGroup}>
+                                    <Text style={localStyles.label}>{t('admin.displayDuration')} ({t('common.days')})</Text>
+                                    <TextInput
+                                        style={localStyles.input}
+                                        value={formDisplayDuration}
+                                        onChangeText={setFormDisplayDuration}
+                                        placeholder="E.g., 30 (Leave empty for permanent)"
+                                        placeholderTextColor={theme.text.tertiary}
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+
                                 <View style={localStyles.switchRow}>
                                     <Text style={localStyles.label}>{t('admin.active')}</Text>
                                     <Switch
@@ -442,25 +458,25 @@ export const AdminBannersScreen: React.FC = () => {
                                 </View>
                             </ScrollView>
 
-                            <TouchableOpacity
-                                style={[
-                                    localStyles.saveButton,
-                                    (!formTitle || !formImageUrl) && localStyles.saveButtonDisabled,
-                                ]}
-                                onPress={handleSave}
-                                disabled={isSaving || !formTitle || !formImageUrl}
-                            >
-                                {isSaving ? (
-                                    <ActivityIndicator color={theme.primary.contrast} />
-                                ) : (
-                                    <Text style={localStyles.saveButtonText}>{t('common.save')}</Text>
-                                )}
-                            </TouchableOpacity>
-                        </KeyboardAvoidingView>
-                    </View>
-                </Modal>
+                        <TouchableOpacity
+                            style={[
+                                localStyles.saveButton,
+                                (!formTitle || !formImageUrl) && localStyles.saveButtonDisabled,
+                            ]}
+                            onPress={handleSave}
+                            disabled={isSaving || !formTitle || !formImageUrl}
+                        >
+                            {isSaving ? (
+                                <ActivityIndicator color={theme.primary.contrast} />
+                            ) : (
+                                <Text style={localStyles.saveButtonText}>{t('common.save')}</Text>
+                            )}
+                        </TouchableOpacity>
+                    </KeyboardAvoidingView>
             </View>
-        </SafeAreaView>
+        </Modal>
+            </View >
+        </SafeAreaView >
     );
 };
 

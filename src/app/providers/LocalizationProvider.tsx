@@ -233,6 +233,7 @@ const translations = {
     'common.seeAll': 'See All',
     'common.search': 'Search...',
     'common.exit': 'Exit Panel',
+    'common.days': 'Days',
 
     // Time
     'time.justNow': 'Just now',
@@ -546,6 +547,7 @@ const translations = {
     'admin.partnerName': 'Partner Name',
     'admin.displayOrder': 'Display Order',
     'admin.tabVisibility': 'Tab Visibility',
+    'admin.displayDuration': 'Display Duration',
 
     // Admin Stats
     'admin.totalUsers': 'Total Users',
@@ -1254,6 +1256,7 @@ const translations = {
     'common.exit': 'الخروج من اللوحة',
     'common.seeAll': 'عرض الكل',
     'common.search': 'بحث...',
+    'common.days': 'أيام',
 
     // Time
     'time.justNow': 'الآن',
@@ -1621,7 +1624,8 @@ const translations = {
     'admin.bannerLinkUrl': 'رابط الإثراء',
     'admin.partnerName': 'اسم الشريك',
     'admin.displayOrder': 'ترتيب العرض',
-    'admin.tabVisibility': 'رؤية التبويب',
+    'admin.tabVisibility': 'ظهور التبويب',
+    'admin.displayDuration': 'مدة العرض',
 
     // Admin Stats
     'admin.totalUsers': 'إجمالي المستخدمين',

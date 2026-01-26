@@ -54,9 +54,11 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
         };
     }, [type]);
 
-    // Auto-scroll logic
+    const [isPaused, setIsPaused] = useState(false);
+
+    // Auto-scroll logic with pause on interaction
     useEffect(() => {
-        if (banners.length <= 1) return;
+        if (banners.length <= 1 || isPaused) return;
 
         const interval = setInterval(() => {
             const nextIndex = (activeIndex + 1) % banners.length;
@@ -68,7 +70,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [activeIndex, banners.length]);
+    }, [activeIndex, banners.length, isPaused]);
 
     const handleBannerPress = (banner: Banner) => {
         if (banner.link) {
@@ -121,6 +123,8 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 onMomentumScrollEnd={onMomentumScrollEnd}
+                onScrollBeginDrag={() => setIsPaused(true)}
+                onScrollEndDrag={() => setIsPaused(false)}
                 keyExtractor={(item) => item._id || item.id!}
                 getItemLayout={(_, index) => ({
                     length: width,

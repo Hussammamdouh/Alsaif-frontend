@@ -27,6 +27,7 @@ export interface Banner {
   isActive: boolean;
   order: number;
   type: 'free' | 'premium' | 'both';
+  displayDurationDays?: number;
   createdAt?: string;
   updatedAt?: string;
 }
