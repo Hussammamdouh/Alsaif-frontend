@@ -73,21 +73,29 @@ export const PdfViewerScreen: React.FC = () => {
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
             {/* Custom Header */}
-            <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-                    <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <View style={[styles.header, { paddingTop: Math.max(insets.top, 12), backgroundColor: theme.background.secondary }]}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                >
+                    <Ionicons name="chevron-back" size={24} color={theme.text.primary} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: theme.text.primary }]} numberOfLines={1}>
-                    {title}
-                </Text>
+                <View style={styles.headerCenter}>
+                    <Text style={[styles.headerTitle, { color: theme.text.primary }]} numberOfLines={1}>
+                        {title}
+                    </Text>
+                </View>
                 <View style={styles.headerActions}>
-                    <TouchableOpacity onPress={handleDownload} style={styles.headerButton}>
-                        <Ionicons name="download-outline" size={22} color={theme.text.primary} />
+                    <TouchableOpacity
+                        onPress={handleDownload}
+                        style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                    >
+                        <Ionicons name="download-outline" size={22} color={theme.primary.main} />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleOpenExternal} style={styles.headerButton}>
-                        <Ionicons name="open-outline" size={22} color={theme.text.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
+                    <TouchableOpacity
+                        onPress={handleShare}
+                        style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                    >
                         <Ionicons name="copy-outline" size={22} color={theme.text.primary} />
                     </TouchableOpacity>
                 </View>
@@ -173,22 +181,28 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: spacing.md,
-        paddingBottom: spacing.sm,
+        paddingBottom: 16,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.1)',
+        borderBottomColor: 'rgba(255,255,255,0.05)',
     },
     headerButton: {
-        padding: spacing.xs,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerCenter: {
+        flex: 1,
+        marginHorizontal: 16,
     },
     headerTitle: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: '600',
-        marginHorizontal: spacing.sm,
+        fontSize: 17,
+        fontWeight: '700',
     },
     headerActions: {
         flexDirection: 'row',
-        gap: spacing.xs,
+        gap: 8,
     },
     pdfContainer: {
         flex: 1,

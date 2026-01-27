@@ -52,26 +52,29 @@ export const PdfViewerScreen: React.FC = () => {
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
             {/* Custom Header */}
-            <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-                    <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <View style={[styles.header, { paddingTop: Math.max(insets.top, 12), backgroundColor: theme.background.secondary }]}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                >
+                    <Ionicons name="chevron-back" size={24} color={theme.text.primary} />
                 </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <Text style={[styles.headerTitle, { color: theme.text.primary }]} numberOfLines={1}>
                         {title}
                     </Text>
                     {pageCount > 0 && (
-                        <Text style={[styles.pageIndicator, { color: theme.text.secondary }]}>
+                        <Text style={[styles.pageIndicator, { color: theme.text.tertiary }]}>
                             {currentPage} / {pageCount}
                         </Text>
                     )}
                 </View>
                 <View style={styles.headerActions}>
-                    <TouchableOpacity onPress={handleOpenExternal} style={styles.headerButton}>
-                        <Ionicons name="open-outline" size={22} color={theme.text.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
-                        <Ionicons name="share-outline" size={22} color={theme.text.primary} />
+                    <TouchableOpacity
+                        onPress={handleShare}
+                        style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                    >
+                        <Ionicons name="share-outline" size={22} color={theme.primary.main} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -138,28 +141,33 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: spacing.md,
-        paddingBottom: spacing.sm,
+        paddingBottom: 16,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.1)',
+        borderBottomColor: 'rgba(255,255,255,0.05)',
     },
     headerButton: {
-        padding: spacing.xs,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     headerCenter: {
         flex: 1,
-        marginHorizontal: spacing.sm,
+        marginHorizontal: 16,
     },
     headerTitle: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 17,
+        fontWeight: '700',
     },
     pageIndicator: {
         fontSize: 12,
+        fontWeight: '600',
         marginTop: 2,
     },
     headerActions: {
         flexDirection: 'row',
-        gap: spacing.xs,
+        gap: 8,
     },
     pdfContainer: {
         flex: 1,

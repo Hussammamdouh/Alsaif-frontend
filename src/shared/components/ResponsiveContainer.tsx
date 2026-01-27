@@ -44,6 +44,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 const styles = StyleSheet.create({
     container: {
         width: '100%',
+        flex: 1,
     },
 });
 
