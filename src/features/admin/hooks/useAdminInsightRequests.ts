@@ -9,6 +9,8 @@ export const useAdminInsightRequests = () => {
         currentPage: 1,
         totalPages: 1,
         totalCount: 0,
+        hasNextPage: false,
+        hasMore: false,
     });
     const [filters, setFilters] = useState({
         status: '',
@@ -26,6 +28,8 @@ export const useAdminInsightRequests = () => {
                 currentPage: data.pagination.currentPage,
                 totalPages: data.pagination.totalPages,
                 totalCount: data.pagination.totalCount,
+                hasNextPage: data.pagination.currentPage < data.pagination.totalPages,
+                hasMore: data.pagination.currentPage < data.pagination.totalPages,
             });
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to fetch requests');

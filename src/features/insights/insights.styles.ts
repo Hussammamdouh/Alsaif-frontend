@@ -258,6 +258,35 @@ export const createInsightsStyles = (theme: any) => StyleSheet.create({
     borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
   },
 
+  parallaxHeader: {
+    height: 380,
+    width: '100%',
+    overflow: 'hidden',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 0,
+  },
+
+  parallaxImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+
+  headerGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
+  },
+
   detailContent: {
     flex: 1,
   },
@@ -268,8 +297,9 @@ export const createInsightsStyles = (theme: any) => StyleSheet.create({
 
   detailTitleSection: {
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 300,
     marginBottom: 24,
+    zIndex: 1,
   },
 
   detailBodyContainer: {
@@ -365,9 +395,9 @@ export const createInsightsStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: 'transparent',
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
     marginHorizontal: 16,
     marginVertical: 24,
     overflow: 'hidden',
@@ -389,6 +419,108 @@ export const createInsightsStyles = (theme: any) => StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: theme.text.secondary,
+  },
+
+  // ==================== SIGNAL CARD ====================
+  signalCard: {
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+  },
+
+  signalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+  },
+
+  signalSymbolContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  signalSymbolIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.primary.main + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  signalSymbol: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: theme.text.primary,
+  },
+
+  signalMarketBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: theme.primary.main,
+  },
+
+  signalMarketText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFF',
+  },
+
+  signalGrid: {
+    gap: 16,
+  },
+
+  signalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  signalItem: {
+    flex: 1,
+  },
+
+  signalLabel: {
+    fontSize: 13,
+    color: theme.text.tertiary,
+    fontWeight: '600',
+    marginBottom: 4,
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
+  },
+
+  signalValue: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: theme.text.primary,
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
+  },
+
+  signalBuyValue: {
+    color: theme.primary.main,
+  },
+
+  signalGoalValue: {
+    color: '#10B981', // Green
+  },
+
+  signalStopValue: {
+    color: '#EF4444', // Red
+  },
+
+  signalStockName: {
+    fontSize: 14,
+    color: theme.text.secondary,
+    fontWeight: '600',
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
   },
 
   // ==================== COMMENTS SECTION ====================
@@ -420,6 +552,30 @@ export const createInsightsStyles = (theme: any) => StyleSheet.create({
   commentsCountText: {
     fontSize: 14,
     fontWeight: '800',
+    color: theme.primary.main,
+  },
+
+  replyIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.background.secondary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.border.light,
+  },
+
+  replyIndicatorText: {
+    fontSize: 13,
+    color: theme.text.secondary,
+    flex: 1,
+  },
+
+  replyAuthorName: {
+    fontWeight: '700',
     color: theme.primary.main,
   },
 
@@ -819,29 +975,5 @@ export const createInsightsStyles = (theme: any) => StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-  },
-
-  replyIndicator: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: theme.border.main,
-  },
-
-  replyIndicatorText: {
-    fontSize: 13,
-    color: theme.text.secondary,
-    fontWeight: '500',
-  },
-
-  replyAuthorName: {
-    fontWeight: '700',
-    color: theme.primary.main,
   },
 });

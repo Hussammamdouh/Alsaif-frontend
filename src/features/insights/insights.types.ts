@@ -36,6 +36,15 @@ export interface Insight {
   commentsCount: number;
   readTime?: number;
   coverImage?: string;
+  insightFormat?: 'article' | 'signal';
+  market?: 'ADX' | 'DFM' | 'Other';
+  symbol?: string;
+  stockName?: string;
+  stockNameAr?: string;
+  buyPrice?: number;
+  firstGoal?: number;
+  secondGoal?: number;
+  stopLoss?: number;
   createdAt: string;
   updatedAt: string;
 }

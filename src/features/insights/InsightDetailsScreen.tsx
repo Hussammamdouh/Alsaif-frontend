@@ -13,6 +13,7 @@ import {
   StatusBar,
   TextInput,
   I18nManager,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
@@ -57,6 +58,7 @@ export const InsightDetailsScreen: React.FC = () => {
   const styles = useMemo(() => createInsightsStyles(theme), [theme]);
   const inputRef = useRef<TextInput>(null);
 
+  const scrollY = useRef(new Animated.Value(0)).current;
   const { canAccessInsight } = useSubscriptionAccess();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -153,30 +155,30 @@ export const InsightDetailsScreen: React.FC = () => {
     Alert.alert('Share', 'Share functionality coming soon');
   }, [insight]);
 
-  const handleReport = useCallback((type: 'insight' | 'comment', id: string) => {
-    Alert.alert(
-      t('common.report'),
-      t('insights.confirmReport'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.report'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await reportContent({
-                targetType: type,
-                targetId: id,
-                reason: 'inappropriate', // Default reason
-              });
-            } catch (error) {
-              console.error('Report error:', error);
-            }
-          },
-        },
-      ]
-    );
-  }, [reportContent, t]);
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 150, 250],
+    outputRange: [0, 0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, 250, 300],
+    outputRange: [20, 10, 0],
+    extrapolate: 'clamp',
+  });
+
+  const imageScale = scrollY.interpolate({
+    inputRange: [-100, 0],
+    outputRange: [1.2, 1],
+    extrapolateLeft: 'extend',
+    extrapolateRight: 'clamp',
+  });
+
+  const imageTranslateY = scrollY.interpolate({
+    inputRange: [0, 380],
+    outputRange: [0, -100],
+    extrapolate: 'clamp',
+  });
 
   if (insightLoading && !insight) {
     return (
@@ -199,52 +201,106 @@ export const InsightDetailsScreen: React.FC = () => {
     );
   }
 
-  const categoryInfo = getCategoryInfo(insight.category);
   const canAccess = canAccessInsight(insight.type);
 
   return (
     <View style={styles.detailContainer}>
       <ResponsiveContainer>
-        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-        <LinearGradient
-          colors={isDark ? [theme.background.primary, '#1a2e1a', '#0a1a0a'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
-          style={StyleSheet.absoluteFill}
-        />
+        <StatusBar barStyle={(!insight.coverImage && !isDark) ? 'dark-content' : 'light-content'} translucent backgroundColor="transparent" />
 
-        {/* Header */}
-        <View style={styles.detailHeader}>
+        {/* Parallax Background Image */}
+        {insight.coverImage && (
+          <Animated.View
+            style={[
+              styles.parallaxHeader,
+              {
+                transform: [
+                  { translateY: imageTranslateY },
+                  { scale: imageScale }
+                ]
+              }
+            ]}
+          >
+            <Image
+              source={{ uri: insight.coverImage }}
+              style={styles.parallaxImage}
+              resizeMode="cover"
+            />
+            <View style={styles.headerOverlay} />
+            <LinearGradient
+              colors={['transparent', isDark ? theme.background.primary : '#FFFFFF']}
+              style={styles.headerGradient}
+            />
+          </Animated.View>
+        )}
+
+        {/* Floating Header */}
+        <Animated.View
+          style={[
+            styles.detailHeader,
+            {
+              backgroundColor: isDark ? theme.background.primary : '#FFFFFF',
+              opacity: headerOpacity,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              paddingTop: Platform.OS === 'ios' ? 50 : 30,
+              zIndex: 30,
+            }
+          ]}
+        >
+          <Animated.Text
+            style={[
+              styles.headerTitleDetail,
+              {
+                transform: [{ translateY: headerTranslateY }]
+              }
+            ]}
+            numberOfLines={1}
+          >
+            {insight.title}
+          </Animated.Text>
+        </Animated.View>
+
+        {/* Static Actions (Back/Share) - Always Visible */}
+        <View style={[styles.detailHeader, { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'transparent', borderBottomWidth: 0, zIndex: 40, paddingTop: Platform.OS === 'ios' ? 50 : 30 }]}>
           <TouchableOpacity
-            style={styles.backButton}
+            style={[styles.backButton, { backgroundColor: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.2)' }]}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={24} color="#FFF" />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitleDetail} numberOfLines={1}>
-            {insight.title}
-          </Text>
+          <View style={{ flex: 1 }} />
 
           <TouchableOpacity
-            style={styles.shareButton}
+            style={[styles.shareButton, { backgroundColor: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.2)' }]}
             onPress={handleShare}
           >
-            <Ionicons name="share-outline" size={22} color={theme.text.primary} />
+            <Ionicons name="share-outline" size={22} color="#FFF" />
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+        <Animated.ScrollView
           style={styles.detailContent}
           contentContainerStyle={styles.detailScrollContent}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={insightLoading && !!insight}
               onRefresh={handleRefresh}
               tintColor={theme.primary.main}
+              progressViewOffset={80}
             />
           }
         >
           {/* Title Section */}
-          <View style={styles.detailTitleSection}>
+          <View style={[styles.detailTitleSection, !insight.coverImage && { paddingTop: Platform.OS === 'ios' ? 100 : 80 }]}>
             <View style={[styles.typeBadge, { backgroundColor: insight.type === 'premium' ? COLORS.premium : COLORS.free, alignSelf: 'flex-start', marginBottom: 16 }]}>
               <Ionicons name={insight.type === 'premium' ? "star" : "lock-open-outline"} size={12} color="#FFF" style={{ marginRight: 4 }} />
               <Text style={styles.typeBadgeText}>
@@ -256,8 +312,8 @@ export const InsightDetailsScreen: React.FC = () => {
 
             <View style={styles.detailMeta}>
               <View style={styles.authorInfo}>
-                <View style={styles.authorAvatar}>
-                  <Ionicons name="person" size={24} color={theme.text.tertiary} />
+                <View style={[styles.authorAvatar, { backgroundColor: theme.background.tertiary }]}>
+                  <Ionicons name="person" size={24} color={theme.primary.main} />
                 </View>
                 <View>
                   <Text style={styles.authorName}>{insight.author?.name || t('common.author')}</Text>
@@ -271,27 +327,69 @@ export const InsightDetailsScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Featured Image */}
-          {insight.coverImage && (
-            <View style={styles.detailImageContainer}>
-              <Image
-                source={{ uri: insight.coverImage }}
-                style={styles.detailImage}
-                resizeMode="cover"
-              />
-            </View>
-          )}
-
-          {/* Content Card */}
+          {/* Content Card with Glassmorphism */}
           <View style={styles.detailBodyContainer}>
             <LinearGradient
               colors={isDark
                 ? ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']
-                : ['rgba(0, 0, 0, 0.03)', 'rgba(0, 0, 0, 0.01)']
+                : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.85)']
               }
               style={StyleSheet.absoluteFill}
             />
             <View style={styles.detailBody}>
+              {insight.insightFormat === 'signal' && (
+                <View style={styles.signalCard}>
+                  <View style={styles.signalHeader}>
+                    <View style={styles.signalSymbolContainer}>
+                      <View style={styles.signalSymbolIcon}>
+                        <Ionicons name="trending-up" size={24} color={theme.primary.main} />
+                      </View>
+                      <View>
+                        <Text style={styles.signalSymbol}>{insight.symbol}</Text>
+                        <Text style={styles.signalStockName}>
+                          {isRTL ? (insight.stockNameAr || insight.stockName) : (insight.stockName || insight.stockNameAr)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.signalMarketBadge}>
+                      <Text style={styles.signalMarketText}>{insight.market}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.signalGrid}>
+                    <View style={styles.signalRow}>
+                      <View style={styles.signalItem}>
+                        <Text style={styles.signalLabel}>{t('admin.buyPrice')}</Text>
+                        <Text style={[styles.signalValue, styles.signalBuyValue]}>
+                          {insight.buyPrice?.toFixed(2) || '---'}
+                        </Text>
+                      </View>
+                      <View style={styles.signalItem}>
+                        <Text style={styles.signalLabel}>{t('admin.stopLoss')}</Text>
+                        <Text style={[styles.signalValue, styles.signalStopValue]}>
+                          {insight.stopLoss?.toFixed(2) || '---'}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.signalRow}>
+                      <View style={styles.signalItem}>
+                        <Text style={styles.signalLabel}>{t('admin.firstGoal')}</Text>
+                        <Text style={[styles.signalValue, styles.signalGoalValue]}>
+                          {insight.firstGoal?.toFixed(2) || '---'}
+                        </Text>
+                      </View>
+                      <View style={styles.signalItem}>
+                        <Text style={styles.signalLabel}>{t('admin.secondGoal')}</Text>
+                        <Text style={[styles.signalValue, styles.signalGoalValue]}>
+                          {insight.secondGoal?.toFixed(2) || '---'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              )}
+
               <Text style={styles.detailText}>
                 {canAccess ? insight.content : insight.excerpt}
               </Text>
@@ -330,7 +428,7 @@ export const InsightDetailsScreen: React.FC = () => {
           <View style={styles.detailEngagement}>
             <LinearGradient
               colors={isDark
-                ? ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']
+                ? ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.01)']
                 : ['rgba(0, 0, 0, 0.03)', 'rgba(0, 0, 0, 0.01)']
               }
               style={StyleSheet.absoluteFill}
@@ -342,14 +440,14 @@ export const InsightDetailsScreen: React.FC = () => {
               >
                 <Ionicons
                   name={insightHasLiked ? "heart" : "heart-outline"}
-                  size={22}
+                  size={24}
                   color={insightHasLiked ? COLORS.liked : theme.text.secondary}
                 />
                 <Text style={styles.detailEngagementText}>{formatCount(insight.likes)}</Text>
               </TouchableOpacity>
 
               <View style={styles.detailEngagementButton}>
-                <Ionicons name="chatbubble-outline" size={20} color={theme.text.secondary} />
+                <Ionicons name="chatbubble-outline" size={22} color={theme.text.secondary} />
                 <Text style={styles.detailEngagementText}>{formatCount(insight.commentsCount)}</Text>
               </View>
             </View>
@@ -360,7 +458,7 @@ export const InsightDetailsScreen: React.FC = () => {
             >
               <Ionicons
                 name={isBookmarked ? "bookmark" : "bookmark-outline"}
-                size={22}
+                size={24}
                 color={isBookmarked ? theme.primary.main : theme.text.secondary}
               />
             </TouchableOpacity>
@@ -409,10 +507,10 @@ export const InsightDetailsScreen: React.FC = () => {
               )}
             </View>
           </View>
-        </ScrollView>
+        </Animated.ScrollView>
 
         {/* Comment Input Sticky */}
-        <View style={[styles.commentInputContainer, { bottom: 0 }]}>
+        <View style={[styles.commentInputContainer, { bottom: 0, paddingBottom: Platform.OS === 'ios' ? 34 : 16 }]}>
           {replyingTo && (
             <View style={styles.replyIndicator}>
               <Text style={styles.replyIndicatorText} numberOfLines={1}>
@@ -441,6 +539,10 @@ export const InsightDetailsScreen: React.FC = () => {
               onPress={handleSendComment}
               disabled={!commentText.trim() || createCommentLoading}
             >
+              <LinearGradient
+                colors={!commentText.trim() ? [theme.background.secondary, theme.background.secondary] : [theme.primary.main, theme.primary.dark]}
+                style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+              />
               {createCommentLoading ? (
                 <ActivityIndicator size="small" color="#FFF" />
               ) : (

@@ -79,8 +79,8 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
                 <View style={styles.cardMain}>
                     <View style={styles.cardTopRow}>
                         <View style={[styles.symbolBadge, { backgroundColor: isADX ? '#EAB30815' : '#3B82F615' }]}>
-                            <Text style={[styles.symbolText, { color: isADX ? '#EAB308' : '#3B82F6' }]}>
-                                {item.symbol || item.exchange}
+                            <Text style={[styles.symbolText, { color: isADX ? '#EAB308' : '#3B82F6' }]} numberOfLines={1}>
+                                {language === 'ar' ? (item.companyNameAr || item.companyName || item.symbol || item.exchange) : (item.companyNameEn || item.companyName || item.symbol || item.exchange)}
                             </Text>
                         </View>
                         <View style={styles.cardMeta}>
@@ -149,9 +149,11 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
         const query = searchQuery.toLowerCase();
         return disclosures.filter(item => {
             const title = language === 'ar' ? (item.titleAr || item.title) : (item.titleEn || item.title);
+            const company = language === 'ar' ? (item.companyNameAr || item.companyName) : (item.companyNameEn || item.companyName);
             return (
                 title.toLowerCase().includes(query) ||
-                (item.symbol && item.symbol.toLowerCase().includes(query))
+                (item.symbol && item.symbol.toLowerCase().includes(query)) ||
+                (company && company.toLowerCase().includes(query))
             );
         });
     }, [disclosures, searchQuery, language]);
@@ -542,6 +544,7 @@ const styles = StyleSheet.create({
     symbolText: {
         fontSize: 12,
         fontWeight: '800',
+        maxWidth: 200,
     },
     cardMeta: {
         flexDirection: 'row',

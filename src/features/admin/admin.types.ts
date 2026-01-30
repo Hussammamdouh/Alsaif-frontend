@@ -36,6 +36,8 @@ export interface UserFilters {
 
 // Insight Management Types
 export type InsightType = 'free' | 'premium';
+export type InsightFormat = 'article' | 'signal';
+export type InsightMarket = 'ADX' | 'DFM' | 'Other';
 export type InsightStatus = 'draft' | 'published' | 'archived' | 'under_review' | 'scheduled';
 export type InsightCategory =
   | 'market_analysis'
@@ -70,6 +72,16 @@ export interface AdminInsight {
   createdAt: string;
   updatedAt: string;
   scheduledFor?: string;
+  // Specific Insight Fields (Trade Signals)
+  insightFormat: InsightFormat;
+  market?: InsightMarket;
+  symbol?: string;
+  stockName?: string;
+  stockNameAr?: string;
+  buyPrice?: number;
+  firstGoal?: number;
+  secondGoal?: number;
+  stopLoss?: number;
 }
 
 export interface InsightFilters {
@@ -91,6 +103,16 @@ export interface CreateInsightData {
   status?: InsightStatus;
   imageUrl?: string;
   scheduledFor?: string;
+  // Specific Insight Fields (Trade Signals)
+  insightFormat?: InsightFormat;
+  market?: InsightMarket;
+  symbol?: string;
+  stockName?: string;
+  stockNameAr?: string;
+  buyPrice?: number;
+  firstGoal?: number;
+  secondGoal?: number;
+  stopLoss?: number;
 }
 
 export interface UpdateInsightData extends Partial<CreateInsightData> {

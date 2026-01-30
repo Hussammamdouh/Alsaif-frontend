@@ -115,6 +115,17 @@ export const AdminInsightsScreen: React.FC = () => {
   const [formTags, setFormTags] = useState('');
   const [formError, setFormError] = useState('');
 
+  // Trade Signal Specific States
+  const [formInsightFormat, setFormInsightFormat] = useState<any>('article');
+  const [formMarket, setFormMarket] = useState<any>('DFM');
+  const [formSymbol, setFormSymbol] = useState('');
+  const [formStockName, setFormStockName] = useState('');
+  const [formStockNameAr, setFormStockNameAr] = useState('');
+  const [formBuyPrice, setFormBuyPrice] = useState('');
+  const [formFirstGoal, setFormFirstGoal] = useState('');
+  const [formSecondGoal, setFormSecondGoal] = useState('');
+  const [formStopLoss, setFormStopLoss] = useState('');
+
   useEffect(() => {
     refresh();
 
@@ -154,6 +165,16 @@ export const AdminInsightsScreen: React.FC = () => {
     setFormError('');
     setIsScheduled(false);
     setScheduledDate(new Date(Date.now() + 86400000));
+
+    setFormInsightFormat('article');
+    setFormMarket('DFM');
+    setFormSymbol('');
+    setFormStockName('');
+    setFormStockNameAr('');
+    setFormBuyPrice('');
+    setFormFirstGoal('');
+    setFormSecondGoal('');
+    setFormStopLoss('');
   };
 
   const openCreateModal = () => {
@@ -172,6 +193,17 @@ export const AdminInsightsScreen: React.FC = () => {
     setFormError('');
     setIsScheduled(insight.status === 'scheduled');
     setScheduledDate(insight.scheduledFor ? new Date(insight.scheduledFor) : new Date(Date.now() + 86400000));
+
+    setFormInsightFormat(insight.insightFormat || 'article');
+    setFormMarket(insight.market || 'DFM');
+    setFormSymbol(insight.symbol || '');
+    setFormStockName(insight.stockName || '');
+    setFormStockNameAr(insight.stockNameAr || '');
+    setFormBuyPrice(insight.buyPrice?.toString() || '');
+    setFormFirstGoal(insight.firstGoal?.toString() || '');
+    setFormSecondGoal(insight.secondGoal?.toString() || '');
+    setFormStopLoss(insight.stopLoss?.toString() || '');
+
     setEditModalVisible(true);
   };
 
@@ -208,6 +240,15 @@ export const AdminInsightsScreen: React.FC = () => {
         category: formCategory,
         tags: formTags.split(',').map(t => t.trim()).filter(Boolean),
         scheduledFor: isScheduled ? scheduledDate.toISOString() : undefined,
+        insightFormat: formInsightFormat,
+        market: formMarket,
+        symbol: formSymbol,
+        stockName: formStockName,
+        stockNameAr: formStockNameAr,
+        buyPrice: formBuyPrice ? parseFloat(formBuyPrice) : undefined,
+        firstGoal: formFirstGoal ? parseFloat(formFirstGoal) : undefined,
+        secondGoal: formSecondGoal ? parseFloat(formSecondGoal) : undefined,
+        stopLoss: formStopLoss ? parseFloat(formStopLoss) : undefined,
       });
       setCreateModalVisible(false);
       resetForm();
@@ -230,6 +271,15 @@ export const AdminInsightsScreen: React.FC = () => {
         category: formCategory,
         tags: formTags.split(',').map(t => t.trim()).filter(Boolean),
         scheduledFor: isScheduled ? scheduledDate.toISOString() : undefined,
+        insightFormat: formInsightFormat,
+        market: formMarket,
+        symbol: formSymbol,
+        stockName: formStockName,
+        stockNameAr: formStockNameAr,
+        buyPrice: formBuyPrice ? parseFloat(formBuyPrice) : undefined,
+        firstGoal: formFirstGoal ? parseFloat(formFirstGoal) : undefined,
+        secondGoal: formSecondGoal ? parseFloat(formSecondGoal) : undefined,
+        stopLoss: formStopLoss ? parseFloat(formStopLoss) : undefined,
       });
       setEditModalVisible(false);
       setSelectedInsight(null);
@@ -492,6 +542,31 @@ export const AdminInsightsScreen: React.FC = () => {
               {/* Classification Section */}
               <View style={localStyles.formSection}>
                 <View style={localStyles.formGroup}>
+                  <Text style={localStyles.label}>{t('admin.insightFormat')} *</Text>
+                  <View style={localStyles.typeButtonsRow}>
+                    {['article', 'signal'].map((format) => (
+                      <TouchableOpacity
+                        key={format}
+                        style={[
+                          localStyles.typeButton,
+                          formInsightFormat === format && localStyles.typeButtonActive,
+                        ]}
+                        onPress={() => setFormInsightFormat(format as any)}
+                      >
+                        <Text
+                          style={[
+                            localStyles.typeButtonText,
+                            formInsightFormat === format && localStyles.typeButtonTextActive,
+                          ]}
+                        >
+                          {t(`admin.${format}`)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.insightType')} *</Text>
                   <View style={localStyles.typeButtonsRow}>
                     {['free', 'premium'].map((type) => (
@@ -556,6 +631,126 @@ export const AdminInsightsScreen: React.FC = () => {
                   />
                 </View>
               </View>
+
+              {/* Trade Signal Details Section */}
+              {formInsightFormat === 'signal' && (
+                <View style={localStyles.formSection}>
+                  <View style={localStyles.divider} />
+                  <View style={[localStyles.titleRow, { marginBottom: 16 }]}>
+                    <Ionicons name="trending-up" size={20} color={theme.text.secondary} style={{ marginRight: 8 }} />
+                    <Text style={localStyles.sectionLabel}>{t('admin.tradeDetails')}</Text>
+                  </View>
+
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.market')} *</Text>
+                    <View style={localStyles.typeButtonsRow}>
+                      {['ADX', 'DFM', 'Other'].map((m) => (
+                        <TouchableOpacity
+                          key={m}
+                          style={[
+                            localStyles.typeButton,
+                            formMarket === m && localStyles.typeButtonActive,
+                          ]}
+                          onPress={() => setFormMarket(m as any)}
+                        >
+                          <Text
+                            style={[
+                              localStyles.typeButtonText,
+                              formMarket === m && localStyles.typeButtonTextActive,
+                            ]}
+                          >
+                            {m === 'Other' ? t('admin.other') : m}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.stockSymbol')}</Text>
+                    <TextInput
+                      style={localStyles.formInput}
+                      placeholder={t('admin.stockSymbolPlaceholder')}
+                      placeholderTextColor={theme.text.tertiary}
+                      value={formSymbol}
+                      onChangeText={setFormSymbol}
+                    />
+                  </View>
+
+                  <View style={localStyles.formRow}>
+                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                      <Text style={localStyles.label}>{t('admin.stockNameEn')}</Text>
+                      <TextInput
+                        style={localStyles.formInput}
+                        placeholder={t('admin.stockNameEnPlaceholder')}
+                        placeholderTextColor={theme.text.tertiary}
+                        value={formStockName}
+                        onChangeText={setFormStockName}
+                      />
+                    </View>
+                    <View style={[localStyles.formGroup, { flex: 1 }]}>
+                      <Text style={localStyles.label}>{t('admin.stockNameAr')}</Text>
+                      <TextInput
+                        style={[localStyles.formInput, { textAlign: 'right' }]}
+                        placeholder={t('admin.stockNameArPlaceholder')}
+                        placeholderTextColor={theme.text.tertiary}
+                        value={formStockNameAr}
+                        onChangeText={setFormStockNameAr}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={localStyles.formRow}>
+                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                      <Text style={localStyles.label}>{t('admin.buyPrice')}</Text>
+                      <TextInput
+                        style={localStyles.formInput}
+                        placeholder="0.00"
+                        placeholderTextColor={theme.text.tertiary}
+                        keyboardType="numeric"
+                        value={formBuyPrice}
+                        onChangeText={setFormBuyPrice}
+                      />
+                    </View>
+                    <View style={[localStyles.formGroup, { flex: 1 }]}>
+                      <Text style={localStyles.label}>{t('admin.stopLoss')}</Text>
+                      <TextInput
+                        style={localStyles.formInput}
+                        placeholder="0.00"
+                        placeholderTextColor={theme.text.tertiary}
+                        keyboardType="numeric"
+                        value={formStopLoss}
+                        onChangeText={setFormStopLoss}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={localStyles.formRow}>
+                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                      <Text style={localStyles.label}>{t('admin.firstGoal')}</Text>
+                      <TextInput
+                        style={localStyles.formInput}
+                        placeholder="0.00"
+                        placeholderTextColor={theme.text.tertiary}
+                        keyboardType="numeric"
+                        value={formFirstGoal}
+                        onChangeText={setFormFirstGoal}
+                      />
+                    </View>
+                    <View style={[localStyles.formGroup, { flex: 1 }]}>
+                      <Text style={localStyles.label}>{t('admin.secondGoal')}</Text>
+                      <TextInput
+                        style={localStyles.formInput}
+                        placeholder="0.00"
+                        placeholderTextColor={theme.text.tertiary}
+                        keyboardType="numeric"
+                        value={formSecondGoal}
+                        onChangeText={setFormSecondGoal}
+                      />
+                    </View>
+                  </View>
+                </View>
+              )}
 
               {/* Divider */}
               <View style={localStyles.divider} />
@@ -756,7 +951,7 @@ export const AdminInsightsScreen: React.FC = () => {
             <FlatList
               data={requests}
               renderItem={renderRequestCard}
-              keyExtractor={(item) => item.id || item._id}
+              keyExtractor={(item) => item.id}
               contentContainerStyle={[localStyles.listContent, isDesktop && { paddingHorizontal: 32 }]}
               onEndReached={loadMoreRequests}
               onEndReachedThreshold={0.5}
@@ -1335,6 +1530,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
+  },
+  formRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   submitButtonText: {
     fontSize: 16,

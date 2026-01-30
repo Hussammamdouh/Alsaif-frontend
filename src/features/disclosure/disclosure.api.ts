@@ -10,6 +10,9 @@ export interface Disclosure {
     date: string;
     exchange: 'DFM' | 'ADX';
     symbol?: string;
+    companyName?: string;
+    companyNameAr?: string;
+    companyNameEn?: string;
     createdAt: string;
     updatedAt: string;
 }
