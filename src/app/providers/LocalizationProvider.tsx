@@ -894,6 +894,14 @@ const translations = {
     'filter.published': 'Published',
     'filter.drafts': 'Drafts',
     'filter.scheduled': 'Scheduled',
+    'filter.adx': 'ADX',
+    'filter.dfm': 'DFM',
+    'filter.general': 'General',
+    'filter.others': 'Others',
+    'filter.specific': 'Specific Insights',
+    'filter.exchange': 'Exchange',
+    'filter.accessType': 'Access',
+    'filter.market': 'Market',
 
     // Admin Analytics
     'admin.daily': 'Daily',
@@ -1948,6 +1956,14 @@ const translations = {
     'filter.published': 'منشور',
     'filter.drafts': 'مسودات',
     'filter.scheduled': 'مجدول',
+    'filter.adx': 'أبوظبي',
+    'filter.dfm': 'دبي',
+    'filter.general': 'عام',
+    'filter.others': 'أخرى',
+    'filter.specific': 'توصيات محددة',
+    'filter.exchange': 'البورصة',
+    'filter.accessType': 'نوع الوصول',
+    'filter.market': 'السوق',
 
     // Admin Analytics
     'admin.daily': 'يومي',

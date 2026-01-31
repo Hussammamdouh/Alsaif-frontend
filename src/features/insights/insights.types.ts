@@ -174,6 +174,8 @@ export interface InsightsQueryParams {
   category?: InsightCategory;
   sortBy?: InsightSortBy;
   search?: string;
+  market?: 'ADX' | 'DFM' | 'Other';
+  insightFormat?: 'article' | 'signal';
 }
 
 export interface InsightCommentsQueryParams {

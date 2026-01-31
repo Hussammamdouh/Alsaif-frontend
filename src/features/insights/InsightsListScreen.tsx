@@ -20,12 +20,13 @@ import {
   useWindowDimensions,
   Animated,
   Easing,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../app/providers/ThemeProvider';
-import { ResponsiveContainer } from '../../shared/components';
+import { ResponsiveContainer, FilterChips } from '../../shared/components';
 import { useInsights } from './insights.hooks';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription';
@@ -187,14 +188,30 @@ const InsightCard: React.FC<InsightCardProps> = ({
 export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHeader, ListHeaderComponent }) => {
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
-  const { t } = useLocalization();
+  const { t, isRTL } = useLocalization();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const columnCount = width > 1600 ? 3 : 2;
-  const styles = React.useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
+  const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark), [theme, isDesktop, isDark]);
   const { canAccessInsight } = useSubscriptionAccess();
 
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter state
+  const [typeFilter, setTypeFilter] = useState<'all' | 'free' | 'premium'>('all');
+  const [marketFilter, setMarketFilter] = useState<'all' | 'ADX' | 'DFM' | 'Other' | 'signal'>('all');
+
+  // Build query params based on filters
+  const queryParams = React.useMemo(() => {
+    const params: any = { search: searchQuery };
+    if (typeFilter !== 'all') params.type = typeFilter;
+    if (marketFilter === 'signal') {
+      params.insightFormat = 'signal';
+    } else if (marketFilter !== 'all') {
+      params.market = marketFilter;
+    }
+    return params;
+  }, [searchQuery, typeFilter, marketFilter]);
 
   const {
     insights,
@@ -204,10 +221,12 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
     refresh,
     loadMore,
     updateInsightInList,
-  } = useInsights({
-    type: 'free',
-    search: searchQuery,
-  });
+  } = useInsights(queryParams);
+
+  // Refresh when filters change
+  React.useEffect(() => {
+    refresh(queryParams);
+  }, [typeFilter, marketFilter]);
 
   const handleInsightPress = (insight: InsightListItem) => {
     if (insight.type === 'premium' && !canAccessInsight('premium')) {
@@ -324,7 +343,33 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
           numColumns={isDesktop ? columnCount : 1}
           columnWrapperStyle={isDesktop && columnCount > 1 ? { gap: 24, paddingHorizontal: 24 } : null}
           contentContainerStyle={styles.listContent}
-          ListHeaderComponent={ListHeaderComponent}
+          ListHeaderComponent={
+            <>
+              {ListHeaderComponent}
+              <FilterChips
+                title={t('filter.accessType')}
+                options={[
+                  { key: 'all', labelKey: 'filter.all' },
+                  { key: 'free', labelKey: 'filter.free' },
+                  { key: 'premium', labelKey: 'filter.premium' },
+                ]}
+                selected={typeFilter}
+                onSelect={(key: string) => setTypeFilter(key as any)}
+              />
+              <FilterChips
+                title={t('filter.market')}
+                options={[
+                  { key: 'all', labelKey: 'filter.general' },
+                  { key: 'ADX', labelKey: 'filter.adx' },
+                  { key: 'DFM', labelKey: 'filter.dfm' },
+                  { key: 'Other', labelKey: 'filter.others' },
+                  { key: 'signal', labelKey: 'filter.specific' },
+                ]}
+                selected={marketFilter}
+                onSelect={(key: string) => setMarketFilter(key as any)}
+              />
+            </>
+          }
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -344,7 +389,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
   );
 };
 
-const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
+const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -390,6 +435,41 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 16,
+  },
+  filtersSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.text.secondary,
+    marginRight: 8,
+  },
+  filtersScroll: {
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+  },
+  filterChipActive: {
+    backgroundColor: theme.primary.main,
+    borderColor: 'transparent',
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.text.secondary,
+  },
+  filterChipTextActive: {
+    color: '#FFFFFF',
   },
   listContent: {
     paddingHorizontal: isDesktop ? 24 : 16,

@@ -23,7 +23,7 @@ import { useTheme } from '../../../app/providers/ThemeProvider';
 import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { spacing } from '../../../core/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
-import { ResponsiveContainer } from '../../../shared/components';
+import { ResponsiveContainer, FilterChips } from '../../../shared/components';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface DisclosureListScreenProps {
@@ -159,9 +159,9 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
     }, [disclosures, searchQuery, language]);
 
     const FILTERS: { key: ExchangeFilter; label: string; icon: any }[] = [
-        { key: 'ALL', label: t('disclosures.filterAll'), icon: 'layers-outline' },
-        { key: 'DFM', label: 'DFM', icon: 'business-outline' },
-        { key: 'ADX', label: 'ADX', icon: 'trending-up-outline' },
+        { key: 'ALL', label: t('filter.all'), icon: 'layers-outline' },
+        { key: 'DFM', label: t('filter.dfm'), icon: 'business-outline' },
+        { key: 'ADX', label: t('filter.adx'), icon: 'trending-up-outline' },
     ];
 
     const handlePress = (item: Disclosure) => {
@@ -395,7 +395,20 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                     data={filteredDisclosures}
                     renderItem={renderItem}
                     keyExtractor={(item) => item._id}
-                    ListHeaderComponent={ListHeaderComponent}
+                    ListHeaderComponent={
+                        <>
+                            {ListHeaderComponent}
+                            <FilterChips
+                                options={FILTERS.map(f => ({
+                                    key: f.key,
+                                    labelKey: `filter.${f.key.toLowerCase()}`,
+                                    icon: f.icon
+                                }))}
+                                selected={filter}
+                                onSelect={(key: string) => setFilter(key as any)}
+                            />
+                        </>
+                    }
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />
                     }
@@ -479,6 +492,10 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         fontWeight: '500',
+    },
+    filtersContainer: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: 12,
     },
     filtersScroll: {
         paddingBottom: 8,

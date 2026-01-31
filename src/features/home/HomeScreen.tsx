@@ -77,8 +77,11 @@ export const HomeScreen: React.FC = React.memo(() => {
   };
 
   // Banner carousel as list header - scrolls with content
+  // Use negative margin to offset FlatList's contentContainerStyle padding for full-bleed
   const renderBannerHeader = () => (
-    <BannerCarousel type={activeTab} />
+    <View style={{ marginHorizontal: -16, marginBottom: 12 }}>
+      <BannerCarousel type={activeTab} />
+    </View>
   );
 
   const renderHeader = () => (
