@@ -25,6 +25,7 @@ import { useSubscriptionAccess } from '../subscription';
 import {
   ICONS,
 } from './insights.constants';
+import { FilterChips } from '../../shared/components/FilterChips';
 import {
   formatTimeAgo,
   formatCount,
@@ -34,6 +35,7 @@ import type { InsightListItem } from './insights.types';
 
 interface PremiumInsightsListScreenProps {
   hideHeader?: boolean;
+  hideAccessFilter?: boolean;
   ListHeaderComponent?: React.ReactElement;
 }
 
@@ -165,7 +167,11 @@ const PremiumInsightCard: React.FC<InsightCardProps> = ({
   );
 };
 
-export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps> = ({ hideHeader, ListHeaderComponent }) => {
+export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps> = ({
+  hideHeader,
+  hideAccessFilter,
+  ListHeaderComponent
+}) => {
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
   const { t } = useLocalization();
@@ -174,7 +180,22 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
   const columnCount = width > 1600 ? 3 : 2;
   const styles = React.useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
   const { hasPremiumAccess } = useSubscriptionAccess();
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Filter state
+  const [typeFilter, setTypeFilter] = useState<'all' | 'free' | 'premium'>('premium');
+  const [marketFilter, setMarketFilter] = useState<'all' | 'ADX' | 'DFM' | 'Other' | 'signal'>('all');
+
+  // Build query params based on filters
+  const queryParams = React.useMemo(() => {
+    const params: any = { search: searchQuery, type: 'premium' };
+    if (marketFilter === 'signal') {
+      params.insightFormat = 'signal';
+    } else if (marketFilter !== 'all') {
+      params.market = marketFilter;
+    }
+    return params;
+  }, [searchQuery, marketFilter]);
   const {
     insights,
     loading,
@@ -183,9 +204,7 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
     refresh,
     loadMore,
     updateInsightInList,
-  } = useInsights({
-    type: 'premium',
-  });
+  } = useInsights(queryParams);
 
   const handleInsightPress = (insight: InsightListItem) => {
     if (!hasPremiumAccess) {
@@ -305,7 +324,35 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
           ListEmptyComponent={renderEmpty}
           ListFooterComponent={renderFooter}
           showsVerticalScrollIndicator={false}
-          ListHeaderComponent={ListHeaderComponent}
+          ListHeaderComponent={
+            <>
+              {ListHeaderComponent}
+              {!hideAccessFilter && (
+                <FilterChips
+                  title={t('filter.accessType')}
+                  options={[
+                    { key: 'all', labelKey: 'filter.all' },
+                    { key: 'free', labelKey: 'filter.free' },
+                    { key: 'premium', labelKey: 'filter.premium' },
+                  ]}
+                  selected={typeFilter}
+                  onSelect={(key: string) => setTypeFilter(key as any)}
+                />
+              )}
+              <FilterChips
+                title={t('filter.market')}
+                options={[
+                  { key: 'all', labelKey: 'filter.general' },
+                  { key: 'ADX', labelKey: 'filter.adx' },
+                  { key: 'DFM', labelKey: 'filter.dfm' },
+                  { key: 'Other', labelKey: 'filter.others' },
+                  { key: 'signal', labelKey: 'filter.specific' },
+                ]}
+                selected={marketFilter}
+                onSelect={(key: string) => setMarketFilter(key as any)}
+              />
+            </>
+          }
         />
       </ResponsiveContainer>
     </View>

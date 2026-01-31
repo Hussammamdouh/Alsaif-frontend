@@ -192,11 +192,13 @@ export const HomeScreen: React.FC = React.memo(() => {
       ) : activeTab === 'free' ? (
         <InsightsListScreen
           hideHeader
+          hideAccessFilter
           ListHeaderComponent={renderBannerHeader()}
         />
       ) : (
         <PremiumInsightsListScreen
           hideHeader
+          hideAccessFilter
           ListHeaderComponent={renderBannerHeader()}
         />
       )}

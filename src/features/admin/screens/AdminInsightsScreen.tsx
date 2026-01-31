@@ -632,6 +632,35 @@ export const AdminInsightsScreen: React.FC = () => {
                 </View>
               </View>
 
+              {/* Market Context Section - Now for all types */}
+              <View style={localStyles.formSection}>
+                <View style={localStyles.divider} />
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.label}>{t('admin.market')} *</Text>
+                  <View style={localStyles.typeButtonsRow}>
+                    {['ADX', 'DFM', 'Other'].map((m) => (
+                      <TouchableOpacity
+                        key={m}
+                        style={[
+                          localStyles.typeButton,
+                          formMarket === m && localStyles.typeButtonActive,
+                        ]}
+                        onPress={() => setFormMarket(m as any)}
+                      >
+                        <Text
+                          style={[
+                            localStyles.typeButtonText,
+                            formMarket === m && localStyles.typeButtonTextActive,
+                          ]}
+                        >
+                          {m === 'Other' ? t('admin.other') : m}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+
               {/* Trade Signal Details Section */}
               {formInsightFormat === 'signal' && (
                 <View style={localStyles.formSection}>
@@ -639,31 +668,6 @@ export const AdminInsightsScreen: React.FC = () => {
                   <View style={[localStyles.titleRow, { marginBottom: 16 }]}>
                     <Ionicons name="trending-up" size={20} color={theme.text.secondary} style={{ marginRight: 8 }} />
                     <Text style={localStyles.sectionLabel}>{t('admin.tradeDetails')}</Text>
-                  </View>
-
-                  <View style={localStyles.formGroup}>
-                    <Text style={localStyles.label}>{t('admin.market')} *</Text>
-                    <View style={localStyles.typeButtonsRow}>
-                      {['ADX', 'DFM', 'Other'].map((m) => (
-                        <TouchableOpacity
-                          key={m}
-                          style={[
-                            localStyles.typeButton,
-                            formMarket === m && localStyles.typeButtonActive,
-                          ]}
-                          onPress={() => setFormMarket(m as any)}
-                        >
-                          <Text
-                            style={[
-                              localStyles.typeButtonText,
-                              formMarket === m && localStyles.typeButtonTextActive,
-                            ]}
-                          >
-                            {m === 'Other' ? t('admin.other') : m}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
                   </View>
 
                   <View style={localStyles.formGroup}>

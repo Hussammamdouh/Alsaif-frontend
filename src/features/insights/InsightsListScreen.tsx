@@ -44,6 +44,7 @@ import type { InsightListItem } from './insights.types';
 
 interface InsightsListScreenProps {
   hideHeader?: boolean;
+  hideAccessFilter?: boolean;
   ListHeaderComponent?: React.ReactElement;
 }
 
@@ -185,7 +186,11 @@ const InsightCard: React.FC<InsightCardProps> = ({
   );
 };
 
-export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHeader, ListHeaderComponent }) => {
+export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
+  hideHeader,
+  hideAccessFilter,
+  ListHeaderComponent
+}) => {
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
   const { t, isRTL } = useLocalization();
@@ -346,16 +351,18 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({ hideHead
           ListHeaderComponent={
             <>
               {ListHeaderComponent}
-              <FilterChips
-                title={t('filter.accessType')}
-                options={[
-                  { key: 'all', labelKey: 'filter.all' },
-                  { key: 'free', labelKey: 'filter.free' },
-                  { key: 'premium', labelKey: 'filter.premium' },
-                ]}
-                selected={typeFilter}
-                onSelect={(key: string) => setTypeFilter(key as any)}
-              />
+              {!hideAccessFilter && (
+                <FilterChips
+                  title={t('filter.accessType')}
+                  options={[
+                    { key: 'all', labelKey: 'filter.all' },
+                    { key: 'free', labelKey: 'filter.free' },
+                    { key: 'premium', labelKey: 'filter.premium' },
+                  ]}
+                  selected={typeFilter}
+                  onSelect={(key: string) => setTypeFilter(key as any)}
+                />
+              )}
               <FilterChips
                 title={t('filter.market')}
                 options={[
