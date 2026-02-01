@@ -9,6 +9,7 @@
       "distribution": "internal"
     },
     "preview": {
+      "autoIncrement": true,
       "distribution": "internal",
       "android": {
         "buildType": "apk"
@@ -19,7 +20,17 @@
         "EXPO_PUBLIC_ONESIGNAL_APP_ID": "43486064-cce9-4d0f-a006-8145e4a29e8d"
       }
     },
-    "production": {}
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "API_BASE_URL": "https://elsaif-backend-persistent.onrender.com",
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_ONESIGNAL_APP_ID": "43486064-cce9-4d0f-a006-8145e4a29e8d"
+      },
+      "ios": {
+        "simulator": false
+      }
+    }
   },
   "submit": {
     "production": {}

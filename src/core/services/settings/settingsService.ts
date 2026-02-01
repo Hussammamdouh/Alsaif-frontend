@@ -168,6 +168,20 @@ export const cancelAccountDeletion = async (): Promise<void> => {
 };
 
 /**
+ * Cancel user subscription
+ */
+export const cancelSubscription = async (reason?: string): Promise<void> => {
+  const response = await apiClient.post<{ success: boolean; message?: string }>(
+    '/api/subscriptions/cancel',
+    { reason }
+  );
+
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to cancel subscription');
+  }
+};
+
+/**
  * Export user data (GDPR compliance)
  */
 export const exportUserData = async (): Promise<any> => {

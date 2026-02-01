@@ -11,7 +11,8 @@ import {
   updateNotificationPreferences as updateNotificationPreferencesApi,
   getActiveSessions as getActiveSessionsApi,
   revokeSession as revokeSessionApi,
-  logoutAllDevices as logoutAllDevicesApi
+  logoutAllDevices as logoutAllDevicesApi,
+  cancelSubscription as cancelSubscriptionApi
 } from '../../core/services/settings/settingsService';
 import {
   SettingsState,
@@ -337,5 +338,36 @@ export const useDeviceManagement = () => {
     loadSessions,
     revokeSession,
     logoutAllDevices
+  };
+};
+
+/**
+ * useSubscriptionCancellation Hook
+ * Manages subscription cancellation state
+ */
+export const useSubscriptionCancellation = () => {
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const cancelSubscription = useCallback(async (reason?: string) => {
+    try {
+      setIsCancelling(true);
+      setError(null);
+      await cancelSubscriptionApi(reason);
+      setIsCancelling(false);
+      return { success: true };
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to cancel subscription';
+      setError(errorMessage);
+      setIsCancelling(false);
+      return { success: false, error: errorMessage };
+    }
+  }, []);
+
+  return {
+    cancelSubscription,
+    isCancelling,
+    error
   };
 };

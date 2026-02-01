@@ -10,7 +10,7 @@ import Constants from 'expo-constants';
 const extra = Constants.expoConfig?.extra || {};
 
 const Config = {
-  API_BASE_URL: extra.apiBaseUrl || 'http://localhost:5000',
+  API_BASE_URL: extra.apiBaseUrl || 'https://elsaif-backend-persistent.onrender.com', // Default to Render for dev client connectivity
   API_TIMEOUT: extra.apiTimeout || '30000',
   ENABLE_LOGGING: extra.enableLogging ? 'true' : 'false',
   LOG_LEVEL: extra.logLevel || 'debug',
@@ -24,7 +24,7 @@ export const ENV = {
   /**
    * API Configuration
    */
-  API_BASE_URL: Config.API_BASE_URL || 'http://localhost:5000',
+  API_BASE_URL: Config.API_BASE_URL || 'https://elsaif-backend-persistent.onrender.com',
   API_TIMEOUT: parseInt(Config.API_TIMEOUT || '30000', 10),
 
   /**

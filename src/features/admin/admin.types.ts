@@ -142,6 +142,8 @@ export interface AdminSubscription {
   cancellationReason?: string;
   cancelledAt?: string;
   revenue?: number;
+  stripeSubscriptionId?: string;
+  stripeProductId?: string;
 }
 
 export interface SubscriptionFilters {

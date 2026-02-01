@@ -117,7 +117,11 @@ export const useNotificationSetup = (config: NotificationSetupConfig = {}) => {
 
       // 1. Initialize Firebase
       await initializeNotificationChannels();
-      await registerDeviceForPushNotifications();
+
+      // Only register with backend if we have a user
+      if (userId) {
+        await registerDeviceForPushNotifications();
+      }
 
       // 2. Initialize OneSignal
       await initializeOneSignal(userId);
@@ -144,6 +148,9 @@ export const useNotificationSetup = (config: NotificationSetupConfig = {}) => {
         onNotificationOpened: handleNotificationOpened,
         onTokenRefresh: async (token) => {
           console.log('Firebase token refreshed:', token);
+          if (userId) {
+            await registerDeviceForPushNotifications();
+          }
         },
       });
 
@@ -168,7 +175,7 @@ export const useNotificationSetup = (config: NotificationSetupConfig = {}) => {
       };
     } catch (error) {
       console.error('Failed to initialize push notifications:', error);
-      return () => {}; // Return empty cleanup function
+      return () => { }; // Return empty cleanup function
     }
   }, [
     userId,

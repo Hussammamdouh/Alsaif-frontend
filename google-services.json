@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "123456789000",
-    "project_id": "vertexcapital-dummy",
-    "storage_bucket": "vertexcapital-dummy.appspot.com"
+    "project_number": "996963538709",
+    "project_id": "elsaif-analysis",
+    "storage_bucket": "elsaif-analysis.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789000:android:abcdef1234567890",
+        "mobilesdk_app_id": "1:996963538709:android:315dc7d7919497ab3f3b1c",
         "android_client_info": {
           "package_name": "com.elsaifanalysis.app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDummyKeyForDevelopment"
+          "current_key": "AIzaSyDb0kLZ-mHE7Iq0f9hv2dkN7sYvAkO_kJI"
         }
       ],
       "services": {

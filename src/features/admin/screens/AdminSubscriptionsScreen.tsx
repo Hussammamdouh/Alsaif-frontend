@@ -261,6 +261,27 @@ export const AdminSubscriptionsScreen: React.FC = () => {
             {t('admin.revenue')}: ${item.revenue.toFixed(2)}
           </Text>
         )}
+
+        {(item.lastPaymentDate || item.stripeSubscriptionId) && (
+          <View style={localStyles.paymentInfo}>
+            {item.lastPaymentDate && (
+              <View style={localStyles.paymentDetail}>
+                <Ionicons name="calendar-outline" size={14} color={theme.text.secondary} />
+                <Text style={localStyles.paymentDetailText}>
+                  {t('admin.paymentDate')}: {formatDate(item.lastPaymentDate)}
+                </Text>
+              </View>
+            )}
+            {item.stripeSubscriptionId && (
+              <View style={localStyles.paymentDetail}>
+                <Ionicons name="receipt-outline" size={14} color={theme.text.secondary} />
+                <Text style={localStyles.paymentDetailText}>
+                  {t('admin.stripeSubscriptionId')}: {item.stripeSubscriptionId}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
@@ -840,5 +861,21 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: theme.primary.contrast,
+  },
+  paymentInfo: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.border.main,
+    gap: 8,
+  },
+  paymentDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  paymentDetailText: {
+    fontSize: 12,
+    color: theme.text.secondary,
   },
 });

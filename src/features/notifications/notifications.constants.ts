@@ -104,52 +104,52 @@ export const NOTIFICATION_ICONS: Record<string, string> = {
 };
 
 export const NOTIFICATION_COLORS: Record<string, string> = {
-  // Subscription
-  'subscription:created': '#34c759',
-  'subscription:upgraded': '#007aff',
-  'subscription:downgraded': '#ff9500',
-  'subscription:renewed': '#34c759',
-  'subscription:cancelled': '#8e8e93',
+  // Subscription - Green tones
+  'subscription:created': '#2d6a4f',
+  'subscription:upgraded': '#1b4332',
+  'subscription:downgraded': '#8e8e93',
+  'subscription:renewed': '#2d6a4f',
+  'subscription:cancelled': '#555',
   'subscription:expired': '#ff3b30',
-  'subscription:expiring-soon': '#ff9500',
+  'subscription:expiring-soon': '#d4a373',
   'subscription:payment-failed': '#ff3b30',
-  'subscription:trial-started': '#af52de',
-  'subscription:trial-ending-soon': '#ff9500',
-  'subscription:trial-ended': '#8e8e93',
+  'subscription:trial-started': '#40916c',
+  'subscription:trial-ending-soon': '#d4a373',
+  'subscription:trial-ended': '#555',
 
-  // Content
-  'insight:published': '#007aff',
-  'insight:premium-published': '#ffd700',
-  'insight:featured': '#ff3b30',
-  'insight:trending': '#ff9500',
-  'insight:saved': '#34c759',
+  // Content - Gold/Accent tones
+  'insight:published': '#d4af37', // Gold
+  'insight:premium-published': '#b8860b', // DarkGold
+  'insight:featured': '#d4af37',
+  'insight:trending': '#edae49',
+  'insight:saved': '#2d6a4f',
 
-  // Engagement
+  // Engagement - Primary tones
   'engagement:insight-liked': '#ff3b30',
-  'engagement:insight-commented': '#007aff',
-  'engagement:user-followed': '#34c759',
-  'engagement:user-mentioned': '#ff9500',
-  'engagement:comment-replied': '#007aff',
+  'engagement:insight-commented': '#2d6a4f',
+  'engagement:user-followed': '#2d6a4f',
+  'engagement:user-mentioned': '#d4af37',
+  'engagement:comment-replied': '#2d6a4f',
 
-  // Premium
-  'premium:content-available': '#af52de',
-  'premium:early-access': '#ff9500',
-  'premium:special-offer': '#34c759',
-  'premium:webinar': '#007aff',
+  // Premium - Deep Gold
+  'premium:content-available': '#b8860b',
+  'premium:early-access': '#edae49',
+  'premium:special-offer': '#2d6a4f',
+  'premium:webinar': '#1b4332',
 
-  // System
-  'system:welcome': '#34c759',
+  // System - Brand tones
+  'system:welcome': '#2d6a4f',
   'system:security-alert': '#ff3b30',
-  'system:account-activity': '#007aff',
+  'system:account-activity': '#1b4332',
   'system:policy-update': '#8e8e93',
-  'system:maintenance': '#ff9500',
-  'system:app-update': '#007aff',
+  'system:maintenance': '#555',
+  'system:app-update': '#d4af37',
 
   // Marketing
-  'marketing:promotion': '#34c759',
-  'marketing:newsletter': '#007aff',
-  'marketing:survey': '#ff9500',
-  'marketing:announcement': '#af52de',
+  'marketing:promotion': '#b8860b',
+  'marketing:newsletter': '#1b4332',
+  'marketing:survey': '#d4af37',
+  'marketing:announcement': '#2d6a4f',
 };
 
 export const NOTIFICATION_TITLES: Record<string, string> = {

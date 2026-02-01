@@ -6,11 +6,14 @@ export default {
     orientation: "portrait",
     icon: "./assets/logo.png",
     userInterfaceStyle: "light",
-    newArchEnabled: true,
+    newArchEnabled: false,
     scheme: "alsaif-analysis",
     experiments: {
       tsconfigPaths: true
     },
+    assetBundlePatterns: [
+      "**/*"
+    ],
     splash: {
       image: "./assets/logo.png",
       resizeMode: "contain",
@@ -18,11 +21,12 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.elsaifanalysis.app"
+      bundleIdentifier: "com.elsaifanalysis.app",
+      googleServicesFile: "./GoogleService-Info.plist"
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/logo.png",
+        foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
       package: "com.elsaifanalysis.app",
@@ -34,7 +38,6 @@ export default {
       favicon: "./assets/logo.png"
     },
     plugins: [
-      "expo-router",
       "@react-native-firebase/app",
       "@react-native-community/datetimepicker",
       [

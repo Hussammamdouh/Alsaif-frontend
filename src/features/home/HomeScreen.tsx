@@ -11,6 +11,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   Animated,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,7 +42,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   const { count: unreadNotifications } = useUnreadBadge();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
-  const styles = React.useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
+  const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark), [theme, isDesktop, isDark]);
 
   const [activeTab, setActiveTab] = useState<TabType>('disclosures');
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -86,9 +87,13 @@ export const HomeScreen: React.FC = React.memo(() => {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={styles.headerTitle}>
-        {t('insights.title')}
-      </Text>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
       <View style={styles.headerActions}>
         <TouchableOpacity
           style={[styles.iconButton, { backgroundColor: theme.background.tertiary, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}
@@ -240,7 +245,7 @@ export const HomeScreen: React.FC = React.memo(() => {
 
 HomeScreen.displayName = 'HomeScreen';
 
-const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
+const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -355,5 +360,25 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
   desktopContent: {
     flex: 1,
     backgroundColor: theme.background.primary,
+  },
+  logoContainer: {
+    padding: 6,
+    backgroundColor: theme.background.secondary,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 44,
+    height: 44,
+  },
+  logo: {
+    width: 30,
+    height: 30,
   },
 });

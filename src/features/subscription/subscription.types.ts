@@ -26,6 +26,8 @@ export interface SubscriptionPlan {
   features: SubscriptionPlanFeature[];
   description?: string;
   isFeatured: boolean;
+  stripeProductId?: string;
+  stripePriceId?: string;
 }
 
 export interface UserSubscription {

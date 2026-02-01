@@ -4,7 +4,7 @@
  * Now with theme and language support
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -62,7 +62,6 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   const [formIsActive, setFormIsActive] = useState(true);
   const [formIsFeatured, setFormIsFeatured] = useState(false);
   const [formCurrency, setFormCurrency] = useState('AED');
-  const [formStripePriceId, setFormStripePriceId] = useState('');
 
   const {
     plans,
@@ -85,7 +84,6 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
     setFormIsActive(true);
     setFormIsFeatured(false);
     setFormCurrency('AED');
-    setFormStripePriceId('');
     setSelectedPlan(null);
   };
 
@@ -109,7 +107,6 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
     setFormIsActive(plan.isActive !== false);
     setFormIsFeatured(plan.isFeatured === true);
     setFormCurrency(plan.currency || 'AED');
-    setFormStripePriceId(plan.stripePriceId || '');
     setShowFormModal(true);
   };
 
@@ -128,7 +125,6 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
         isActive: formIsActive,
         isFeatured: formIsFeatured,
         currency: formCurrency,
-        stripePriceId: formStripePriceId,
       };
 
       if (selectedPlan) {
@@ -486,7 +482,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                 </View>
 
                 <View style={localStyles.row}>
-                  <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                  <View style={[localStyles.formGroup, { flex: 1 }]}>
                     <Text style={localStyles.label}>{t('admin.currency')} *</Text>
                     <TextInput
                       style={localStyles.input}
@@ -497,17 +493,28 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                       autoCapitalize="characters"
                     />
                   </View>
-                  <View style={[localStyles.formGroup, { flex: 2, marginLeft: 8 }]}>
-                    <Text style={localStyles.label}>{t('admin.stripePriceId')}</Text>
-                    <TextInput
-                      style={localStyles.input}
-                      value={formStripePriceId}
-                      onChangeText={setFormStripePriceId}
-                      placeholder="price_..."
-                      placeholderTextColor={theme.text.tertiary}
-                    />
-                  </View>
                 </View>
+
+                {selectedPlan && (selectedPlan.stripeProductId || selectedPlan.stripePriceId) && (
+                  <View style={localStyles.stripeIdsContainer}>
+                    <Ionicons name="sync-outline" size={16} color={theme.primary.main} style={{ marginRight: 8 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={localStyles.stripeSyncTitle}>Stripe Synchronization</Text>
+                      {selectedPlan.stripeProductId && (
+                        <View style={localStyles.stripeIdRow}>
+                          <Text style={localStyles.stripeIdLabel}>{t('admin.stripeProductId')}:</Text>
+                          <Text style={localStyles.stripeIdValue} numberOfLines={1}>{selectedPlan.stripeProductId}</Text>
+                        </View>
+                      )}
+                      {selectedPlan.stripePriceId && (
+                        <View style={localStyles.stripeIdRow}>
+                          <Text style={localStyles.stripeIdLabel}>{t('admin.stripePriceId')}:</Text>
+                          <Text style={localStyles.stripeIdValue} numberOfLines={1}>{selectedPlan.stripePriceId}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                )}
 
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.features')}</Text>
@@ -683,7 +690,9 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     minHeight: '80%',
+    maxHeight: '90%',
     padding: 24,
+    flexShrink: 1,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -825,5 +834,38 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: theme.primary.contrast,
+  },
+  stripeIdsContainer: {
+    backgroundColor: theme.background.primary,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: theme.border.main,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  stripeSyncTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.primary.main,
+    marginBottom: 8,
+  },
+  stripeIdRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  stripeIdLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.text.secondary,
+    width: 100,
+  },
+  stripeIdValue: {
+    flex: 1,
+    fontSize: 12,
+    color: theme.text.primary,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
 });

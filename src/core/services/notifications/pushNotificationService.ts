@@ -3,7 +3,16 @@
  * Handles Firebase Cloud Messaging (FCM) integration for push notifications
  */
 
-import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import {
+  getMessaging,
+  getToken,
+  requestPermission,
+  onMessage,
+  onTokenRefresh,
+  setBackgroundMessageHandler,
+  getInitialNotification,
+  onNotificationOpenedApp
+} from '@react-native-firebase/messaging';
 import { Platform, Alert, PermissionsAndroid } from 'react-native';
 import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -18,10 +27,10 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 
   try {
     if (Platform.OS === 'ios') {
-      const authStatus = await messaging().requestPermission();
+      const authStatus = await requestPermission(getMessaging());
       const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        authStatus === 1 || // AUTHORIZED
+        authStatus === 2;   // PROVISIONAL
 
       if (enabled) {
         console.log('iOS notification permission granted:', authStatus);
@@ -32,7 +41,8 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
       return enabled;
     } else {
       // Android
-      if (Platform.Version >= 33) {
+      const version = typeof Platform.Version === 'string' ? parseInt(Platform.Version, 10) : Platform.Version;
+      if (version >= 33) {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
         );
@@ -54,7 +64,7 @@ export const getFCMToken = async (): Promise<string | null> => {
   if (Platform.OS === 'web') return null;
 
   try {
-    const token = await messaging().getToken();
+    const token = await getToken(getMessaging());
     console.log('FCM Token:', token);
     return token;
   } catch (error) {
@@ -105,6 +115,11 @@ export const registerDeviceForPushNotifications = async (): Promise<boolean> => 
     console.log('Device registered for push notifications');
     return true;
   } catch (error) {
+    // Suppress "Not authenticated" error as it's expected before login
+    if (error instanceof Error && error.message.includes('Not authenticated')) {
+      console.log('Postponing push token registration until authenticated');
+      return false;
+    }
     console.error('Error registering device for push notifications:', error);
     return false;
   }
@@ -117,7 +132,8 @@ export const unregisterDeviceFromPushNotifications = async (): Promise<void> => 
   try {
     const deviceId = await DeviceInfo.getUniqueId();
     await unregisterPushToken(deviceId);
-    await messaging().deleteToken();
+    const { deleteToken } = await import('@react-native-firebase/messaging');
+    await deleteToken(getMessaging());
     console.log('Device unregistered from push notifications');
   } catch (error) {
     console.error('Error unregistering device from push notifications:', error);
@@ -196,7 +212,7 @@ export const initializeNotificationChannels = async (): Promise<void> => {
  * Display local notification using Notifee
  */
 export const displayLocalNotification = async (
-  notification: FirebaseMessagingTypes.RemoteMessage
+  notification: any
 ): Promise<void> => {
   try {
     const { title, body, data } = notification;
@@ -231,8 +247,8 @@ export const displayLocalNotification = async (
  * Handle foreground notification
  */
 export const handleForegroundNotification = (
-  notification: FirebaseMessagingTypes.RemoteMessage,
-  onNotificationReceived?: (notification: FirebaseMessagingTypes.RemoteMessage) => void
+  notification: any,
+  onNotificationReceived?: (notification: any) => void
 ): void => {
   console.log('Foreground notification received:', notification);
 
@@ -249,7 +265,7 @@ export const handleForegroundNotification = (
  * Handle background notification
  */
 export const handleBackgroundNotification = async (
-  notification: FirebaseMessagingTypes.RemoteMessage
+  notification: any
 ): Promise<void> => {
   console.log('Background notification received:', notification);
   await displayLocalNotification(notification);
@@ -259,7 +275,7 @@ export const handleBackgroundNotification = async (
  * Handle notification opened (user tapped on notification)
  */
 export const handleNotificationOpened = (
-  remoteMessage: FirebaseMessagingTypes.RemoteMessage | null,
+  remoteMessage: any | null,
   onNotificationOpened?: (data: any) => void
 ): void => {
   if (remoteMessage) {
@@ -283,7 +299,7 @@ export const handleNotificationOpened = (
  * Setup push notification listeners
  */
 export const setupPushNotificationListeners = (handlers: {
-  onNotificationReceived?: (notification: FirebaseMessagingTypes.RemoteMessage) => void;
+  onNotificationReceived?: (notification: any) => void;
   onNotificationOpened?: (data: any) => void;
   onTokenRefresh?: (token: string) => void;
 }): (() => void) => {
@@ -296,29 +312,29 @@ export const setupPushNotificationListeners = (handlers: {
   } = handlers;
 
   // Foreground message listener
-  const unsubscribeForeground = messaging().onMessage(notification => {
+  const unsubscribeForeground = onMessage(getMessaging(), (notification: any) => {
     handleForegroundNotification(notification, onNotificationReceived);
   });
 
-  // Background/Quit state message handler (set in index.js)
-  messaging().setBackgroundMessageHandler(handleBackgroundNotification);
+  // Background/Quit state message handler
+  const messagingInstance = getMessaging();
+  setBackgroundMessageHandler(messagingInstance, handleBackgroundNotification);
 
   // Notification opened listener (when app is in background)
-  const unsubscribeNotificationOpened = messaging().onNotificationOpenedApp(
-    remoteMessage => {
+  const unsubscribeNotificationOpened = onNotificationOpenedApp(messagingInstance,
+    (remoteMessage: any) => {
       handleNotificationOpened(remoteMessage, onNotificationOpened);
     }
   );
 
   // Check if app was opened from a notification (when app was quit)
-  messaging()
-    .getInitialNotification()
-    .then(remoteMessage => {
+  getInitialNotification(messagingInstance)
+    .then((remoteMessage: any) => {
       handleNotificationOpened(remoteMessage, onNotificationOpened);
     });
 
   // Token refresh listener
-  const unsubscribeTokenRefresh = messaging().onTokenRefresh(async token => {
+  const unsubscribeTokenRefresh = onTokenRefresh(getMessaging(), async (token: string) => {
     console.log('FCM token refreshed:', token);
 
     try {
@@ -361,9 +377,13 @@ export const setupPushNotificationListeners = (handlers: {
 
   // Return cleanup function
   return () => {
-    unsubscribeForeground();
-    unsubscribeNotificationOpened();
-    unsubscribeTokenRefresh();
+    if (unsubscribeForeground) unsubscribeForeground();
+    if (typeof unsubscribeNotificationOpened === 'function') {
+      (unsubscribeNotificationOpened as any)();
+    }
+    if (typeof unsubscribeTokenRefresh === 'function') {
+      (unsubscribeTokenRefresh as any)();
+    }
     unsubscribeNotifeeEvents();
   };
 };

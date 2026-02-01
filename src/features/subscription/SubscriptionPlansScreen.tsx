@@ -3,7 +3,7 @@
  * Premium redesigned plans screen matching Paywall aesthetics
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, StatusBar, Dimensions, Alert, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -67,7 +67,7 @@ export const SubscriptionPlansScreen: React.FC = () => {
             <Ionicons name="close" size={28} color={isDark ? "#FFF" : "#000"} />
           </TouchableOpacity>
         </View>
-        <ScrollView contentContainerStyle={styles.scrollContent} padsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.plansList}>
             <PlanSkeleton />
             <PlanSkeleton />

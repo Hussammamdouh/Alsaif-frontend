@@ -42,8 +42,15 @@ export const getNotifications = async (params?: {
 
   // Map backend structure to frontend expectation
   const { notifications, pagination } = response.data;
+
+  // Ensure all notifications have an 'id' field (mapped from _id if necessary)
+  const mappedNotifications = (notifications || []).map((n: any) => ({
+    ...n,
+    id: n.id || n._id || '',
+  }));
+
   return {
-    notifications,
+    notifications: mappedNotifications,
     total: pagination.total,
     page: pagination.page,
     limit: pagination.limit,
@@ -94,6 +101,11 @@ export const markAllNotificationsAsRead = async (): Promise<void> => {
  * Track notification click
  */
 export const trackNotificationClick = async (notificationId: string): Promise<void> => {
+  if (!notificationId || notificationId === 'undefined') {
+    console.warn('[NotificationsService] trackNotificationClick called with invalid ID:', notificationId);
+    return;
+  }
+
   const response = await apiClient.post<TrackClickResponse>(
     `/api/notifications/${notificationId}/click`
   );

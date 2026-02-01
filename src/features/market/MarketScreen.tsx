@@ -174,7 +174,7 @@ export const MarketScreen = () => {
                     style={[styles.tickerCard, { borderColor: isDark ? '#2A2A2A' : theme.ui.border }]}
                 >
                     <View style={styles.tickerContent}>
-                        <View style={[styles.avatar, { backgroundColor: '#2A2A2A' }]}>
+                        <View style={[styles.avatar, { backgroundColor: isDark ? '#2A2A2A' : '#F0F0F0' }]}>
                             <Text style={[styles.avatarText, { color: theme.text.primary }]}>{initials}</Text>
                         </View>
                         <View style={styles.tickerInfo}>
@@ -182,10 +182,10 @@ export const MarketScreen = () => {
                             <Text style={[styles.tickerName, { color: theme.text.tertiary }]}>{item.symbol}</Text>
                         </View>
                         <View style={[styles.tickerPriceContainer, isDesktop ? { flexDirection: 'row', alignItems: 'center', gap: 24 } : null]}>
-                            <Text style={[styles.tickerPrice, { color: theme.text.primary, fontSize: isDesktop ? 22 : 18 }]}>{(item.price || 0).toFixed(2)}</Text>
+                            <Text style={[styles.tickerPrice, { color: theme.text.primary, fontSize: isDesktop ? 22 : 18 }]}>{(item.price || 0).toFixed(3)}</Text>
                             <View style={[styles.changeBadge, { backgroundColor: isPositive ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)' }]}>
                                 <Text style={[styles.tickerChange, { color, fontSize: isDesktop ? 15 : 12, fontWeight: '700' }]}>
-                                    {isPositive ? '▲' : '▼'} {Math.abs(displayChange).toFixed(2)} ({Math.abs(item.changePercent || 0).toFixed(2)}%)
+                                    {isPositive ? '▲' : '▼'} {Math.abs(displayChange).toFixed(3)} ({Math.abs(item.changePercent || 0).toFixed(3)}%)
                                 </Text>
                             </View>
                         </View>
@@ -196,7 +196,7 @@ export const MarketScreen = () => {
                             <Icon
                                 name={favorites.includes(item.symbol) ? 'star' : 'star-outline'}
                                 size={isDesktop ? 26 : 22}
-                                color={favorites.includes(item.symbol) ? '#FFD700' : 'rgba(255,255,255,0.2)'}
+                                color={favorites.includes(item.symbol) ? '#FFD700' : theme.text.tertiary}
                             />
                         </TouchableOpacity>
                     </View>
@@ -275,10 +275,10 @@ export const MarketScreen = () => {
                     <View style={[isDesktop ? styles.dashboardRow : { padding: spacing.lg }]}>
                         <View style={[styles.detailCard, isDesktop ? { flex: 1, margin: 0, marginRight: 24 } : null]}>
                             <Text style={[styles.bigPrice, { color: theme.text.primary }]}>
-                                {(selectedSymbol.price || 0).toFixed(2)} <Text style={{ fontSize: 16 }}>AED</Text>
+                                {(selectedSymbol.price || 0).toFixed(3)} <Text style={{ fontSize: 16 }}>AED</Text>
                             </Text>
                             <Text style={[styles.bigChange, { color }]}>
-                                {isPositive ? '▲' : '▼'} {Math.abs(selectedSymbol.change ?? (selectedSymbol.price * (selectedSymbol.changePercent / 100))).toFixed(2)} ({(selectedSymbol.changePercent || 0).toFixed(2)}%)
+                                {isPositive ? '▲' : '▼'} {Math.abs(selectedSymbol.change ?? (selectedSymbol.price * (selectedSymbol.changePercent / 100))).toFixed(3)} ({(selectedSymbol.changePercent || 0).toFixed(3)}%)
                             </Text>
                             <View style={styles.divider} />
                             <View style={isDesktop ? { gap: 16 } : {}}>
@@ -310,7 +310,7 @@ export const MarketScreen = () => {
                                     <View style={styles.calculationResult}>
                                         <View style={styles.resultRow}>
                                             <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalValue')}</Text>
-                                            <Text style={[styles.resultValue, { color: theme.text.primary }]}>{(parseFloat(sharesCount) * selectedSymbol.price).toFixed(2)} AED</Text>
+                                            <Text style={[styles.resultValue, { color: theme.text.primary }]}>{(parseFloat(sharesCount) * selectedSymbol.price).toFixed(3)} AED</Text>
                                         </View>
                                         {(() => {
                                             const v = parseFloat(sharesCount) * selectedSymbol.price;
@@ -319,11 +319,11 @@ export const MarketScreen = () => {
                                                 <>
                                                     <View style={styles.resultRow}>
                                                         <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>Commission ({selectedSymbol.exchange})</Text>
-                                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>{commission.toFixed(2)} AED</Text>
+                                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>{commission.toFixed(3)} AED</Text>
                                                     </View>
                                                     <View style={[styles.resultRow, { borderTopWidth: 1, borderTopColor: theme.ui.border, marginTop: 4, paddingTop: 8 }]}>
                                                         <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '700' }]}>Total Cost</Text>
-                                                        <Text style={[styles.resultValue, { color: theme.primary.main, fontSize: 18 }]}>{(v + commission).toFixed(2)} AED</Text>
+                                                        <Text style={[styles.resultValue, { color: theme.primary.main, fontSize: 18 }]}>{(v + commission).toFixed(3)} AED</Text>
                                                     </View>
                                                 </>
                                             );
@@ -331,7 +331,7 @@ export const MarketScreen = () => {
                                         <View style={[styles.resultRow, { marginTop: 8 }]}>
                                             <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.todayChange')}</Text>
                                             <Text style={[styles.resultValue, { color: isPositive ? '#22c55e' : '#ef4444' }]}>
-                                                {isPositive ? '+' : ''}{(parseFloat(sharesCount) * (selectedSymbol.change || 0)).toFixed(2)} AED
+                                                {isPositive ? '+' : ''}{(parseFloat(sharesCount) * (selectedSymbol.change || 0)).toFixed(3)} AED
                                             </Text>
                                         </View>
                                     </View>
@@ -357,7 +357,7 @@ export const MarketScreen = () => {
                                             fillShadowGradientTo: theme.background.secondary,
                                             fillShadowGradientFromOpacity: 0.5,
                                             fillShadowGradientToOpacity: 0.05,
-                                            decimalPlaces: 2,
+                                            decimalPlaces: 3,
                                             color: (opacity = 1) => curatedChartData.color,
                                             labelColor: (opacity = 1) => theme.text.secondary,
                                             style: { borderRadius: 16 },
@@ -501,7 +501,7 @@ const getChartLabels = (data: { timestamp: any }[]): string[] => {
 const formatStatValue = (value: number, isVolume: boolean = false): string => {
     if (value === undefined || value === null || value === 0) return '—';
     if (isVolume) return value.toLocaleString();
-    return value.toFixed(2);
+    return value.toFixed(3);
 };
 
 const Stat = ({ label, value, theme, styles, t }: any) => (

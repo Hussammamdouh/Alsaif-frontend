@@ -26,7 +26,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import { styles } from './settings.styles';
 import { ResponsiveContainer } from '../../shared/components';
-import { useSettings, useDeviceManagement, useNotificationSettings } from './settings.hooks';
+import { useSettings, useDeviceManagement, useNotificationSettings, useSubscriptionCancellation } from './settings.hooks';
 import { useProfile } from '../profile/profile.hooks';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
@@ -65,6 +65,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
     const { settings, updateSettings, changePassword, isUpdating } = useSettings();
     const { sessions, loadSessions, revokeSession, logoutAllDevices, isRevoking } = useDeviceManagement();
     const { preferences, updatePreferences } = useNotificationSettings();
+    const { cancelSubscription, isCancelling } = useSubscriptionCancellation();
     const { theme, themeMode, toggleTheme, setThemeMode } = useTheme();
     const { t, language, setLanguage } = useLocalization();
     const { logout: authLogout } = useAuth();
@@ -79,6 +80,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
     const [showThemeModal, setShowThemeModal] = useState(false);
     const [showNotificationPreferencesModal, setShowNotificationPreferencesModal] = useState(false);
     const [showLogoutAllDevicesModal, setShowLogoutAllDevicesModal] = useState(false);
+    const [showCancelSubscriptionModal, setShowCancelSubscriptionModal] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -501,6 +503,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
       },
       [revokeSession, loadSessions]
     );
+
+    /**
+     * Handle subscription cancellation
+     */
+    const handleCancelSubscription = useCallback(async () => {
+      setShowCancelSubscriptionModal(false);
+
+      const result = await cancelSubscription();
+      if (result.success) {
+        loadProfile(); // Refresh profile to show cancelled status
+        Alert.alert(t('common.success'), t('settings.cancelSubscriptionSuccess'));
+      } else {
+        Alert.alert(t('common.error'), result.error || t('common.failed'));
+      }
+    }, [cancelSubscription, loadProfile, t]);
 
     /**
      * Handle logout all devices initiation
@@ -944,6 +961,31 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                         <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
                       </View>
                     </TouchableOpacity>
+                  )}
+
+                  {subscription?.tier === 'premium' && subscription?.status !== 'cancelled' && (
+                    <TouchableOpacity
+                      style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                      onPress={() => setShowCancelSubscriptionModal(true)}
+                    >
+                      <View style={styles.settingLeft}>
+                        <Icon name="close-circle-outline" size={24} color="#ff3b30" style={styles.settingIcon} />
+                        <Text style={[styles.settingLabel, styles.dangerText]}>{t('settings.cancelSubscription')}</Text>
+                      </View>
+                      <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
+                    </TouchableOpacity>
+                  )}
+
+                  {subscription?.status === 'cancelled' && subscription?.endDate && (
+                    <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
+                      <View style={styles.settingLeft}>
+                        <Icon name="time-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
+                        <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.activeUntil')}</Text>
+                      </View>
+                      <Text style={[styles.settingValue, { color: theme.text.secondary }]}>
+                        {new Date(subscription.endDate).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}
+                      </Text>
+                    </View>
                   )}
                   {/* Active Sessions */}
                   <TouchableOpacity
@@ -1572,6 +1614,59 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   ) : (
                     <Text style={[styles.modalButtonText, { color: '#fff' }]}>
                       {t('settings.logoutAllDevices')}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          </View>
+        </Modal>
+        {/* Subscription Cancellation Modal */}
+        <Modal
+          visible={showCancelSubscriptionModal}
+          transparent
+          animationType={isDesktop ? "fade" : "fade"}
+          onRequestClose={() => setShowCancelSubscriptionModal(false)}
+        >
+          <View style={[styles.modalOverlay, isDesktop && styles.desktopModalOverlay]}>
+            <Animated.View
+              style={[
+                styles.modalContent,
+                isDesktop && styles.desktopModalContent,
+                { backgroundColor: theme.background.primary },
+                {
+                  opacity: modalOpacity,
+                  transform: [{ scale: modalScale }],
+                },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: theme.text.primary }]}>
+                {t('settings.cancelSubscriptionConfirmTitle')}
+              </Text>
+              <Text style={[styles.modalDescription, { color: theme.text.secondary }]}>
+                {t('settings.cancelSubscriptionConfirmMessage')}
+              </Text>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonCancel, { backgroundColor: theme.background.secondary }]}
+                  onPress={() => setShowCancelSubscriptionModal(false)}
+                >
+                  <Text style={[styles.modalButtonTextCancel, { color: theme.text.primary }]}>
+                    {t('common.cancel')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonDanger, { backgroundColor: theme.error.main }]}
+                  onPress={handleCancelSubscription}
+                  disabled={isCancelling}
+                >
+                  {isCancelling ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                      {t('settings.cancelSubscription')}
                     </Text>
                   )}
                 </TouchableOpacity>

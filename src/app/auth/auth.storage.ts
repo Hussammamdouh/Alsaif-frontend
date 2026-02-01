@@ -89,7 +89,7 @@ export const saveAuthSession = async (
     }
 
     // Use Keychain for native
-    const options = useBiometric ? BIOMETRIC_OPTIONS : KEYCHAIN_OPTIONS;
+    const options = useBiometric ? { ...BIOMETRIC_OPTIONS } : { ...KEYCHAIN_OPTIONS };
     await Keychain.setGenericPassword(
       SecureStorageKey.AUTH_SESSION,
       sessionData,
@@ -123,15 +123,17 @@ export const loadAuthSession = async (
     }
 
     // Use Keychain for native
+    // We pass a new object literal to avoid "frozen object" errors if the library tries to modify it
     const options = requireBiometric
-      ? ({
+      ? {
         service: KEYCHAIN_OPTIONS.service,
         accessControl: Keychain.ACCESS_CONTROL?.BIOMETRY_CURRENT_SET || 'BiometryCurrentSet',
         authenticationPrompt: {
           title: 'Authenticate to access your account',
         },
-      } as any)
-      : (KEYCHAIN_OPTIONS as any);
+      }
+      : { ...KEYCHAIN_OPTIONS };
+
     const credentials = await Keychain.getGenericPassword(options);
 
     if (!credentials) {

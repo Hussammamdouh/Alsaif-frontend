@@ -117,7 +117,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
   // Notification Item
   notificationItem: {
     backgroundColor: theme.background.secondary,
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: theme.ui.border,
@@ -125,7 +125,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'flex-start',
   },
   notificationItemUnread: {
-    backgroundColor: theme.isDark ? 'rgba(0, 122, 255, 0.1)' : 'rgba(0, 122, 255, 0.05)',
+    backgroundColor: theme.isDark ? 'rgba(45, 106, 79, 0.15)' : 'rgba(45, 106, 79, 0.08)',
   },
   notificationContent: {
     flex: 1,
@@ -133,12 +133,17 @@ export const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'flex-start',
   },
   notificationIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 16, // Smoother rounded corners
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   notificationTextContainer: {
     flex: 1,
@@ -147,18 +152,18 @@ export const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   notificationTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: theme.text.primary,
     flex: 1,
     marginRight: 8,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   notificationTitleUnread: {
-    fontWeight: '700',
+    color: theme.isDark ? '#d4af37' : '#2d6a4f', // Use brand colors for unread titles
   },
   notificationTime: {
     fontSize: 11,
@@ -168,7 +173,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
   notificationBody: {
     fontSize: 14,
     color: theme.text.secondary,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   notificationBodyUnread: {
     color: theme.text.primary,
@@ -177,41 +182,47 @@ export const createStyles = (theme: any) => StyleSheet.create({
     width: '100%',
     height: 180,
     borderRadius: 12,
-    marginTop: 12,
+    marginTop: 14,
     backgroundColor: theme.background.tertiary,
+    borderWidth: 1,
+    borderColor: theme.ui.border,
   },
   unreadIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.primary.main,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#d4af37', // Gold indicator
     marginLeft: 8,
-    marginTop: 6,
+    marginTop: 8,
   },
 
   // CTA Buttons
   ctaButtonsContainer: {
     flexDirection: 'row',
-    marginTop: 16,
-    gap: 10,
+    marginTop: 18,
+    gap: 12,
   },
   ctaButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: theme.background.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.ui.border,
   },
   ctaButtonPrimary: {
-    backgroundColor: theme.primary.main,
+    backgroundColor: '#2d6a4f', // Brand Green
+    borderColor: '#2d6a4f',
   },
   ctaButtonDanger: {
     backgroundColor: theme.accent.error,
+    borderColor: theme.accent.error,
   },
   ctaButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: theme.text.primary,
   },
@@ -227,14 +238,14 @@ export const createStyles = (theme: any) => StyleSheet.create({
   // Priority Badge
   priorityBadge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: theme.accent.warning,
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#d4af37',
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: theme.background.primary,
+    paddingVertical: 1,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: theme.background.secondary,
   },
   priorityBadgeUrgent: {
     backgroundColor: theme.accent.error,

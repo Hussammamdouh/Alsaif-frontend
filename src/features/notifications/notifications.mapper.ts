@@ -84,16 +84,8 @@ export const formatNotificationTime = (
  * Get action URL from notification
  */
 export const getNotificationActionUrl = (notification: Notification): string | null => {
-  if (notification.richContent?.actionUrl) {
-    return notification.richContent.actionUrl;
-  }
-
-  // Extract action URL from metadata
-  if (notification.richContent?.metadata?.actionUrl) {
-    return notification.richContent.metadata.actionUrl;
-  }
-
-  return null;
+  const url = notification.richContent?.actionUrl || notification.richContent?.metadata?.actionUrl || null;
+  return url ? url.trim() : null;
 };
 
 /**

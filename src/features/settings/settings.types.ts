@@ -100,6 +100,8 @@ export interface GetSessionsResponse {
   };
 }
 
+export interface UpdateNotificationPreferencesRequest extends Partial<NotificationPreferences> { }
+
 export interface SettingsState {
   settings: UserSettings | null;
   notificationPreferences: NotificationPreferences | null;

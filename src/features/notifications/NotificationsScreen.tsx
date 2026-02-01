@@ -38,6 +38,7 @@ import {
   filterNotificationsByCategory,
   sortNotifications,
 } from './notifications.mapper';
+import { navigateByUrl } from '../../app/navigation/navigationUtils';
 import { Notification } from './notifications.types';
 import { createStyles } from './notifications.styles';
 import { NOTIFICATION_CATEGORIES } from './notifications.constants';
@@ -45,6 +46,22 @@ import { ResponsiveContainer } from '../../shared/components';
 
 const { width } = Dimensions.get('window');
 const isDesktop = width > 768;
+
+/**
+ * Cleanse JSON body if it's stringified
+ */
+const cleanseBody = (body: string): string => {
+  if (!body) return '';
+  if (body.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(body);
+      return parsed.body || parsed.title || body;
+    } catch (e) {
+      return body;
+    }
+  }
+  return body;
+};
 
 const NotificationsScreen: React.FC = () => {
   const {
@@ -83,29 +100,36 @@ const NotificationsScreen: React.FC = () => {
    */
   const handleNotificationPress = useCallback(
     async (notification: Notification) => {
-      // Mark as read if unread
-      if (isNotificationUnread(notification)) {
-        await markAsRead(notification.id);
-      }
+      console.log('[NotificationsScreen] Notification pressed:', {
+        id: notification.id,
+        _id: (notification as any)._id,
+        type: notification.type
+      });
 
-      // Track click
-      await trackClick(notification.id);
-
-      // Handle action if available
-      if (hasNotificationAction(notification)) {
+      try {
         const actionUrl = getNotificationActionUrl(notification);
-        if (actionUrl) {
-          try {
-            if (actionUrl.startsWith('http')) {
-              await Linking.openURL(actionUrl);
-            } else {
-              navigation.navigate(actionUrl as any);
-            }
-          } catch (error) {
-            console.error('Navigation failed:', error);
-            Alert.alert(t('common.error'), t('error.navigationFailed') || 'Could not open the requested page');
+        console.log('[NotificationsScreen] Action URL:', actionUrl);
+
+        // Mark as read if unread
+        if (isNotificationUnread(notification)) {
+          const targetId = notification.id || (notification as any)._id;
+          if (targetId) {
+            await markAsRead(targetId);
           }
         }
+
+        // Track click
+        const targetId = notification.id || (notification as any)._id;
+        if (targetId) {
+          await trackClick(targetId);
+        }
+
+        if (actionUrl) {
+          navigateByUrl(navigation, actionUrl);
+        }
+      } catch (error) {
+        console.error('[NotificationsScreen] Press handler failed:', error);
+        Alert.alert(t('common.error'), t('error.navigationFailed') || 'Could not open the requested page');
       }
     },
     [markAsRead, trackClick, navigation, t]
@@ -229,7 +253,7 @@ const NotificationsScreen: React.FC = () => {
                 ]}
                 numberOfLines={isDesktop ? 1 : 2}
               >
-                {t(notification.body)}
+                {t(cleanseBody(notification.body))}
               </Text>
 
               {/* Rich Content - Image */}
@@ -254,15 +278,19 @@ const NotificationsScreen: React.FC = () => {
                           button.style === 'danger' && styles.ctaButtonDanger,
                         ]}
                         onPress={async () => {
-                          try {
-                            if (button.url.startsWith('http')) {
-                              await Linking.openURL(button.url);
-                            } else {
-                              navigation.navigate(button.url as any);
+                          const targetId = notification.id || (notification as any)._id;
+                          const url = button.url?.trim();
+
+                          if (url) {
+                            navigateByUrl(navigation, url);
+                          }
+
+                          if (targetId) {
+                            try {
+                              await trackClick(targetId);
+                            } catch (e) {
+                              console.error('[NotificationsScreen] CTA trackClick failed:', e);
                             }
-                            await trackClick(notification.id);
-                          } catch (error) {
-                            console.error('CTA Navigation failed:', error);
                           }
                         }}
                       >

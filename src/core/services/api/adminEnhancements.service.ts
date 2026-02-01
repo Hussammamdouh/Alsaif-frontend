@@ -387,6 +387,8 @@ export interface SubscriptionPlanData {
   isActive?: boolean;
   isFeatured?: boolean;
   description?: string;
+  stripeProductId?: string;
+  stripePriceId?: string;
 }
 
 export const subscriptionPlansService = {

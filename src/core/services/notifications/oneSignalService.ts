@@ -11,16 +11,22 @@ import { registerPushToken } from './notificationsService';
 // OneSignal App ID - Replace with your actual OneSignal App ID
 const ONESIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID || '__ONESIGNAL_APP_ID__';
 
-// Track initialization status to prevent multiple init calls
-let isWebInitialized = false;
+// Track initialization status to prevent multiple init calls or calling methods before init
+let isInitialized = false;
 
 /**
  * Initialize OneSignal
  */
 export const initializeOneSignal = async (userId?: string): Promise<void> => {
+  if (isInitialized && Platform.OS !== 'web') {
+    console.log('OneSignal already initialized');
+    if (userId) await setOneSignalUserId(userId);
+    return;
+  }
+
   try {
     if (Platform.OS === 'web') {
-      if (isWebInitialized) {
+      if (isInitialized) {
         console.log('OneSignal Web already initialized');
         if (userId) await setOneSignalUserId(userId);
         return;
@@ -39,11 +45,11 @@ export const initializeOneSignal = async (userId?: string): Promise<void> => {
             enable: false,
           } as any,
         });
-        isWebInitialized = true;
+        isInitialized = true;
       } catch (initError: any) {
         console.error('OneSignal Web Init Catch:', initError.message);
         if (initError.message?.includes('already initialized')) {
-          isWebInitialized = true;
+          isInitialized = true;
           console.log('OneSignal Web detected previous initialization');
         } else if (initError.message?.includes('Can only be used on')) {
           console.error('ONESIGNAL DOMAIN MISMATCH: Please check your OneSignal Dashboard Settings.');
@@ -55,10 +61,9 @@ export const initializeOneSignal = async (userId?: string): Promise<void> => {
         }
       }
 
-      if (userId && isWebInitialized) {
+      if (userId && isInitialized) {
         try {
           // Small delay to ensure SDK internal objects are stable
-          // This helps prevent 'Cannot read properties of undefined (reading "tt")'
           await new Promise(resolve => setTimeout(resolve, 500));
           await OneSignalWeb.login(userId);
           console.log('OneSignal Web login successful for:', userId);
@@ -80,6 +85,7 @@ export const initializeOneSignal = async (userId?: string): Promise<void> => {
 
     // OneSignal Initialization
     OneSignal.initialize(ONESIGNAL_APP_ID);
+    isInitialized = true;
 
     // Request permission for push notifications (iOS)
     if (Platform.OS === 'ios') {
@@ -103,11 +109,15 @@ export const initializeOneSignal = async (userId?: string): Promise<void> => {
  * Set OneSignal user ID (external user ID)
  */
 export const setOneSignalUserId = async (userId: string): Promise<void> => {
+  if (!isInitialized && Platform.OS !== 'web') {
+    console.warn('OneSignal not initialized, queuing user ID set for after init');
+    return;
+  }
+
   try {
     if (Platform.OS === 'web') {
       const { default: OneSignalWeb } = await import('react-onesignal');
       try {
-        // Small delay to ensure SDK internal objects are stable
         await new Promise(resolve => setTimeout(resolve, 500));
         await OneSignalWeb.login(userId);
         console.log('OneSignal Web login successful for:', userId);
@@ -136,16 +146,15 @@ export const setOneSignalUserId = async (userId: string): Promise<void> => {
  * Remove OneSignal user ID (on logout)
  */
 export const removeOneSignalUserId = async (): Promise<void> => {
+  if (!isInitialized) {
+    console.warn('OneSignal not initialized, skipping logout');
+    return;
+  }
+
   try {
     if (Platform.OS === 'web') {
-      if (!isWebInitialized) {
-        console.warn('OneSignal Web not initialized, skipping logout');
-        return;
-      }
       const { default: OneSignalWeb } = await import('react-onesignal');
 
-      // Ensure we are logged in or have a state session before logging out
-      // OneSignal Web sometimes throws if calling logout when already logged out or uninitialized
       try {
         await OneSignalWeb.logout();
       } catch (logoutError) {
