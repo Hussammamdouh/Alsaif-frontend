@@ -52,6 +52,7 @@ export type MainStackParamList = {
   InsightRequests: undefined;
   Notifications: { category?: string };
   PdfViewer: { url: string | any; title: string };
+  DisclosureDetails: { disclosureId: string; disclosure?: any };
 
   // User Subscription Screens
   Subscription: undefined;

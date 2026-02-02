@@ -270,6 +270,15 @@ const translations = {
     'market.totalValue': 'Total Value',
     'market.todayChange': "Today's Change",
     'market.favorites': 'Favorites',
+    'market.pricePerShare': 'Price per Share',
+    'market.simulatorMode': 'Simulator',
+    'market.liveMode': 'Live Price',
+    'market.brokerage': 'Brokerage',
+    'market.exchangeFees': 'Exchange Fees',
+    'market.vat': 'VAT (5%)',
+    'market.scaFee': 'SCA Fee',
+    'market.totalCommission': 'Total Commission',
+    'market.tradeCost': 'Total Trade Cost',
 
     // About Screen
     'about.title': 'About',
@@ -1326,6 +1335,15 @@ const translations = {
     'market.totalValue': 'القيمة الإجمالية',
     'market.todayChange': 'التغيير اليوم',
     'market.favorites': 'المفضلة',
+    'market.pricePerShare': 'سعر السهم',
+    'market.simulatorMode': 'المحاكي',
+    'market.liveMode': 'السعر المباشر',
+    'market.brokerage': 'العمولة (بروكر)',
+    'market.exchangeFees': 'رسوم السوق',
+    'market.vat': 'ضريبة القيمة المضافة (5%)',
+    'market.scaFee': 'رسوم الهيئة',
+    'market.totalCommission': 'إجمالي العمولة',
+    'market.tradeCost': 'إجمالي تكلفة الصفقة',
 
     // About Screen
     'about.title': 'حول التطبيق',

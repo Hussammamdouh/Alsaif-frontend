@@ -4,5 +4,6 @@ export { DisclosureListScreen } from './screens/DisclosureListScreen';
 // - PdfViewerScreen.native.tsx (react-native-pdf)
 // Metro automatically resolves the correct file based on platform
 export { PdfViewerScreen } from './screens/PdfViewerScreen';
+export { DisclosureDetailsScreen } from './screens/DisclosureDetailsScreen';
 export { useDisclosures } from './disclosure.hooks';
 export type { Disclosure } from './disclosure.api';

@@ -23,7 +23,7 @@ import {
 import {
   InsightDetailsScreen,
 } from '../../features/insights';
-import { PdfViewerScreen } from '../../features/disclosure';
+import { PdfViewerScreen, DisclosureDetailsScreen } from '../../features/disclosure';
 import { UserRequestHistoryScreen } from '../../features/insights/requests/UserRequestHistoryScreen';
 import {
   AdminDashboardScreen,
@@ -255,6 +255,7 @@ export const RootNavigator: React.FC = () => {
 
                   <MainStack.Screen name="InsightDetail" component={InsightDetailsScreen} />
                   <MainStack.Screen name="PdfViewer" component={PdfViewerScreen} />
+                  <MainStack.Screen name="DisclosureDetails" component={DisclosureDetailsScreen} />
                   <MainStack.Screen name="InsightRequests" component={UserRequestHistoryScreen} />
                   <MainStack.Screen name="Notifications" component={NotificationsScreen} />
 

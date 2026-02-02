@@ -25,6 +25,8 @@ import { spacing } from '../../../core/theme/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { ResponsiveContainer, FilterChips } from '../../../shared/components';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useIsAdmin } from '../../../app/auth/auth.hooks';
+import { Disclosure as DisclosureType } from '../disclosure.api';
 
 interface DisclosureListScreenProps {
     hideHeader?: boolean;
@@ -78,9 +80,9 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
                 <View style={[styles.cardAccent, { backgroundColor: isADX ? '#EAB308' : '#3B82F6' }]} />
                 <View style={styles.cardMain}>
                     <View style={styles.cardTopRow}>
-                        <View style={[styles.symbolBadge, { backgroundColor: isADX ? '#EAB30815' : '#3B82F615' }]}>
+                        <View style={[styles.symbolBadge, { backgroundColor: isADX ? '#EAB30815' : '#3B82F615', borderLeftWidth: 3, borderLeftColor: isADX ? '#EAB308' : '#3B82F6' }]}>
                             <Text style={[styles.symbolText, { color: isADX ? '#EAB308' : '#3B82F6' }]} numberOfLines={1}>
-                                {language === 'ar' ? (item.companyNameAr || item.companyName || item.symbol || item.exchange) : (item.companyNameEn || item.companyName || item.symbol || item.exchange)}
+                                {language === 'ar' ? (item.companyNameAr || item.companyName || 'ADX') : (item.companyNameEn || item.companyName || 'ADX')}
                             </Text>
                         </View>
                         <View style={styles.cardMeta}>
@@ -138,6 +140,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
     const { width } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const isDesktop = width >= 1024;
+    const isAdmin = useIsAdmin();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDisclosure, setSelectedDisclosure] = useState<Disclosure | null>(null);
@@ -165,6 +168,18 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
     ];
 
     const handlePress = (item: Disclosure) => {
+        const hasNote = !!(item.note || item.noteAr || item.noteEn);
+
+        // If user is Admin OR disclosure has a note, go to details screen
+        if (isAdmin || hasNote) {
+            navigation.navigate('DisclosureDetails', {
+                disclosureId: item._id,
+                disclosure: item
+            });
+            return;
+        }
+
+        // Existing PDF viewer behavior for regular users and no-note disclosures
         const pdfUrls = (item.pdfUrls && item.pdfUrls.length > 0)
             ? item.pdfUrls
             : (item.url ? [item.url] : []);

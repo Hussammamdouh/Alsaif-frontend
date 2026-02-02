@@ -10,6 +10,7 @@ import { spacing } from '../../core/theme/spacing';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ResponsiveContainer } from '../../shared/components';
+import { calculateCommission } from '../../core/utils/commission';
 
 // Threshold for desktop view
 const DESKTOP_THRESHOLD = 1024;
@@ -27,6 +28,8 @@ export const MarketScreen = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [selectedSymbol, setSelectedSymbol] = useState<MarketTicker | null>(null);
     const [sharesCount, setSharesCount] = useState<string>('');
+    const [isSimulatorMode, setIsSimulatorMode] = useState(false);
+    const [manualPrice, setManualPrice] = useState<string>('');
     const [favorites, setFavorites] = useState<string[]>([]);
 
     // Memoized chart configuration to prevent flickering/jumping on every re-render
@@ -164,7 +167,12 @@ export const MarketScreen = () => {
 
         return (
             <TouchableOpacity
-                onPress={() => { setSelectedSymbol(item); setSharesCount(''); }}
+                onPress={() => {
+                    setSelectedSymbol(item);
+                    setSharesCount('');
+                    setIsSimulatorMode(false);
+                    setManualPrice(item.price.toFixed(3));
+                }}
                 activeOpacity={0.8}
             >
                 <LinearGradient
@@ -294,7 +302,48 @@ export const MarketScreen = () => {
                             </View>
 
                             <View style={styles.calculatorSection}>
-                                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('market.sharesCalculator')}</Text>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                    <Text style={[styles.sectionTitle, { color: theme.text.primary, marginBottom: 0 }]}>{t('market.sharesCalculator')}</Text>
+                                    <View style={{ flexDirection: 'row', backgroundColor: theme.background.primary, borderRadius: 20, padding: 4 }}>
+                                        <TouchableOpacity
+                                            onPress={() => setIsSimulatorMode(false)}
+                                            style={{
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 6,
+                                                borderRadius: 16,
+                                                backgroundColor: !isSimulatorMode ? theme.primary.main : 'transparent'
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 12, fontWeight: '700', color: !isSimulatorMode ? '#FFF' : theme.text.secondary }}>{t('market.liveMode')}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={() => setIsSimulatorMode(true)}
+                                            style={{
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 6,
+                                                borderRadius: 16,
+                                                backgroundColor: isSimulatorMode ? theme.primary.main : 'transparent'
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 12, fontWeight: '700', color: isSimulatorMode ? '#FFF' : theme.text.secondary }}>{t('market.simulatorMode')}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                {isSimulatorMode && (
+                                    <View style={[styles.inputRow, { marginBottom: 12 }]}>
+                                        <Text style={[styles.inputLabel, { color: theme.text.secondary }]}>{t('market.pricePerShare')} (AED)</Text>
+                                        <TextInput
+                                            style={[styles.sharesInput, { backgroundColor: theme.background.secondary, color: theme.text.primary, borderColor: theme.ui.border }]}
+                                            value={manualPrice}
+                                            onChangeText={setManualPrice}
+                                            keyboardType="numeric"
+                                            placeholder="0.000"
+                                            placeholderTextColor={theme.text.tertiary}
+                                        />
+                                    </View>
+                                )}
+
                                 <View style={styles.inputRow}>
                                     <Text style={[styles.inputLabel, { color: theme.text.secondary }]}>{t('market.numberOfShares')}</Text>
                                     <TextInput
@@ -306,34 +355,42 @@ export const MarketScreen = () => {
                                         placeholderTextColor={theme.text.tertiary}
                                     />
                                 </View>
+
                                 {sharesCount && parseFloat(sharesCount) > 0 && (
                                     <View style={styles.calculationResult}>
-                                        <View style={styles.resultRow}>
-                                            <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalValue')}</Text>
-                                            <Text style={[styles.resultValue, { color: theme.text.primary }]}>{(parseFloat(sharesCount) * selectedSymbol.price).toFixed(3)} AED</Text>
-                                        </View>
                                         {(() => {
-                                            const v = parseFloat(sharesCount) * selectedSymbol.price;
-                                            const commission = selectedSymbol.exchange === 'DFM' ? (v * 0.0028625) + 10.5 : v * 0.001575;
+                                            const shares = parseFloat(sharesCount);
+                                            const price = isSimulatorMode ? parseFloat(manualPrice || '0') : selectedSymbol.price;
+                                            const breakdown = calculateCommission(shares, price, selectedSymbol.exchange as any);
+
                                             return (
                                                 <>
                                                     <View style={styles.resultRow}>
-                                                        <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>Commission ({selectedSymbol.exchange})</Text>
-                                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>{commission.toFixed(3)} AED</Text>
+                                                        <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalValue')}</Text>
+                                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>{breakdown.tradeValue.toFixed(2)} AED</Text>
                                                     </View>
-                                                    <View style={[styles.resultRow, { borderTopWidth: 1, borderTopColor: theme.ui.border, marginTop: 4, paddingTop: 8 }]}>
-                                                        <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '700' }]}>Total Cost</Text>
-                                                        <Text style={[styles.resultValue, { color: theme.primary.main, fontSize: 18 }]}>{(v + commission).toFixed(3)} AED</Text>
+
+                                                    <View style={styles.resultRow}>
+                                                        <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalCommission')}</Text>
+                                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>{breakdown.totalCommission.toFixed(2)} AED</Text>
                                                     </View>
+
+                                                    <View style={[styles.resultRow, { borderTopWidth: 1, borderTopColor: theme.ui.border, marginTop: 4, paddingTop: 12 }]}>
+                                                        <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '900', fontSize: 16 }]}>{t('market.tradeCost')}</Text>
+                                                        <Text style={[styles.resultValue, { color: theme.primary.main, fontSize: 20, fontWeight: '900' }]}>{breakdown.totalCost.toFixed(2)} AED</Text>
+                                                    </View>
+
+                                                    {!isSimulatorMode && (
+                                                        <View style={[styles.resultRow, { marginTop: 8 }]}>
+                                                            <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.todayChange')}</Text>
+                                                            <Text style={[styles.resultValue, { color: isPositive ? '#22c55e' : '#ef4444' }]}>
+                                                                {isPositive ? '+' : ''}{(shares * (selectedSymbol.change || 0)).toFixed(2)} AED
+                                                            </Text>
+                                                        </View>
+                                                    )}
                                                 </>
                                             );
                                         })()}
-                                        <View style={[styles.resultRow, { marginTop: 8 }]}>
-                                            <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.todayChange')}</Text>
-                                            <Text style={[styles.resultValue, { color: isPositive ? '#22c55e' : '#ef4444' }]}>
-                                                {isPositive ? '+' : ''}{(parseFloat(sharesCount) * (selectedSymbol.change || 0)).toFixed(3)} AED
-                                            </Text>
-                                        </View>
                                     </View>
                                 )}
                             </View>

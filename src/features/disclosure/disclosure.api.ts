@@ -13,6 +13,9 @@ export interface Disclosure {
     companyName?: string;
     companyNameAr?: string;
     companyNameEn?: string;
+    note?: string;
+    noteAr?: string;
+    noteEn?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -52,6 +55,23 @@ export const fetchDisclosures = async (exchange?: 'DFM' | 'ADX'): Promise<Disclo
         return [];
     } catch (error) {
         console.error('[Disclosures] Fetch error:', error);
+        throw error;
+    }
+};
+
+export const updateDisclosureNote = async (
+    id: string,
+    notes: { note?: string; noteAr?: string; noteEn?: string }
+): Promise<Disclosure> => {
+    try {
+        console.log(`[DisclosuresApi] Updating note for ${id}...`);
+        const response = await apiClient.put<any>(`/api/disclosures/${id}`, notes);
+        if (response && response.success && response.data) {
+            return response.data;
+        }
+        throw new Error(response?.message || 'Failed to update disclosure note');
+    } catch (error) {
+        console.error('[Disclosures] Update note error:', error);
         throw error;
     }
 };
