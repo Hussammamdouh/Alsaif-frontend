@@ -255,6 +255,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.ui.border,
     overflow: 'hidden',
+    width: '100%',
   },
   dashboardStatLeft: {
     flex: 1,

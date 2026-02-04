@@ -58,6 +58,8 @@ export type MainStackParamList = {
   Subscription: undefined;
   Paywall: undefined;
   SubscriptionPlans: undefined;
+  PaymentSuccess: undefined;
+  PaymentCancel: undefined;
 
   // Settings
   Settings: undefined;

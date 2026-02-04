@@ -19,6 +19,7 @@ import {
   SubscriptionScreen,
   PaywallScreen,
   SubscriptionPlansScreen,
+  PaymentSuccessScreen,
 } from '../../features/subscription';
 import {
   InsightDetailsScreen,
@@ -295,6 +296,7 @@ export const RootNavigator: React.FC = () => {
                   <MainStack.Screen name="Subscription" component={SubscriptionScreen} />
                   <MainStack.Screen name="Paywall" component={PaywallScreen} />
                   <MainStack.Screen name="SubscriptionPlans" component={SubscriptionPlansScreen} />
+                  <MainStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
                   <MainStack.Screen name="Terms">
                     {({ navigation: termsNav }) => (
                       <TermsScreen onNavigateBack={() => termsNav.goBack()} />

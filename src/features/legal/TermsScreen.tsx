@@ -38,8 +38,8 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                 </Text>
                 {Array.isArray(contentKey) ? (
                     contentKey.map((key, index) => (
-                        <View key={index} style={styles.listBullet}>
-                            <View style={[styles.bullet, { backgroundColor: theme.primary.main }]} />
+                        <View key={index} style={[styles.listBullet, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                            <View style={[styles.bullet, { backgroundColor: theme.primary.main, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 4 }]} />
                             <View style={{ flex: 1 }}>
                                 <Text style={[styles.sectionContent, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
                                     {t(key)}
@@ -158,6 +158,15 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                         {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
 
                         {renderSection('legal.terms.sec10Title', 'legal.terms.sec10Content')}
+
+                        {renderSection('legal.terms.sec11Title', [
+                            'legal.terms.sec11Content1',
+                            'legal.terms.sec11Content2',
+                            'legal.terms.sec11Bullet1',
+                            'legal.terms.sec11Bullet2',
+                            'legal.terms.sec11Bullet3',
+                            'legal.terms.sec11Bullet4'
+                        ])}
                     </View>
 
                     <View style={styles.footer}>
@@ -260,15 +269,13 @@ const styles = StyleSheet.create({
     listBullet: {
         flexDirection: 'row',
         marginBottom: 12,
-        paddingLeft: 8,
+        paddingHorizontal: 8,
     },
     bullet: {
         width: 6,
         height: 6,
         borderRadius: 3,
         marginTop: 9,
-        marginRight: 12,
-        marginLeft: 4,
     },
     footer: {
         marginTop: 40,

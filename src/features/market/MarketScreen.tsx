@@ -337,7 +337,7 @@ export const MarketScreen = () => {
                                             style={[styles.sharesInput, { backgroundColor: theme.background.secondary, color: theme.text.primary, borderColor: theme.ui.border }]}
                                             value={manualPrice}
                                             onChangeText={setManualPrice}
-                                            keyboardType="numeric"
+                                            keyboardType="decimal-pad"
                                             placeholder="0.000"
                                             placeholderTextColor={theme.text.tertiary}
                                         />
@@ -350,7 +350,7 @@ export const MarketScreen = () => {
                                         style={[styles.sharesInput, { backgroundColor: theme.background.secondary, color: theme.text.primary, borderColor: theme.ui.border }]}
                                         value={sharesCount}
                                         onChangeText={setSharesCount}
-                                        keyboardType="numeric"
+                                        keyboardType="decimal-pad"
                                         placeholder="0"
                                         placeholderTextColor={theme.text.tertiary}
                                     />

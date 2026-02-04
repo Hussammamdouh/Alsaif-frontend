@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
   SUBSCRIPTION_RENEW: '/api/subscriptions/renew',
   SUBSCRIPTION_CANCEL: '/api/subscriptions/cancel',
   SUBSCRIPTION_BENEFITS: '/api/subscriptions/benefits',
+  MAGIC_LINK_GENERATE: '/api/magic-link/generate',
 } as const;
 
 // Messages

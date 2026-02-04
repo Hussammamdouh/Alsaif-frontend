@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Linking, Alert } from 'react-native';
+import { Linking, Alert, Platform } from 'react-native';
 import apiClient from '../../core/services/api/apiClient';
 import {
   UserSubscription,
@@ -194,6 +194,8 @@ export const useSubscriptionHistory = () => {
 
 /**
  * Hook to handle subscription checkout
+ * Web: Direct Stripe checkout redirect
+ * Native: Magic link + external browser for "Reader App" compliance
  */
 export const useCheckout = () => {
   const [loading, setLoading] = useState(false);
@@ -205,25 +207,59 @@ export const useCheckout = () => {
         setLoading(true);
         setError(null);
 
-        const response = await apiClient.post(API_ENDPOINTS.SUBSCRIPTION_CHECKOUT, {
-          planId,
-          billingCycle,
-        }) as any;
+        const isWeb = Platform.OS === 'web';
 
-        if (response.success && response.data.checkoutUrl) {
-          const checkout = mapCheckoutResponse(response.data);
+        if (isWeb) {
+          // Web: Direct Stripe checkout
+          const response = await apiClient.post(API_ENDPOINTS.SUBSCRIPTION_CHECKOUT, {
+            planId,
+            billingCycle,
+          }) as any;
 
-          // Open checkout URL in external browser
-          const canOpen = await Linking.canOpenURL(checkout.checkoutUrl);
-
-          if (canOpen) {
-            await Linking.openURL(checkout.checkoutUrl);
+          if (response.success && response.data.checkoutUrl) {
+            const checkout = mapCheckoutResponse(response.data);
+            // Redirect to Stripe checkout
+            window.location.href = checkout.checkoutUrl;
             return true;
           } else {
-            throw new Error('Cannot open payment URL');
+            throw new Error(response.message || MESSAGES.ERROR_CHECKOUT);
           }
         } else {
-          throw new Error(response.message || MESSAGES.ERROR_CHECKOUT);
+          // Native: Generate magic link and open in external browser
+          const response = await apiClient.post(API_ENDPOINTS.MAGIC_LINK_GENERATE, {
+            purpose: 'checkout',
+            planId,
+            billingCycle,
+            returnUrl: 'alsaif-analysis://payment-success',
+          }) as any;
+
+          if (response.success && response.data.checkoutUrl) {
+            // Show info alert about external browser
+            Alert.alert(
+              'Secure Payment',
+              'You will be redirected to our secure web payment page. After completing payment, you will be returned to the app.',
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+                {
+                  text: 'Continue',
+                  onPress: async () => {
+                    const canOpen = await Linking.canOpenURL(response.data.checkoutUrl);
+                    if (canOpen) {
+                      await Linking.openURL(response.data.checkoutUrl);
+                    } else {
+                      throw new Error('Cannot open payment URL');
+                    }
+                  },
+                },
+              ]
+            );
+            return true;
+          } else {
+            throw new Error(response.message || MESSAGES.ERROR_CHECKOUT);
+          }
         }
       } catch (err: any) {
         console.error('Error initiating checkout:', err);

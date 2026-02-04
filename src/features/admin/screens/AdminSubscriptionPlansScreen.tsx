@@ -300,8 +300,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background.primary }]}>
+      <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
         {isDesktop ? (
           <View style={styles.desktopContentWrapper}>
             <AdminSidebar />

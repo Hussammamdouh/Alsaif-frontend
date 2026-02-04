@@ -7,6 +7,7 @@
 export { SubscriptionScreen } from './SubscriptionScreen';
 export { PaywallScreen } from './PaywallScreen';
 export { SubscriptionPlansScreen } from './SubscriptionPlansScreen';
+export { PaymentSuccessScreen } from './PaymentSuccessScreen';
 
 // Access Control Components
 export { UpgradePrompt, UpgradePromptInline } from './UpgradePrompt';

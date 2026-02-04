@@ -18,6 +18,7 @@ import { BillingCycle } from './subscription.types';
 import { formatCurrency } from './subscription.mapper';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
+import { SubscriptionTermsModal } from './components/SubscriptionTermsModal';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +29,8 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const { t } = useLocalization();
   const styles = useMemo(() => getStyles(theme), [theme]);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
   const { plans: allPlans, loading: plansLoading, refetch: refetchPlans } = useSubscriptionPlans();
   const { settings, loading: settingsLoading } = useSystemSettings();
   const { loading: checkoutLoading, initiateCheckout } = useCheckout();
@@ -50,11 +53,25 @@ export const SubscriptionPlansScreen: React.FC = () => {
     ).start();
   }, []);
 
-  const handleSelectPlan = async (planId: string) => {
-    const success = await initiateCheckout(planId, billingCycle);
-    if (success) {
-      // Handled by hook
+  const handleSelectPlan = (planId: string) => {
+    setPendingPlanId(planId);
+    setShowTermsModal(true);
+  };
+
+  const handleTermsAccepted = async () => {
+    setShowTermsModal(false);
+    if (pendingPlanId) {
+      const success = await initiateCheckout(pendingPlanId, billingCycle);
+      if (success) {
+        // Handled by hook
+      }
+      setPendingPlanId(null);
     }
+  };
+
+  const handleTermsClose = () => {
+    setShowTermsModal(false);
+    setPendingPlanId(null);
   };
 
   if (loading) {
@@ -250,6 +267,13 @@ export const SubscriptionPlansScreen: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Subscription Terms Modal */}
+      <SubscriptionTermsModal
+        visible={showTermsModal}
+        onClose={handleTermsClose}
+        onAccept={handleTermsAccepted}
+      />
     </View>
   );
 };
