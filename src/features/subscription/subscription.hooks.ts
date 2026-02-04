@@ -218,8 +218,30 @@ export const useCheckout = () => {
 
           if (response.success && response.data.checkoutUrl) {
             const checkout = mapCheckoutResponse(response.data);
-            // Redirect to Stripe checkout
-            window.location.href = checkout.checkoutUrl;
+            const checkoutUrl = checkout.checkoutUrl;
+
+            // Use multiple redirect methods for maximum Safari compatibility
+            // Method 1: Try location.assign (works in most cases)
+            try {
+              window.location.assign(checkoutUrl);
+            } catch (e) {
+              // Method 2: Fallback to programmatic anchor click
+              // This simulates a user clicking a link, which Safari respects
+              const link = document.createElement('a');
+              link.href = checkoutUrl;
+              link.style.display = 'none';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }
+
+            // Method 3: Final fallback with setTimeout
+            setTimeout(() => {
+              if (window.location.href.indexOf('stripe.com') === -1) {
+                window.location.href = checkoutUrl;
+              }
+            }, 100);
+
             return true;
           } else {
             throw new Error(response.message || MESSAGES.ERROR_CHECKOUT);
