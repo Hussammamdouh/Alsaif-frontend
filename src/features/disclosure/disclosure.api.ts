@@ -92,8 +92,12 @@ export interface DisclosureComment {
 
 interface CommentsResponse {
     success: boolean;
-    data: DisclosureComment[];
-    count: number;
+    data: {
+        comments: DisclosureComment[];
+        total: number;
+        page: number;
+        totalPages: number;
+    };
 }
 
 // Fetch comments for a disclosure
@@ -102,11 +106,18 @@ export const fetchDisclosureComments = async (disclosureId: string): Promise<Dis
         console.log(`[DisclosuresApi] Fetching comments for ${disclosureId}...`);
         const response = await apiClient.get<CommentsResponse>(`/api/disclosures/${disclosureId}/comments`, {}, false);
 
+        // Handle direct array response (legacy/fallback)
         if (Array.isArray(response)) {
             return response;
         }
 
-        if (response && response.data) {
+        // Handle standardized paginated response: { success: true, data: { comments: [...] } }
+        if (response && response.data && Array.isArray(response.data.comments)) {
+            return response.data.comments;
+        }
+
+        // Handle direct data array: { success: true, data: [...] }
+        if (response && Array.isArray(response.data)) {
             return response.data;
         }
 
