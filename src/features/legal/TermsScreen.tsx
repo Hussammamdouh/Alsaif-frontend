@@ -157,16 +157,16 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
 
                         {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
 
-                        {renderSection('legal.terms.sec10Title', 'legal.terms.sec10Content')}
-
-                        {renderSection('legal.terms.sec11Title', [
-                            'legal.terms.sec11Content1',
-                            'legal.terms.sec11Content2',
-                            'legal.terms.sec11Bullet1',
-                            'legal.terms.sec11Bullet2',
-                            'legal.terms.sec11Bullet3',
-                            'legal.terms.sec11Bullet4'
+                        {renderSection('legal.terms.sec10Title', [
+                            'legal.terms.sec10Content1',
+                            'legal.terms.sec10Content2',
+                            'legal.terms.sec10Bullet1',
+                            'legal.terms.sec10Bullet2',
+                            'legal.terms.sec10Bullet3',
+                            'legal.terms.sec10Bullet4'
                         ])}
+
+                        {renderSection('legal.terms.sec11Title', 'legal.terms.sec11Content')}
                     </View>
 
                     <View style={styles.footer}>

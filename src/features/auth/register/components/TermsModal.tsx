@@ -132,16 +132,16 @@ export const TermsModal: React.FC<TermsModalProps> = ({
                                 {renderSection('legal.terms.sec7Title', 'legal.terms.sec7Content')}
                                 {renderSection('legal.terms.sec8Title', 'legal.terms.sec8Content')}
                                 {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
-                                {renderSection('legal.terms.sec10Title', 'legal.terms.sec10Content')}
-
-                                {renderSection('legal.terms.sec11Title', [
-                                    'legal.terms.sec11Content1',
-                                    'legal.terms.sec11Content2',
-                                    'legal.terms.sec11Bullet1',
-                                    'legal.terms.sec11Bullet2',
-                                    'legal.terms.sec11Bullet3',
-                                    'legal.terms.sec11Bullet4'
+                                {renderSection('legal.terms.sec10Title', [
+                                    'legal.terms.sec10Content1',
+                                    'legal.terms.sec10Content2',
+                                    'legal.terms.sec10Bullet1',
+                                    'legal.terms.sec10Bullet2',
+                                    'legal.terms.sec10Bullet3',
+                                    'legal.terms.sec10Bullet4'
                                 ])}
+
+                                {renderSection('legal.terms.sec11Title', 'legal.terms.sec11Content')}
 
                                 <View style={[styles.divider, { backgroundColor: theme.ui.border }]} />
 

@@ -28,6 +28,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { createAdminStyles } from '../admin.styles';
 import { useAdminInsights, useAdminInsightRequests } from '../hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { RichTextEditor } from '../../../shared/components';
 import { AdminSidebar } from '../components/AdminSidebar';
 import {
   INSIGHT_TYPE_FILTER_OPTIONS,
@@ -511,14 +512,11 @@ export const AdminInsightsScreen: React.FC = () => {
 
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.insightContent')} *</Text>
-                  <TextInput
-                    style={[localStyles.formInput, localStyles.textArea, { textAlign: isRTL ? 'right' : 'left' }]}
-                    placeholder={t('admin.insightContentPlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
+                  <RichTextEditor
                     value={formContent}
-                    onChangeText={setFormContent}
-                    multiline
-                    numberOfLines={6}
+                    onChange={setFormContent}
+                    placeholder={t('admin.insightContentPlaceholder')}
+                    minHeight={220}
                   />
                 </View>
 
@@ -711,7 +709,7 @@ export const AdminInsightsScreen: React.FC = () => {
                         style={localStyles.formInput}
                         placeholder="0.00"
                         placeholderTextColor={theme.text.tertiary}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         value={formBuyPrice}
                         onChangeText={setFormBuyPrice}
                       />
@@ -722,7 +720,7 @@ export const AdminInsightsScreen: React.FC = () => {
                         style={localStyles.formInput}
                         placeholder="0.00"
                         placeholderTextColor={theme.text.tertiary}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         value={formStopLoss}
                         onChangeText={setFormStopLoss}
                       />
@@ -736,7 +734,7 @@ export const AdminInsightsScreen: React.FC = () => {
                         style={localStyles.formInput}
                         placeholder="0.00"
                         placeholderTextColor={theme.text.tertiary}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         value={formFirstGoal}
                         onChangeText={setFormFirstGoal}
                       />
@@ -747,7 +745,7 @@ export const AdminInsightsScreen: React.FC = () => {
                         style={localStyles.formInput}
                         placeholder="0.00"
                         placeholderTextColor={theme.text.tertiary}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         value={formSecondGoal}
                         onChangeText={setFormSecondGoal}
                       />
@@ -1584,5 +1582,36 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 15,
     color: theme.text.primary,
     marginLeft: 10,
+  },
+  formattingToolbar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    backgroundColor: theme.background.tertiary,
+    borderRadius: 8,
+  },
+  toolbarButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: theme.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.border.main,
+  },
+  toolbarButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.text.primary,
+  },
+  formattingHint: {
+    fontSize: 11,
+    color: theme.text.tertiary,
+    marginTop: 6,
+    fontStyle: 'italic',
   },
 });

@@ -75,3 +75,80 @@ export const updateDisclosureNote = async (
         throw error;
     }
 };
+
+// Disclosure Comment Types
+export interface DisclosureComment {
+    _id: string;
+    disclosureId: string;
+    content: string;
+    author: {
+        _id: string;
+        name: string;
+        avatar?: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface CommentsResponse {
+    success: boolean;
+    data: DisclosureComment[];
+    count: number;
+}
+
+// Fetch comments for a disclosure
+export const fetchDisclosureComments = async (disclosureId: string): Promise<DisclosureComment[]> => {
+    try {
+        console.log(`[DisclosuresApi] Fetching comments for ${disclosureId}...`);
+        const response = await apiClient.get<CommentsResponse>(`/api/disclosures/${disclosureId}/comments`, {}, false);
+
+        if (Array.isArray(response)) {
+            return response;
+        }
+
+        if (response && response.data) {
+            return response.data;
+        }
+
+        return [];
+    } catch (error) {
+        console.error('[Disclosures] Fetch comments error:', error);
+        return [];
+    }
+};
+
+// Create a comment on a disclosure
+export const createDisclosureComment = async (
+    disclosureId: string,
+    content: string
+): Promise<DisclosureComment | null> => {
+    try {
+        console.log(`[DisclosuresApi] Creating comment for ${disclosureId}...`);
+        const response = await apiClient.post<any>(`/api/disclosures/${disclosureId}/comments`, { content });
+
+        if (response && response.success && response.data) {
+            return response.data;
+        }
+
+        if (response && response._id) {
+            return response;
+        }
+
+        throw new Error(response?.message || 'Failed to create comment');
+    } catch (error) {
+        console.error('[Disclosures] Create comment error:', error);
+        throw error;
+    }
+};
+
+// Delete a comment
+export const deleteDisclosureComment = async (commentId: string): Promise<boolean> => {
+    try {
+        console.log(`[DisclosuresApi] Deleting comment ${commentId}...`);
+        await apiClient.delete<any>(`/api/disclosure-comments/${commentId}`);
+        return true;
+    } catch (error) {
+        console.error('[Disclosures] Delete comment error:', error);
+        throw error;
+    }
+};

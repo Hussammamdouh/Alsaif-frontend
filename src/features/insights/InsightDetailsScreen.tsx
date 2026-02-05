@@ -14,7 +14,9 @@ import {
   TextInput,
   I18nManager,
   Animated,
+  useWindowDimensions,
 } from 'react-native';
+import RenderHtml from 'react-native-render-html';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,6 +57,7 @@ export const InsightDetailsScreen: React.FC = () => {
   const { insightId } = route.params;
   const { theme, isDark } = useTheme();
   const { t, isRTL } = useLocalization();
+  const { width: contentWidth } = useWindowDimensions();
   const styles = useMemo(() => createInsightsStyles(theme), [theme]);
   const inputRef = useRef<TextInput>(null);
 
@@ -390,9 +393,35 @@ export const InsightDetailsScreen: React.FC = () => {
                 </View>
               )}
 
-              <Text style={styles.detailText}>
-                {canAccess ? insight.content : insight.excerpt}
-              </Text>
+              {/* Content - supports HTML formatting from WYSIWYG editor */}
+              {canAccess ? (
+                <RenderHtml
+                  contentWidth={contentWidth - 32}
+                  source={{ html: insight.content || '' }}
+                  baseStyle={{
+                    color: theme.text.secondary,
+                    fontSize: 16,
+                    lineHeight: 26,
+                    textAlign: isRTL ? 'right' : 'left',
+                  }}
+                  tagsStyles={{
+                    b: { fontWeight: '700' },
+                    strong: { fontWeight: '700' },
+                    i: { fontStyle: 'italic' },
+                    em: { fontStyle: 'italic' },
+                    u: { textDecorationLine: 'underline' },
+                    h1: { fontSize: 24, fontWeight: '800', marginVertical: 12 },
+                    h2: { fontSize: 20, fontWeight: '700', marginVertical: 10 },
+                    h3: { fontSize: 18, fontWeight: '700', marginVertical: 8 },
+                    p: { marginVertical: 8 },
+                    ul: { paddingLeft: 16 },
+                    ol: { paddingLeft: 16 },
+                    li: { marginVertical: 4 },
+                  }}
+                />
+              ) : (
+                <Text style={styles.detailText}>{insight.excerpt}</Text>
+              )}
             </View>
 
             {!canAccess && (

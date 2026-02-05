@@ -10,6 +10,7 @@
     "build": "expo export -p web"
   },
   "dependencies": {
+    "@10play/tentap-editor": "^1.0.1",
     "@notifee/react-native": "^9.1.8",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
@@ -44,6 +45,7 @@
     "react-native-linear-gradient": "^2.8.3",
     "react-native-onesignal": "^5.2.16",
     "react-native-pdf": "^7.0.3",
+    "react-native-render-html": "^6.3.4",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",

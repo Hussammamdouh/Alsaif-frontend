@@ -6,3 +6,4 @@ export { OfflineBanner } from './OfflineBanner';
 export { ThemeLanguageToggle } from './ThemeLanguageToggle';
 export { ResponsiveContainer } from './ResponsiveContainer';
 export { FilterChips } from './FilterChips';
+export { RichTextEditor } from './RichTextEditor';

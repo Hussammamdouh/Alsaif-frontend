@@ -19,7 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../../app/providers/ThemeProvider';
 import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { ResponsiveContainer } from '../../../shared/components';
-import { Disclosure, updateDisclosureNote } from '../disclosure.api';
+import { Disclosure, updateDisclosureNote, DisclosureComment, fetchDisclosureComments, createDisclosureComment } from '../disclosure.api';
 import { useDisclosures } from '../disclosure.hooks';
 import { useIsAdmin } from '../../../app/auth/auth.hooks';
 
@@ -46,7 +46,14 @@ export const DisclosureDetailsScreen: React.FC = () => {
     const [noteArText, setNoteArText] = useState(initialDisclosure?.noteAr || '');
     const [saving, setSaving] = useState(false);
 
+    // Comment state
+    const [comments, setComments] = useState<DisclosureComment[]>([]);
+    const [commentText, setCommentText] = useState('');
+    const [commentsLoading, setCommentsLoading] = useState(false);
+    const [submittingComment, setSubmittingComment] = useState(false);
+
     const scrollY = useRef(new Animated.Value(0)).current;
+    const commentInputRef = useRef<TextInput>(null);
 
     const fetchDisclosure = useCallback(async () => {
         try {
@@ -64,10 +71,45 @@ export const DisclosureDetailsScreen: React.FC = () => {
         }
     }, [disclosureId, disclosure]);
 
+    // Fetch comments for this disclosure
+    const loadComments = useCallback(async () => {
+        if (!disclosureId) return;
+        setCommentsLoading(true);
+        try {
+            const fetchedComments = await fetchDisclosureComments(disclosureId);
+            setComments(fetchedComments);
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+        } finally {
+            setCommentsLoading(false);
+        }
+    }, [disclosureId]);
+
+    // Load comments on mount
+    useEffect(() => {
+        loadComments();
+    }, [loadComments]);
+
     const handleRefresh = async () => {
         setRefreshing(true);
-        await fetchDisclosure();
+        await Promise.all([fetchDisclosure(), loadComments()]);
         setRefreshing(false);
+    };
+
+    const handleSubmitComment = async () => {
+        if (!commentText.trim() || !disclosureId) return;
+        setSubmittingComment(true);
+        try {
+            const newComment = await createDisclosureComment(disclosureId, commentText.trim());
+            if (newComment) {
+                setComments(prev => [newComment, ...prev]);
+                setCommentText('');
+            }
+        } catch (error) {
+            Alert.alert(t('common.error'), language === 'ar' ? 'فشل في إرسال التعليق' : 'Failed to submit comment');
+        } finally {
+            setSubmittingComment(false);
+        }
     };
 
     const handleSaveNote = async () => {
@@ -263,6 +305,94 @@ export const DisclosureDetailsScreen: React.FC = () => {
                                 })}
                             </View>
                         </View>
+
+                        {/* User Comments Section */}
+                        <View style={styles.commentsSection}>
+                            <View style={styles.sectionHeader}>
+                                <Ionicons name="chatbubbles" size={20} color={theme.primary.main} />
+                                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>
+                                    {language === 'ar' ? 'التعليقات' : 'Comments'}
+                                </Text>
+                                <View style={[styles.commentCountBadge, { backgroundColor: theme.primary.main + '20' }]}>
+                                    <Text style={[styles.commentCountText, { color: theme.primary.main }]}>{comments.length}</Text>
+                                </View>
+                            </View>
+
+                            {/* Comment Input */}
+                            <View style={[styles.commentInputContainer, { backgroundColor: theme.background.secondary }]}>
+                                <TextInput
+                                    ref={commentInputRef}
+                                    style={[styles.commentInput, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}
+                                    placeholder={language === 'ar' ? 'أضف تعليقًا...' : 'Add a comment...'}
+                                    placeholderTextColor={theme.text.tertiary}
+                                    value={commentText}
+                                    onChangeText={setCommentText}
+                                    multiline
+                                    maxLength={500}
+                                />
+                                <TouchableOpacity
+                                    style={[
+                                        styles.sendButton,
+                                        { backgroundColor: commentText.trim() ? theme.primary.main : theme.background.tertiary }
+                                    ]}
+                                    onPress={handleSubmitComment}
+                                    disabled={!commentText.trim() || submittingComment}
+                                >
+                                    {submittingComment ? (
+                                        <ActivityIndicator size="small" color="#FFF" />
+                                    ) : (
+                                        <Ionicons
+                                            name={isRTL ? "send" : "send"}
+                                            size={18}
+                                            color={commentText.trim() ? '#FFF' : theme.text.tertiary}
+                                            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Comments List */}
+                            {commentsLoading ? (
+                                <View style={styles.commentsLoadingContainer}>
+                                    <ActivityIndicator size="small" color={theme.primary.main} />
+                                </View>
+                            ) : comments.length > 0 ? (
+                                <View style={styles.commentsList}>
+                                    {comments.map((comment) => (
+                                        <View key={comment._id} style={[styles.commentItem, { backgroundColor: theme.background.secondary }]}>
+                                            <View style={styles.commentHeader}>
+                                                <View style={[styles.commentAvatar, { backgroundColor: theme.primary.main + '20' }]}>
+                                                    <Ionicons name="person" size={16} color={theme.primary.main} />
+                                                </View>
+                                                <View style={styles.commentMeta}>
+                                                    <Text style={[styles.commentAuthor, { color: theme.text.primary }]}>
+                                                        {comment.author?.name || (language === 'ar' ? 'مستخدم' : 'User')}
+                                                    </Text>
+                                                    <Text style={[styles.commentDate, { color: theme.text.tertiary }]}>
+                                                        {new Date(comment.createdAt).toLocaleDateString(language === 'ar' ? 'ar-AE' : 'en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                            <Text style={[styles.commentText, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
+                                                {comment.content}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            ) : (
+                                <View style={styles.noCommentsContainer}>
+                                    <Ionicons name="chatbubbles-outline" size={40} color={theme.text.tertiary} />
+                                    <Text style={[styles.noCommentsText, { color: theme.text.tertiary }]}>
+                                        {language === 'ar' ? 'لا توجد تعليقات بعد. كن أول من يعلق!' : 'No comments yet. Be the first to comment!'}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                     </View>
                 </ScrollView>
             </ResponsiveContainer>
@@ -308,6 +438,24 @@ const styles = StyleSheet.create({
     input: { borderRadius: 12, padding: 16, fontSize: 15, minHeight: 120, textAlignVertical: 'top', borderWidth: 1 },
     saveButton: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 12 },
     saveButtonText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+    // Comment section styles
+    commentsSection: { marginTop: 24, marginBottom: 32 },
+    commentCountBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginLeft: 'auto' },
+    commentCountText: { fontSize: 12, fontWeight: '800' },
+    commentInputContainer: { flexDirection: 'row', alignItems: 'flex-end', padding: 12, borderRadius: 16, gap: 12, marginBottom: 16 },
+    commentInput: { flex: 1, fontSize: 15, minHeight: 40, maxHeight: 100, paddingVertical: 8 },
+    sendButton: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+    commentsLoadingContainer: { padding: 24, alignItems: 'center' },
+    commentsList: { gap: 12 },
+    commentItem: { padding: 14, borderRadius: 16 },
+    commentHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+    commentAvatar: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+    commentMeta: { flex: 1 },
+    commentAuthor: { fontSize: 14, fontWeight: '700' },
+    commentDate: { fontSize: 11, fontWeight: '500', marginTop: 2 },
+    commentText: { fontSize: 14, lineHeight: 22 },
+    noCommentsContainer: { alignItems: 'center', paddingVertical: 32, gap: 12 },
+    noCommentsText: { fontSize: 14, fontWeight: '500', textAlign: 'center' },
 });
 
 export default DisclosureDetailsScreen;

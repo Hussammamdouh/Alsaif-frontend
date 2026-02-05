@@ -168,32 +168,11 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
     ];
 
     const handlePress = (item: Disclosure) => {
-        const hasNote = !!(item.note || item.noteAr || item.noteEn);
-
-        // If user is Admin OR disclosure has a note, go to details screen
-        if (isAdmin || hasNote) {
-            navigation.navigate('DisclosureDetails', {
-                disclosureId: item._id,
-                disclosure: item
-            });
-            return;
-        }
-
-        // Existing PDF viewer behavior for regular users and no-note disclosures
-        const pdfUrls = (item.pdfUrls && item.pdfUrls.length > 0)
-            ? item.pdfUrls
-            : (item.url ? [item.url] : []);
-
-        if (pdfUrls.length === 0) return;
-
-        const currentTitle = language === 'ar' ? (item.titleAr || item.title) : (item.titleEn || item.title);
-
-        if (pdfUrls.length === 1) {
-            navigation.navigate('PdfViewer', { url: pdfUrls[0], title: currentTitle });
-        } else {
-            setSelectedDisclosure(item);
-            setShowPdfModal(true);
-        }
+        // Always navigate to disclosure details screen for all users
+        navigation.navigate('DisclosureDetails', {
+            disclosureId: item._id,
+            disclosure: item
+        });
     };
 
     const handlePdfSelect = (url: string, index: number) => {
