@@ -26,15 +26,19 @@ interface DisclosuresResponse {
     data: Disclosure[];
 }
 
-export const fetchDisclosures = async (exchange?: 'DFM' | 'ADX'): Promise<Disclosure[]> => {
-    const params: Record<string, string> = {};
-    if (exchange) {
-        params.exchange = exchange;
-    }
+export const fetchDisclosures = async (
+    exchange?: 'DFM' | 'ADX',
+    page?: number,
+    limit?: number
+): Promise<any> => {
+    const params: Record<string, string | number> = {};
+    if (exchange) params.exchange = exchange;
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
 
     try {
         console.log('[DisclosuresApi] Fetching from /api/disclosures...', params);
-        const response = await apiClient.get<DisclosuresResponse>('/api/disclosures', params, false);
+        const response = await apiClient.get<any>('/api/disclosures', params, false);
         console.log('[DisclosuresApi] Received response:', !!response);
 
         // Handle different response structures

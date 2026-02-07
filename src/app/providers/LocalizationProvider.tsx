@@ -206,7 +206,7 @@ const translations = {
     'chat.settings.communityGroup': 'Community Group',
 
     // Common
-    'common.appName': 'Alsaif-Analysis',
+    'common.appName': 'Alsaif Analysis',
     'common.ad': 'Ad',
     'common.tagline': 'Smarter decisions. Higher returns.',
     'common.settings': 'Settings',
@@ -247,6 +247,7 @@ const translations = {
     // Bottom Tab Navigation
     'tabs.home': 'Home',
     'tabs.disclosures': 'Disclosures',
+    'tabs.insights': 'Insights',
     'tabs.news': 'News',
     'tabs.chat': 'Chat',
     'tabs.market': 'Market',
@@ -1353,6 +1354,7 @@ const translations = {
     // Bottom Tab Navigation
     'tabs.home': 'الرئيسية',
     'tabs.disclosures': 'الإفصاحات',
+    'tabs.insights': 'التوصيات',
     'tabs.news': 'الأخبار',
     'tabs.chat': 'المحادثات',
     'tabs.market': 'السوق',

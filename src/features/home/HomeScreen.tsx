@@ -30,6 +30,7 @@ import { useSubscriptionAccess } from '../subscription/useSubscriptionAccess';
 import { useIsAdmin } from '../../app/auth/auth.hooks';
 import { BannerCarousel } from './components/BannerCarousel';
 import { useUnreadBadge } from '../notifications';
+import { NewHomeScreen } from './NewHomeScreen';
 
 type TabType = 'disclosures' | 'free' | 'premium';
 
@@ -213,15 +214,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {isDesktop ? (
-        <View style={styles.desktopContainer}>
-          <View style={styles.desktopMainColumn}>
-            {!isDesktop && renderHeader()}
-            {renderTabs()}
-            <View style={styles.desktopContent}>
-              {renderMainContent()}
-            </View>
-          </View>
-        </View>
+        <NewHomeScreen />
       ) : (
         <SafeAreaView
           style={[styles.container, { backgroundColor: theme.background.primary }]}

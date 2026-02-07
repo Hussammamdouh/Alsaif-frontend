@@ -34,6 +34,8 @@ export type AuthStackParamList = {
 export type BottomTabParamList = {
   HomeTab: undefined;
   MarketTab: undefined;
+  DisclosuresTab: undefined;
+  InsightsTab: undefined;
   ChatTab: undefined;
   ProfileTab: undefined;
   AdminTab: undefined;

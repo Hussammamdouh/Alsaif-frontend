@@ -1,28 +1,45 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    useWindowDimensions,
+    Image,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../../app/providers';
-import { useAuth } from '../../../app/auth';
+import { useUser, useIsAdmin } from '../../../app/auth/auth.hooks';
+import { spacing } from '../../../core/theme/spacing';
+
+const NAV_ITEMS = [
+    { key: 'HomeTab', label: 'tabs.home', icon: 'home-outline' },
+    { key: 'MarketTab', label: 'tabs.market', icon: 'trending-up-outline' },
+    { key: 'DisclosuresTab', label: 'tabs.disclosures', icon: 'document-text-outline' },
+    { key: 'InsightsTab', label: 'tabs.insights', icon: 'analytics-outline' },
+    { key: 'ChatTab', label: 'tabs.chat', icon: 'chatbubbles-outline' },
+];
 
 export const DesktopTopNav: React.FC = () => {
+    const { theme, isDark, toggleTheme } = useTheme();
+    const { t, language, toggleLanguage, isRTL } = useLocalization();
     const { width } = useWindowDimensions();
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
     const route = useRoute();
-    const { theme, isDark } = useTheme();
-    const { t, isRTL } = useLocalization();
-    const { state: authState } = useAuth();
-    const user = authState.session?.user;
-    const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
-
-    const NAV_ITEMS = [
-        { id: 'home', labelKey: 'tabs.home', icon: 'home-outline', route: 'HomeTab' },
-        { id: 'market', labelKey: 'tabs.market', icon: 'bar-chart-outline', route: 'MarketTab' },
-        { id: 'chat', labelKey: 'tabs.chat', icon: 'chatbubbles-outline', route: 'ChatTab' },
-        { id: 'profile', labelKey: 'tabs.profile', icon: 'person-outline', route: 'ProfileTab' },
-    ];
+    const isAdmin = useIsAdmin();
+    const user = useUser();
 
     if (width < 1024) return null;
+
+    const getInitials = () => {
+        if (!user || !user.name) return 'U';
+        const names = user.name.split(' ');
+        if (names.length >= 2) {
+            return (names[0][0] + names[1][0]).toUpperCase();
+        }
+        return names[0][0].toUpperCase();
+    };
 
     return (
         <View style={[styles.container, {
@@ -30,76 +47,94 @@ export const DesktopTopNav: React.FC = () => {
             borderBottomColor: theme.border.main,
             flexDirection: isRTL ? 'row-reverse' : 'row'
         }]}>
-            {/* Logo/Brand */}
+            {/* Logo Section */}
             <TouchableOpacity
                 style={styles.logoContainer}
-                onPress={() => navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'HomeTab' } } as any)}
+                onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
             >
-                <Text style={[styles.logoText, { color: theme.primary.main }]}>ELSAIF</Text>
-                <View style={[styles.logoDot, { backgroundColor: theme.primary.main }]} />
+                <Image
+                    source={require('../../../../assets/logo.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                />
+                <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
+                <View style={[styles.premiumBadge, { backgroundColor: `${theme.primary.main}15` }]}>
+                    <Text style={[styles.premiumBadgeText, { color: theme.primary.main }]}>PRO</Text>
+                </View>
             </TouchableOpacity>
 
-            {/* Nav Links */}
+            {/* Navigation Links */}
             <View style={[styles.navLinks, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 {NAV_ITEMS.map((item) => {
-                    // Check if active based on route name OR nested screen name
-                    const isActive = route.name === item.route;
-
+                    const isActive = route.name.includes(item.key.replace('Tab', ''));
                     return (
                         <TouchableOpacity
-                            key={item.id}
-                            style={[
-                                styles.navItem,
-                                isActive && { backgroundColor: theme.primary.main + '15' }
-                            ]}
-                            onPress={() => navigation.navigate('Main', { screen: 'MainTabs', params: { screen: item.route } } as any)}
+                            key={item.key}
+                            onPress={() => navigation.navigate('MainTabs', { screen: item.key })}
                         >
-                            <Ionicons
-                                name={(isActive ? item.icon.replace('-outline', '') : item.icon) as any}
-                                size={20}
-                                color={isActive ? theme.primary.main : theme.text.tertiary}
-                            />
                             <Text style={[
-                                styles.navLabel,
-                                { color: isActive ? theme.primary.main : theme.text.secondary },
-                                isActive && styles.navLabelActive
+                                styles.navItemText,
+                                { color: isActive ? theme.primary.main : theme.text.secondary }
                             ]}>
-                                {t(item.labelKey)}
+                                {t(item.label)}
                             </Text>
+                            {isActive && <View style={[styles.activeIndicator, { backgroundColor: theme.primary.main }]} />}
                         </TouchableOpacity>
                     );
                 })}
             </View>
 
-            {/* Right Actions */}
+            {/* Actions Section */}
             <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                {/* Language Toggle */}
+                <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: theme.background.secondary }]}
+                    onPress={toggleLanguage}
+                >
+                    <Text style={[styles.actionBtnText, { color: theme.text.primary }]}>
+                        {language === 'ar' ? 'EN' : 'AR'}
+                    </Text>
+                </TouchableOpacity>
+
+                {/* Theme Toggle */}
+                <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: theme.background.secondary }]}
+                    onPress={toggleTheme}
+                >
+                    <Ionicons
+                        name={isDark ? "sunny-outline" : "moon-outline"}
+                        size={20}
+                        color={theme.text.primary}
+                    />
+                </TouchableOpacity>
+
+                {/* Notifications */}
+                <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: theme.background.secondary }]}
+                    onPress={() => navigation.navigate('Notifications')}
+                >
+                    <Ionicons name="notifications-outline" size={20} color={theme.text.primary} />
+                    <View style={[styles.badge, { backgroundColor: theme.semantic.negative }]} />
+                </TouchableOpacity>
+
+                {/* Admin */}
                 {isAdmin && (
                     <TouchableOpacity
-                        style={[styles.adminButton, { backgroundColor: theme.background.tertiary }]}
-                        onPress={() => navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'AdminTab' } } as any)}
+                        style={[styles.adminBtn, { backgroundColor: theme.primary.main }]}
+                        onPress={() => navigation.navigate('MainTabs', { screen: 'AdminTab' })}
                     >
-                        <Ionicons name="shield-checkmark" size={18} color={theme.primary.main} />
-                        <Text style={[styles.adminButtonText, { color: theme.text.primary }]}>
-                            {t('tabs.admin')}
-                        </Text>
+                        <Ionicons name="shield-checkmark" size={18} color="#FFF" />
+                        <Text style={styles.adminBtnText}>Admin</Text>
                     </TouchableOpacity>
                 )}
 
+                {/* Profile */}
                 <TouchableOpacity
-                    style={[styles.iconButton, { backgroundColor: theme.background.tertiary }]}
-                    onPress={() => navigation.navigate('Notifications' as any)}
+                    style={styles.profileAvatar}
+                    onPress={() => navigation.navigate('MainTabs', { screen: 'ProfileTab' })}
                 >
-                    <Ionicons name="notifications-outline" size={20} color={theme.text.primary} />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.profileButton, { borderColor: theme.border.main }]}
-                    onPress={() => navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } } as any)}
-                >
-                    <View style={[styles.avatarPlaceholder, { backgroundColor: theme.primary.main + '30' }]}>
-                        <Text style={[styles.avatarInitial, { color: theme.primary.main }]}>
-                            {user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </Text>
+                    <View style={[styles.avatarCircle, { backgroundColor: theme.primary.main }]}>
+                        <Text style={styles.initialsText}>{getInitials()}</Text>
                     </View>
                 </TouchableOpacity>
             </View>
@@ -109,94 +144,137 @@ export const DesktopTopNav: React.FC = () => {
 
 const styles = StyleSheet.create({
     container: {
-        height: 80,
-        paddingHorizontal: 32,
+        height: 88,
+        paddingHorizontal: spacing['3xl'],
         alignItems: 'center',
         justifyContent: 'space-between',
         borderBottomWidth: 1,
-        zIndex: 1000,
-        // Glassmorphism effect
+        zIndex: 100,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
         shadowRadius: 10,
-        elevation: 5,
+        elevation: 2,
     },
     logoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: spacing.md,
+    },
+    logo: {
+        width: 44,
+        height: 44,
     },
     logoText: {
-        fontSize: 24,
+        fontSize: 26,
         fontWeight: '900',
         letterSpacing: 2,
     },
-    logoDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        marginTop: 8,
+    premiumBadge: {
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 2,
+        borderRadius: 8,
+    },
+    premiumBadgeText: {
+        fontSize: 12,
+        fontWeight: '900',
     },
     navLinks: {
-        gap: 8,
-        height: '100%',
+        flexDirection: 'row',
+        gap: spacing['3xl'],
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
         alignItems: 'center',
+        height: '100%',
+        pointerEvents: 'box-none',
     },
     navItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 12,
-    },
-    navLabel: {
-        fontSize: 15,
-        fontWeight: '600',
-    },
-    navLabelActive: {
-        fontWeight: '700',
-    },
-    actions: {
-        gap: 16,
-        alignItems: 'center',
-    },
-    adminButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'transparent',
-    },
-    adminButtonText: {
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    iconButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        alignItems: 'center',
+        height: '100%',
         justifyContent: 'center',
+        position: 'relative',
     },
-    profileButton: {
-        padding: 4,
-        borderRadius: 14,
-        borderWidth: 1,
-    },
-    avatarPlaceholder: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    avatarInitial: {
+    navItemText: {
         fontSize: 16,
         fontWeight: '700',
+    },
+    activeIndicator: {
+        position: 'absolute',
+        bottom: 0,
+        left: 10,
+        right: 10,
+        height: 4,
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
+    },
+    actions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.md,
+    },
+    actionBtn: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.03)',
+    },
+    actionBtnText: {
+        fontSize: 15,
+        fontWeight: '800',
+    },
+    badge: {
+        position: 'absolute',
+        top: 14,
+        right: 14,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        borderWidth: 2,
+        borderColor: '#FFF',
+    },
+    adminBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: spacing.xl,
+        paddingVertical: 14,
+        borderRadius: 18,
+        gap: spacing.sm,
+        marginLeft: spacing.sm,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    adminBtnText: {
+        color: '#FFF',
+        fontSize: 15,
+        fontWeight: '800',
+    },
+    profileAvatar: {
+        marginLeft: spacing.sm,
+    },
+    avatarCircle: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        elevation: 4,
+    },
+    initialsText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: '800',
+        letterSpacing: 0.5,
     },
 });

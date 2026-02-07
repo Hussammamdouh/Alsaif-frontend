@@ -20,6 +20,8 @@ import { MarketScreen } from '../../features/market/MarketScreen';
 import { ChatListScreen } from '../../features/chat/list';
 import { ProfileScreen } from '../../features/profile/ProfileScreen';
 import { AdminDashboardScreen } from '../../features/admin';
+import { DisclosureListScreen } from '../../features/disclosure/screens/DisclosureListScreen';
+import { InsightsListScreen } from '../../features/insights/InsightsListScreen';
 import { DesktopTopNav } from '../../features/home/components/DesktopTopNav';
 import { useWindowDimensions } from 'react-native';
 
@@ -181,6 +183,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
           component={MarketScreen}
         />
 
+
         {/* Chat Tab */}
         <Tab.Screen
           name="ChatTab"
@@ -238,6 +241,29 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
               ),
             }}
             component={AdminDashboardScreen}
+          />
+        )}
+        {/* Disclosures Tab (Desktop Only Link) */}
+        {isDesktop && (
+          <Tab.Screen
+            name="DisclosuresTab"
+            options={{
+              tabBarButton: () => null, // Hide from mobile tab bar
+              tabBarLabel: t('tabs.disclosures'),
+            }}
+            component={DisclosureListScreen}
+          />
+        )}
+
+        {/* Insights Tab (Desktop Only Link) */}
+        {isDesktop && (
+          <Tab.Screen
+            name="InsightsTab"
+            options={{
+              tabBarButton: () => null, // Hide from mobile tab bar
+              tabBarLabel: t('tabs.insights'),
+            }}
+            component={InsightsListScreen}
           />
         )}
       </Tab.Navigator>

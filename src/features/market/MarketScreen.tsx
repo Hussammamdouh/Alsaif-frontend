@@ -123,39 +123,41 @@ export const MarketScreen = () => {
     }, [marketData, selectedExchange, favorites]);
 
     const renderExchangeSelector = () => (
-        <View style={styles.selectorContainer}>
-            <TouchableOpacity
-                style={[styles.selectorButton, selectedExchange === 'DFM' && styles.selectorButtonActive]}
-                onPress={() => { setSelectedExchange('DFM'); setSelectedSymbol(null); }}
-            >
-                <Text style={[styles.selectorText, selectedExchange === 'DFM' ? styles.selectorTextActive : styles.selectorTextInactive]}>
-                    {t('market.dubai')}
-                </Text>
-            </TouchableOpacity>
+        <View style={[styles.selectorContainer, isDesktop && { width: '100%', alignSelf: 'center', marginHorizontal: 0, paddingHorizontal: spacing.lg }]}>
+            <View style={{ flexDirection: 'row', flex: 1, backgroundColor: theme.background.secondary, borderRadius: 12, padding: 4 }}>
+                <TouchableOpacity
+                    style={[styles.selectorButton, selectedExchange === 'DFM' && styles.selectorButtonActive]}
+                    onPress={() => { setSelectedExchange('DFM'); setSelectedSymbol(null); }}
+                >
+                    <Text style={[styles.selectorText, selectedExchange === 'DFM' ? styles.selectorTextActive : styles.selectorTextInactive]}>
+                        {t('market.dubai')}
+                    </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                style={[styles.selectorButton, selectedExchange === 'ADX' && styles.selectorButtonActive]}
-                onPress={() => { setSelectedExchange('ADX'); setSelectedSymbol(null); }}
-            >
-                <Text style={[styles.selectorText, selectedExchange === 'ADX' ? styles.selectorTextActive : styles.selectorTextInactive]}>
-                    {t('market.abuDhabi')}
-                </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.selectorButton, selectedExchange === 'ADX' && styles.selectorButtonActive]}
+                    onPress={() => { setSelectedExchange('ADX'); setSelectedSymbol(null); }}
+                >
+                    <Text style={[styles.selectorText, selectedExchange === 'ADX' ? styles.selectorTextActive : styles.selectorTextInactive]}>
+                        {t('market.abuDhabi')}
+                    </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                style={[styles.selectorButton, selectedExchange === 'FAVORITES' && styles.selectorButtonActive]}
-                onPress={() => { setSelectedExchange('FAVORITES'); setSelectedSymbol(null); }}
-            >
-                <Icon
-                    name={selectedExchange === 'FAVORITES' ? 'star' : 'star-outline'}
-                    size={16}
-                    color={selectedExchange === 'FAVORITES' ? '#FFFFFF' : '#888888'}
-                    style={{ marginRight: 4 }}
-                />
-                <Text style={[styles.selectorText, selectedExchange === 'FAVORITES' ? styles.selectorTextActive : styles.selectorTextInactive]}>
-                    {t('market.favorites')}
-                </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.selectorButton, selectedExchange === 'FAVORITES' && styles.selectorButtonActive]}
+                    onPress={() => { setSelectedExchange('FAVORITES'); setSelectedSymbol(null); }}
+                >
+                    <Icon
+                        name={selectedExchange === 'FAVORITES' ? 'star' : 'star-outline'}
+                        size={16}
+                        color={selectedExchange === 'FAVORITES' ? '#FFFFFF' : '#888888'}
+                        style={{ marginRight: 4 }}
+                    />
+                    <Text style={[styles.selectorText, selectedExchange === 'FAVORITES' ? styles.selectorTextActive : styles.selectorTextInactive]}>
+                        {t('market.favorites')}
+                    </Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 
@@ -219,7 +221,7 @@ export const MarketScreen = () => {
                 <Icon name="stats-chart" size={64} color={theme.primary.main} style={{ marginBottom: 24 }} />
                 <Text style={[styles.promptTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
                 <Text style={[styles.promptSubtitle, { color: theme.text.secondary }]}>{t('market.selectMarketPrompt')}</Text>
-                <View style={[styles.marketPillContainer, isDesktop ? { flexDirection: 'row', gap: 24, justifyContent: 'center' } : null]}>
+                <View style={[styles.marketPillContainer, isDesktop ? { flexDirection: 'row', gap: 24 } : null]}>
                     <TouchableOpacity
                         style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
                         onPress={() => setSelectedExchange('DFM')}
@@ -439,7 +441,7 @@ export const MarketScreen = () => {
                 <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
                 {isDesktop ? (
                     <View style={styles.desktopContainer}>
-                        <View style={[styles.desktopMainColumn, { maxWidth: 1200 }]}>
+                        <View style={styles.desktopMainColumn}>
                             {renderSymbolDetail()}
                         </View>
                     </View>
@@ -576,7 +578,7 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingTop: 45,
-        paddingHorizontal: 20,
+        paddingHorizontal: spacing.lg,
         borderBottomWidth: 1,
         borderBottomColor: theme.ui.border,
     },
@@ -603,7 +605,8 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
     },
     desktopMainColumn: {
         flex: 1,
-        backgroundColor: theme.background.secondary + '10',
+        width: '100%',
+        backgroundColor: theme.background.secondary + '05',
         borderLeftWidth: 1,
         borderRightWidth: 1,
         borderColor: theme.ui.border,
@@ -612,6 +615,8 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 24,
         paddingTop: 24,
+        width: '100%',
+        alignSelf: 'center',
     },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     promptTitle: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
@@ -624,7 +629,8 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
         paddingHorizontal: spacing.xl,
         borderRadius: 20,
         marginBottom: spacing.md,
-        width: '100%',
+        width: isDesktop ? undefined : '100%',
+        flex: isDesktop ? 1 : undefined,
         borderWidth: 1,
     },
     marketPillText: { fontSize: 18, fontWeight: '700', marginLeft: 20 },
@@ -634,7 +640,6 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
         padding: 4,
         borderRadius: 12,
         marginBottom: spacing.md,
-        backgroundColor: theme.background.secondary,
         marginTop: 16,
     },
     selectorButton: {
