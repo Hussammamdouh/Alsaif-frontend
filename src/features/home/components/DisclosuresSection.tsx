@@ -29,7 +29,7 @@ const DisclosuresSection: React.FC = () => {
                     {t('tabs.disclosures')}
                 </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'MarketTab' })}>
-                    <Text style={[styles.viewAll, { color: theme.primary.main }]}>View All</Text>
+                    <Text style={[styles.viewAll, { color: theme.primary.main }]}>{t('common.viewAll')}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -46,7 +46,7 @@ const DisclosuresSection: React.FC = () => {
                     >
                         <View style={styles.cardHeader}>
                             <View style={[styles.exchangeBadge, { backgroundColor: isADX ? '#007AFF' : '#E62E2D' }]}>
-                                <Text style={styles.exchangeText}>{item.exchange}</Text>
+                                <Text style={styles.exchangeText}>{isADX ? t('market.adxTitle') : t('market.dfmTitle')}</Text>
                             </View>
                             <Text style={[styles.dateText, { color: theme.text.tertiary }]}>
                                 {new Date(item.date).toLocaleDateString()}
@@ -59,8 +59,8 @@ const DisclosuresSection: React.FC = () => {
 
                         <View style={styles.cardFooter}>
                             <View style={styles.readMore}>
-                                <Text style={[styles.readMoreText, { color: theme.primary.main }]}>Read Disclosure</Text>
-                                <Ionicons name="chevron-forward" size={14} color={theme.primary.main} />
+                                <Text style={[styles.readMoreText, { color: theme.primary.main }]}>{t('disclosures.readDisclosure')}</Text>
+                                <Ionicons name={language === 'ar' ? "chevron-back" : "chevron-forward"} size={14} color={theme.primary.main} />
                             </View>
                         </View>
                     </TouchableOpacity>

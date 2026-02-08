@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export const NewHomeScreen: React.FC = () => {
     const { theme, isDark } = useTheme();
-    const { t } = useLocalization();
+    const { t, isRTL } = useLocalization();
     const [marketData, setMarketData] = useState<MarketTicker[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -52,22 +52,22 @@ export const NewHomeScreen: React.FC = () => {
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
                 <NewHeroCarousel />
 
-                <View style={styles.gridContainer}>
-                    {/* Left Column: Market Data */}
+                <View style={[styles.gridContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    {/* Column 1: Market Data (Moves to right in RTL) */}
                     <View style={styles.leftColumn}>
-                        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>
+                        <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
                             {t('market.title')}
                         </Text>
                         <MarketWatchWidget data={marketData} exchange="ADX" />
                         <MarketWatchWidget data={marketData} exchange="DFM" />
                     </View>
 
-                    {/* Middle Column: Disclosures */}
+                    {/* Column 2: Disclosures */}
                     <View style={styles.middleColumn}>
                         <DisclosuresSection />
                     </View>
 
-                    {/* Right Column: Insights */}
+                    {/* Column 3: Insights */}
                     <View style={styles.rightColumn}>
                         <InsightsFeedSection />
                     </View>
@@ -87,7 +87,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     gridContainer: {
-        flexDirection: 'row',
         paddingHorizontal: spacing['2xl'],
         paddingBottom: spacing['5xl'],
         gap: spacing.xl,

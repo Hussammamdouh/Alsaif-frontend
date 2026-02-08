@@ -6,8 +6,10 @@ import {
     TouchableOpacity,
     useWindowDimensions,
     Image,
+    Animated,
+    Pressable,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useNavigationState } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { useUser, useIsAdmin } from '../../../app/auth/auth.hooks';
@@ -21,14 +23,156 @@ const NAV_ITEMS = [
     { key: 'ChatTab', label: 'tabs.chat', icon: 'chatbubbles-outline' },
 ];
 
+/**
+ * Animated Nav Item Component with Lift and Highlight
+ */
+const NavItem: React.FC<{
+    item: typeof NAV_ITEMS[0];
+    isActive: boolean;
+    onPress: () => void;
+    theme: any;
+    t: any;
+}> = ({ item, isActive, onPress, theme, t }) => {
+    const hoverAnim = React.useRef(new Animated.Value(0)).current;
+    const activeAnim = React.useRef(new Animated.Value(isActive ? 1 : 0)).current;
+
+    React.useEffect(() => {
+        Animated.spring(activeAnim, {
+            toValue: isActive ? 1 : 0,
+            useNativeDriver: false,
+            friction: 8,
+            tension: 40,
+        }).start();
+    }, [isActive]);
+
+    const onHoverIn = () => {
+        Animated.spring(hoverAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            friction: 4,
+        }).start();
+    };
+
+    const onHoverOut = () => {
+        Animated.spring(hoverAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            friction: 4,
+        }).start();
+    };
+
+    const translateY = hoverAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -4],
+    });
+
+    const scale = hoverAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 1.05],
+    });
+
+    return (
+        <Pressable
+            onPress={onPress}
+            onPointerEnter={onHoverIn}
+            onPointerLeave={onHoverOut}
+            style={styles.navItemWrapper}
+        >
+            <Animated.View style={[
+                styles.navItemPill,
+                {
+                    backgroundColor: activeAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['transparent', `${theme.primary.main}15`],
+                    }),
+                    transform: [{ translateY }, { scale }]
+                }
+            ]}>
+                <Text style={[
+                    styles.navItemText,
+                    {
+                        color: isActive ? theme.primary.main : theme.text.secondary,
+                        fontWeight: isActive ? '900' : '700',
+                    }
+                ]}>
+                    {t(item.label)}
+                </Text>
+                <Animated.View
+                    style={[
+                        styles.activeIndicator,
+                        {
+                            backgroundColor: theme.primary.main,
+                            width: activeAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0%', '100%'],
+                            }),
+                            opacity: activeAnim,
+                            height: 4,
+                        }
+                    ]}
+                />
+            </Animated.View>
+        </Pressable>
+    );
+};
+
 export const DesktopTopNav: React.FC = () => {
     const { theme, isDark, toggleTheme } = useTheme();
     const { t, language, toggleLanguage, isRTL } = useLocalization();
     const { width } = useWindowDimensions();
     const navigation = useNavigation<any>();
-    const route = useRoute();
     const isAdmin = useIsAdmin();
     const user = useUser();
+
+    // Enhanced Active Route Detection
+    const activeRouteName = useNavigationState(state => {
+        if (!state || typeof state.index !== 'number') return null;
+        let route = state.routes[state.index as number];
+        while (route && route.state && typeof route.state.index === 'number') {
+            route = (route.state as any).routes[route.state.index as number];
+        }
+        return route?.name;
+    });
+
+    // Animations
+    const entryAnim = React.useRef(new Animated.Value(0)).current;
+    const themeRotate = React.useRef(new Animated.Value(0)).current;
+    const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+    React.useEffect(() => {
+        // Entrance
+        Animated.spring(entryAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            friction: 7,
+            tension: 40,
+        }).start();
+
+        // Notification Pulse
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulseAnim, {
+                    toValue: 1.2,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(pulseAnim, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+            ])
+        ).start();
+    }, []);
+
+    // Rotate theme icon on change
+    React.useEffect(() => {
+        Animated.spring(themeRotate, {
+            toValue: isDark ? 1 : 0,
+            useNativeDriver: true,
+            friction: 5,
+        }).start();
+    }, [isDark]);
 
     if (width < 1024) return null;
 
@@ -41,104 +185,133 @@ export const DesktopTopNav: React.FC = () => {
         return names[0][0].toUpperCase();
     };
 
-    return (
-        <View style={[styles.container, {
-            backgroundColor: theme.background.primary,
-            borderBottomColor: theme.border.main,
-            flexDirection: isRTL ? 'row-reverse' : 'row'
-        }]}>
-            {/* Logo Section */}
+    const renderLogo = () => (
+        <TouchableOpacity
+            style={[styles.logoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
+        >
+            <Image
+                source={require('../../../../assets/logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+            />
+            <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
+            <View style={[styles.premiumBadge, { backgroundColor: `${theme.primary.main}15` }]}>
+                <Text style={[styles.premiumBadgeText, { color: theme.primary.main }]}>PRO</Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const renderActions = () => (
+        <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            {/* Language Toggle */}
             <TouchableOpacity
-                style={styles.logoContainer}
-                onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
+                style={[styles.langToggle, { borderColor: theme.text.primary + '30' }]}
+                onPress={toggleLanguage}
             >
-                <Image
-                    source={require('../../../../assets/logo.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                />
-                <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
-                <View style={[styles.premiumBadge, { backgroundColor: `${theme.primary.main}15` }]}>
-                    <Text style={[styles.premiumBadgeText, { color: theme.primary.main }]}>PRO</Text>
-                </View>
+                <Text style={[styles.langToggleText, { color: theme.text.primary }]}>
+                    {language === 'ar' ? 'EN' : 'AR'}
+                </Text>
             </TouchableOpacity>
 
-            {/* Navigation Links */}
-            <View style={[styles.navLinks, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                {NAV_ITEMS.map((item) => {
-                    const isActive = route.name.includes(item.key.replace('Tab', ''));
-                    return (
-                        <TouchableOpacity
-                            key={item.key}
-                            onPress={() => navigation.navigate('MainTabs', { screen: item.key })}
-                        >
-                            <Text style={[
-                                styles.navItemText,
-                                { color: isActive ? theme.primary.main : theme.text.secondary }
-                            ]}>
-                                {t(item.label)}
-                            </Text>
-                            {isActive && <View style={[styles.activeIndicator, { backgroundColor: theme.primary.main }]} />}
-                        </TouchableOpacity>
-                    );
-                })}
-            </View>
-
-            {/* Actions Section */}
-            <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                {/* Language Toggle */}
-                <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: theme.background.secondary }]}
-                    onPress={toggleLanguage}
-                >
-                    <Text style={[styles.actionBtnText, { color: theme.text.primary }]}>
-                        {language === 'ar' ? 'EN' : 'AR'}
-                    </Text>
-                </TouchableOpacity>
-
-                {/* Theme Toggle */}
-                <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: theme.background.secondary }]}
-                    onPress={toggleTheme}
-                >
+            {/* Theme Toggle */}
+            <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: theme.background.secondary + '60' }]}
+                onPress={toggleTheme}
+            >
+                <Animated.View style={{
+                    transform: [{
+                        rotate: themeRotate.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '180deg'],
+                        })
+                    }]
+                }}>
                     <Ionicons
                         name={isDark ? "sunny-outline" : "moon-outline"}
                         size={20}
                         color={theme.text.primary}
                     />
-                </TouchableOpacity>
+                </Animated.View>
+            </TouchableOpacity>
 
-                {/* Notifications */}
+            {/* Notifications */}
+            <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: theme.background.secondary + '60' }]}
+                onPress={() => navigation.navigate('Notifications')}
+            >
+                <Ionicons name="notifications-outline" size={20} color={theme.text.primary} />
+                <Animated.View style={[
+                    styles.badge,
+                    {
+                        backgroundColor: theme.semantic.negative,
+                        transform: [{ scale: pulseAnim }]
+                    }
+                ]} />
+            </TouchableOpacity>
+
+            {/* Admin */}
+            {isAdmin && (
                 <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: theme.background.secondary }]}
-                    onPress={() => navigation.navigate('Notifications')}
+                    style={[styles.adminBtn, { backgroundColor: theme.primary.main }]}
+                    onPress={() => navigation.navigate('MainTabs', { screen: 'AdminTab' })}
                 >
-                    <Ionicons name="notifications-outline" size={20} color={theme.text.primary} />
-                    <View style={[styles.badge, { backgroundColor: theme.semantic.negative }]} />
+                    <Ionicons name="shield-checkmark" size={18} color="#FFF" />
+                    <Text style={styles.adminBtnText}>Admin</Text>
                 </TouchableOpacity>
+            )}
 
-                {/* Admin */}
-                {isAdmin && (
-                    <TouchableOpacity
-                        style={[styles.adminBtn, { backgroundColor: theme.primary.main }]}
-                        onPress={() => navigation.navigate('MainTabs', { screen: 'AdminTab' })}
-                    >
-                        <Ionicons name="shield-checkmark" size={18} color="#FFF" />
-                        <Text style={styles.adminBtnText}>Admin</Text>
-                    </TouchableOpacity>
-                )}
-
-                {/* Profile */}
-                <TouchableOpacity
-                    style={styles.profileAvatar}
-                    onPress={() => navigation.navigate('MainTabs', { screen: 'ProfileTab' })}
-                >
-                    <View style={[styles.avatarCircle, { backgroundColor: theme.primary.main }]}>
-                        <Text style={styles.initialsText}>{getInitials()}</Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
+            {/* Profile */}
+            <TouchableOpacity
+                style={styles.profileAvatar}
+                onPress={() => navigation.navigate('MainTabs', { screen: 'ProfileTab' })}
+            >
+                <View style={[styles.avatarCircle, { backgroundColor: theme.primary.main }]}>
+                    <Text style={styles.initialsText}>{getInitials()}</Text>
+                </View>
+            </TouchableOpacity>
         </View>
+    );
+
+    return (
+        <Animated.View style={[
+            styles.container,
+            {
+                backgroundColor: theme.background.primary,
+                borderBottomColor: theme.border.main,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                transform: [{
+                    translateY: entryAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-88, 0],
+                    })
+                }],
+                opacity: entryAnim,
+            }
+        ]}>
+            <View style={[styles.contentLayout, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                {renderLogo()}
+
+                {/* Navigation Links */}
+                <View style={[styles.navLinks, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    {NAV_ITEMS.map((item) => {
+                        const isActive = activeRouteName?.includes(item.key.replace('Tab', ''));
+                        return (
+                            <NavItem
+                                key={item.key}
+                                item={item}
+                                isActive={!!isActive}
+                                onPress={() => navigation.navigate('MainTabs', { screen: item.key })}
+                                theme={theme}
+                                t={t}
+                            />
+                        );
+                    })}
+                </View>
+
+                {renderActions()}
+            </View>
+        </Animated.View>
     );
 };
 
@@ -146,42 +319,43 @@ const styles = StyleSheet.create({
     container: {
         height: 88,
         paddingHorizontal: spacing['3xl'],
+        borderBottomWidth: 1,
+        zIndex: 1000,
+    },
+    contentLayout: {
+        flex: 1,
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        borderBottomWidth: 1,
-        zIndex: 100,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 10,
-        elevation: 2,
+        width: '100%',
     },
     logoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.md,
+        gap: spacing.sm,
     },
     logo: {
-        width: 44,
-        height: 44,
+        width: 34,
+        height: 34,
     },
     logoText: {
-        fontSize: 26,
+        fontSize: 22,
         fontWeight: '900',
-        letterSpacing: 2,
+        letterSpacing: -0.5,
     },
     premiumBadge: {
-        paddingHorizontal: spacing.sm,
+        paddingHorizontal: 8,
         paddingVertical: 2,
-        borderRadius: 8,
+        borderRadius: 6,
+        marginLeft: 4,
     },
     premiumBadgeText: {
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: '900',
     },
     navLinks: {
         flexDirection: 'row',
-        gap: spacing['3xl'],
+        gap: spacing.md,
         position: 'absolute',
         left: 0,
         right: 0,
@@ -190,91 +364,90 @@ const styles = StyleSheet.create({
         height: '100%',
         pointerEvents: 'box-none',
     },
-    navItem: {
+    navItemWrapper: {
         height: '100%',
         justifyContent: 'center',
-        position: 'relative',
+        paddingHorizontal: 4,
+    },
+    navItemPill: {
+        paddingHorizontal: spacing.lg,
+        paddingVertical: 10,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     navItemText: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '700',
     },
     activeIndicator: {
         position: 'absolute',
-        bottom: 0,
-        left: 10,
-        right: 10,
-        height: 4,
-        borderTopLeftRadius: 4,
-        borderTopRightRadius: 4,
+        bottom: -6,
+        alignSelf: 'center',
+        borderRadius: 2,
     },
     actions: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.md,
+        gap: spacing.sm,
     },
     actionBtn: {
-        width: 48,
-        height: 48,
-        borderRadius: 16,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.03)',
     },
-    actionBtnText: {
-        fontSize: 15,
+    langToggle: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1.5,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: 56,
+    },
+    langToggleText: {
+        fontSize: 13,
         fontWeight: '800',
     },
     badge: {
         position: 'absolute',
-        top: 14,
-        right: 14,
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        borderWidth: 2,
+        top: 10,
+        right: 10,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        borderWidth: 1.5,
         borderColor: '#FFF',
     },
     adminBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: spacing.xl,
-        paddingVertical: 14,
-        borderRadius: 18,
-        gap: spacing.sm,
-        marginLeft: spacing.sm,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 5,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: 10,
+        borderRadius: 14,
+        gap: spacing.xs,
     },
     adminBtnText: {
         color: '#FFF',
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: '800',
     },
     profileAvatar: {
-        marginLeft: spacing.sm,
+        marginLeft: spacing.xs,
     },
     avatarCircle: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        elevation: 4,
     },
     initialsText: {
         color: '#FFF',
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: '800',
-        letterSpacing: 0.5,
     },
 });

@@ -23,7 +23,7 @@ export const MarketWatchWidget: React.FC<MarketWatchWidgetProps> = ({ data, exch
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <Text style={[styles.exchangeTitle, { color: theme.primary.main }]}>
-                        {exchange}
+                        {exchange === 'ADX' ? t('market.adxTitle') : t('market.dfmTitle')}
                     </Text>
                     <View style={[styles.liveBadge, { backgroundColor: theme.semantic.positive + '15' }]}>
                         <View style={[styles.liveDot, { backgroundColor: theme.semantic.positive }]} />

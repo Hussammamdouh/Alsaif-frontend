@@ -40,7 +40,7 @@ export const InsightsFeedSection: React.FC = () => {
                         <View style={styles.cardHeader}>
                             <View style={[styles.tagBadge, { backgroundColor: isPremium ? `${theme.primary.main}15` : `${theme.text.tertiary}15` }]}>
                                 <Text style={[styles.tagText, { color: isPremium ? theme.primary.main : theme.text.tertiary }]}>
-                                    {isPremium ? 'PREMIUM' : 'FREE'}
+                                    {isPremium ? t('common.premium') : t('common.free')}
                                 </Text>
                             </View>
                             <Text style={[styles.dateText, { color: theme.text.tertiary }]}>

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../../app/providers';
+import { useTheme, useLocalization } from '../../../app/providers';
 import { bannerService, Banner } from '../../../core/services/api/adminEnhancements.service';
 import { LinearGradient } from 'expo-linear-gradient';
 import { spacing } from '../../../core/theme/spacing';
 
 export const NewHeroCarousel: React.FC = () => {
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
+    const { t, isRTL } = useLocalization();
     const [banners, setBanners] = useState<Banner[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -48,33 +49,55 @@ export const NewHeroCarousel: React.FC = () => {
 
                 <LinearGradient
                     colors={['rgba(0,0,0,0.85)', 'rgba(0,0,0,0.2)', 'transparent']}
-                    start={{ x: 0, y: 0.5 }}
-                    end={{ x: 1, y: 0.5 }}
-                    style={styles.overlay}
+                    start={{ x: isRTL ? 1 : 0, y: 0.5 }}
+                    end={{ x: isRTL ? 0 : 1, y: 0.5 }}
+                    style={[styles.overlay, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}
                 >
-                    <View style={styles.textContent}>
-                        <Text style={styles.heroSub}>Market Spotlight</Text>
-                        <Text style={styles.heroTitle}>
+                    <View style={[styles.textContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <Text style={[styles.heroSub, { textAlign: isRTL ? 'right' : 'left' }]}>
+                            {t('home.marketSpotlight')}
+                        </Text>
+                        <Text style={[styles.heroTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                             {currentBanner.partner || 'Premium Market Analysis'}
                         </Text>
-                        <Text style={styles.heroDesc}>
-                            Exclusive insights and technical analysis for Abu Dhabi and Dubai financial markets.
+                        <Text style={[styles.heroDesc, { textAlign: isRTL ? 'right' : 'left' }]}>
+                            {t('home.heroDescription')}
                         </Text>
-                        <TouchableOpacity style={[styles.ctaBtn, { backgroundColor: theme.primary.main }]}>
-                            <Text style={styles.ctaText}>Explore Now</Text>
-                            <Ionicons name="chevron-forward" size={20} color="#FFF" />
+                        <TouchableOpacity style={[
+                            styles.ctaBtn,
+                            {
+                                backgroundColor: theme.primary.main,
+                                flexDirection: isRTL ? 'row-reverse' : 'row',
+                                alignSelf: isRTL ? 'flex-end' : 'flex-start'
+                            }
+                        ]}>
+                            <Text style={styles.ctaText}>{t('home.exploreNow')}</Text>
+                            <Ionicons
+                                name={isRTL ? "chevron-back" : "chevron-forward"}
+                                size={20}
+                                color="#FFF"
+                            />
                         </TouchableOpacity>
                     </View>
                 </LinearGradient>
 
-                <TouchableOpacity style={[styles.arrow, styles.leftArrow]} onPress={handlePrev}>
+                <TouchableOpacity
+                    style={[styles.arrow, styles.leftArrow]}
+                    onPress={isRTL ? handleNext : handlePrev}
+                >
                     <Ionicons name="chevron-back" size={28} color="#FFF" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.arrow, styles.rightArrow]} onPress={handleNext}>
+                <TouchableOpacity
+                    style={[styles.arrow, styles.rightArrow]}
+                    onPress={isRTL ? handlePrev : handleNext}
+                >
                     <Ionicons name="chevron-forward" size={28} color="#FFF" />
                 </TouchableOpacity>
 
-                <View style={styles.indicators}>
+                <View style={[
+                    styles.indicators,
+                    isRTL ? { right: spacing['5xl'], left: undefined } : { left: spacing['5xl'], right: undefined }
+                ]}>
                     {banners.map((_, i) => (
                         <View
                             key={i}

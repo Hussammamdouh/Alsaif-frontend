@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Image, useWindowDimensions, Platform, TextInput, ScrollView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Image, useWindowDimensions, Platform, TextInput, ScrollView, StatusBar, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
 import { useTheme } from '../../app/providers/ThemeProvider';
@@ -17,7 +17,7 @@ const DESKTOP_THRESHOLD = 1024;
 
 export const MarketScreen = () => {
     const { theme, toggleTheme, isDark } = useTheme();
-    const { t } = useLocalization();
+    const { t, isRTL } = useLocalization();
     const { width } = useWindowDimensions();
     const isDesktop = width >= DESKTOP_THRESHOLD;
     const styles = useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
@@ -216,29 +216,116 @@ export const MarketScreen = () => {
     };
 
     if (!selectedExchange) {
-        const renderEmptyMarkets = () => (
-            <View style={[styles.centered, { paddingHorizontal: spacing.xl, backgroundColor: theme.background.primary }]}>
-                <Icon name="stats-chart" size={64} color={theme.primary.main} style={{ marginBottom: 24 }} />
-                <Text style={[styles.promptTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
-                <Text style={[styles.promptSubtitle, { color: theme.text.secondary }]}>{t('market.selectMarketPrompt')}</Text>
-                <View style={[styles.marketPillContainer, isDesktop ? { flexDirection: 'row', gap: 24 } : null]}>
-                    <TouchableOpacity
-                        style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
-                        onPress={() => setSelectedExchange('DFM')}
-                    >
-                        <Icon name="business" size={24} color={theme.primary.main} />
-                        <Text style={[styles.marketPillText, { color: theme.text.primary }]}>{t('market.dubai')}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
-                        onPress={() => setSelectedExchange('ADX')}
-                    >
-                        <Icon name="trending-up" size={24} color={theme.primary.main} />
-                        <Text style={[styles.marketPillText, { color: theme.text.primary }]}>{t('market.abuDhabi')}</Text>
-                    </TouchableOpacity>
+        const SelectionCard = ({ type, title, desc, icon, onPress, theme }: any) => {
+            const [isHovered, setIsHovered] = useState(false);
+            const isADX = type === 'ADX';
+            const accentColor = isADX ? '#007AFF' : '#E62E2D';
+
+            return (
+                <Pressable
+                    onPress={onPress}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    style={({ pressed }: any) => [
+                        styles.selectionCard,
+                        {
+                            backgroundColor: theme.background.secondary,
+                            borderColor: (isHovered || pressed) ? accentColor : theme.ui.border,
+                            transform: [{ scale: (isHovered || pressed) ? 1.02 : 1 }],
+                        }
+                    ]}
+                >
+                    {({ pressed }: any) => (
+                        <>
+                            <View>
+                                <View style={[styles.cardIconContainer, { backgroundColor: accentColor + '15' }]}>
+                                    <Icon name={icon} size={32} color={accentColor} />
+                                </View>
+                                <View style={{ marginTop: 24 }}>
+                                    <Text style={[styles.cardTitle, { color: theme.text.primary }]}>{title}</Text>
+                                    <Text style={[styles.cardDesc, { color: theme.text.secondary }]}>{desc}</Text>
+                                </View>
+                            </View>
+
+                            <View style={[styles.cardArrow, { opacity: (isHovered || pressed) ? 1 : 0.3 }]}>
+                                <Icon
+                                    name={isRTL ? "arrow-back-circle" : "arrow-forward-circle"}
+                                    size={48}
+                                    color={accentColor}
+                                />
+                            </View>
+                        </>
+                    )}
+                </Pressable>
+            );
+        };
+
+        const renderEmptyMarkets = () => {
+            if (isDesktop) {
+                return (
+                    <View style={styles.desktopSelectionContainer}>
+                        <LinearGradient
+                            colors={isDark ? ['#1a1a1a', '#0a0a0a'] : ['#f8f9fa', '#e9ecef']}
+                            style={styles.selectionBackdrop}
+                        />
+                        <View style={styles.selectionContent}>
+                            <View style={styles.selectionHeader}>
+                                <Icon name="stats-chart" size={64} color={theme.primary.main} />
+                                <Text style={[styles.selectionTitle, { color: theme.text.primary }]}>
+                                    {t('market.title')}
+                                </Text>
+                                <Text style={[styles.selectionSubtitle, { color: theme.text.secondary }]}>
+                                    {t('market.selectMarketPrompt')}
+                                </Text>
+                            </View>
+
+                            <View style={[styles.selectionGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                <SelectionCard
+                                    type="DFM"
+                                    title={t('market.dubai')}
+                                    desc={t('market.dfmDesc')}
+                                    icon="business"
+                                    onPress={() => setSelectedExchange('DFM')}
+                                    theme={theme}
+                                />
+                                <SelectionCard
+                                    type="ADX"
+                                    title={t('market.abuDhabi')}
+                                    desc={t('market.adxDesc')}
+                                    icon="trending-up"
+                                    onPress={() => setSelectedExchange('ADX')}
+                                    theme={theme}
+                                />
+                            </View>
+                        </View>
+                    </View>
+                );
+            }
+
+            return (
+                <View style={[styles.centered, { paddingHorizontal: spacing.xl, backgroundColor: theme.background.primary }]}>
+                    <Icon name="stats-chart" size={64} color={theme.primary.main} style={{ marginBottom: 24 }} />
+                    <Text style={[styles.promptTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
+                    <Text style={[styles.promptSubtitle, { color: theme.text.secondary }]}>{t('market.selectMarketPrompt')}</Text>
+                    <View style={styles.marketPillContainer}>
+                        <TouchableOpacity
+                            style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
+                            onPress={() => setSelectedExchange('DFM')}
+                        >
+                            <Icon name="business" size={24} color={theme.primary.main} />
+                            <Text style={[styles.marketPillText, { color: theme.text.primary }]}>{t('market.dubai')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
+                            onPress={() => setSelectedExchange('ADX')}
+                        >
+                            <Icon name="trending-up" size={24} color={theme.primary.main} />
+                            <Text style={[styles.marketPillText, { color: theme.text.primary }]}>{t('market.abuDhabi')}</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        );
+            );
+        };
 
         return (
             <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
@@ -246,9 +333,6 @@ export const MarketScreen = () => {
                 {isDesktop ? (
                     <View style={styles.desktopContainer}>
                         <View style={styles.desktopMainColumn}>
-                            <View style={[styles.dashboardHeader, { height: 80, paddingTop: 0, justifyContent: 'center', backgroundColor: theme.background.secondary }]}>
-                                <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
-                            </View>
                             {renderEmptyMarkets()}
                         </View>
                     </View>
@@ -622,6 +706,79 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
     promptTitle: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
     promptSubtitle: { fontSize: 16, textAlign: 'center', marginBottom: 32 },
     marketPillContainer: { width: '100%', marginTop: spacing.md },
+    desktopSelectionContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    selectionBackdrop: {
+        ...StyleSheet.absoluteFillObject,
+        opacity: 0.5,
+    },
+    selectionContent: {
+        width: '100%',
+        maxWidth: 900,
+        paddingHorizontal: 40,
+        zIndex: 1,
+    },
+    selectionHeader: {
+        alignItems: 'center',
+        marginBottom: 60,
+    },
+    selectionTitle: {
+        fontSize: 48,
+        fontWeight: '900',
+        marginTop: 16,
+        letterSpacing: -1,
+    },
+    selectionSubtitle: {
+        fontSize: 20,
+        marginTop: 12,
+        opacity: 0.8,
+    },
+    selectionGrid: {
+        flexDirection: 'row',
+        gap: 32,
+        width: '100%',
+    },
+    selectionCard: {
+        flex: 1,
+        height: 300,
+        borderRadius: 32,
+        padding: 32,
+        borderWidth: 1.5,
+        justifyContent: 'space-between',
+        ...Platform.select({
+            web: {
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+            },
+        }),
+    },
+    cardIconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cardTitle: {
+        fontSize: 32,
+        fontWeight: '900',
+        marginBottom: 8,
+    },
+    cardDesc: {
+        fontSize: 16,
+        lineHeight: 24,
+        opacity: 0.7,
+    },
+    cardArrow: {
+        position: 'absolute',
+        right: 32,
+        bottom: 32,
+        opacity: 0.5,
+    },
     marketPill: {
         flexDirection: 'row',
         alignItems: 'center',

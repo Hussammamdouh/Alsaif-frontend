@@ -234,6 +234,9 @@ const translations = {
     'common.search': 'Search...',
     'common.exit': 'Exit Panel',
     'common.days': 'Days',
+    'common.viewAll': 'View All',
+    'common.premium': 'PREMIUM',
+    'common.free': 'FREE',
 
     // Time
     'time.justNow': 'Just now',
@@ -244,6 +247,13 @@ const translations = {
     'time.monthsAgo': '{count}mo ago',
     'time.readTime': '{count} min read',
 
+    // Home
+    'home.exploreNow': 'Explore Now',
+    'home.marketSpotlight': 'MARKET SPOTLIGHT',
+    'home.heroDescription': 'Exclusive insights and technical analysis for Abu Dhabi and Dubai financial markets.',
+
+    // Disclosures
+    'disclosures.readDisclosure': 'Read Disclosure',
     // Bottom Tab Navigation
     'tabs.home': 'Home',
     'tabs.disclosures': 'Disclosures',
@@ -258,6 +268,10 @@ const translations = {
     'market.title': 'Market Data',
     'market.dubai': 'Dubai',
     'market.abuDhabi': 'Abu Dhabi',
+    'market.adxTitle': 'ADX',
+    'market.dfmTitle': 'DFM',
+    'market.adxDesc': 'Abu Dhabi Securities Exchange',
+    'market.dfmDesc': 'Dubai Financial Market',
     'market.selectMarketPrompt': 'Select a market to explore',
     'market.noData': 'No market data available',
     'market.open': 'Open',
@@ -1341,6 +1355,9 @@ const translations = {
     'common.seeAll': 'عرض الكل',
     'common.search': 'بحث...',
     'common.days': 'أيام',
+    'common.viewAll': 'عرض الكل',
+    'common.premium': 'مميز',
+    'common.free': 'مجاني',
 
     // Time
     'time.justNow': 'الآن',
@@ -1351,6 +1368,13 @@ const translations = {
     'time.monthsAgo': 'منذ {count} شهر',
     'time.readTime': 'قراءة {count} دقيقة',
 
+    // Home
+    'home.exploreNow': 'استكشف الآن',
+    'home.marketSpotlight': 'أضواء على السوق',
+    'home.heroDescription': 'رؤى حصرية وتحليل فني لأسوق أبوظبي ودبي المالية.',
+
+    // Disclosures
+    'disclosures.readDisclosure': 'اقرأ الإفصاح',
     // Bottom Tab Navigation
     'tabs.home': 'الرئيسية',
     'tabs.disclosures': 'الإفصاحات',
@@ -1365,6 +1389,10 @@ const translations = {
     'market.title': 'بيانات السوق',
     'market.dubai': 'دبي',
     'market.abuDhabi': 'أبو ظبي',
+    'market.adxTitle': 'سوق أبوظبي',
+    'market.dfmTitle': 'سوق دبي',
+    'market.adxDesc': 'سوق أبوظبي للأوراق المالية',
+    'market.dfmDesc': 'سوق دبي المالي',
     'market.selectMarketPrompt': 'اختر سوقاً للاستكشاف',
     'market.noData': 'لا توجد بيانات متاحة',
     'market.open': 'الافتتاح',
