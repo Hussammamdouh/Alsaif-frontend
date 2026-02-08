@@ -136,30 +136,22 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
     const { theme, isDark, toggleTheme } = useTheme();
     const { t, language, toggleLanguage } = useLocalization();
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
-    const { disclosures, loading, refreshing, error, refresh, filter, setFilter } = useDisclosures();
+    const { disclosures, loading, refreshing, error, refresh, loadMore, hasMore, filter, setFilter } = useDisclosures();
     const { width } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const isDesktop = width >= 1024;
     const isAdmin = useIsAdmin();
 
-    const [searchQuery, setSearchQuery] = useState('');
     const [selectedDisclosure, setSelectedDisclosure] = useState<Disclosure | null>(null);
     const [showPdfModal, setShowPdfModal] = useState(false);
 
+    // Responsive column count
+    const numColumns = width > 1600 ? 3 : (isDesktop ? 2 : 1);
+
     // Memoized filtered data
     const filteredDisclosures = React.useMemo(() => {
-        if (!searchQuery) return disclosures;
-        const query = searchQuery.toLowerCase();
-        return disclosures.filter(item => {
-            const title = language === 'ar' ? (item.titleAr || item.title) : (item.titleEn || item.title);
-            const company = language === 'ar' ? (item.companyNameAr || item.companyName) : (item.companyNameEn || item.companyName);
-            return (
-                title.toLowerCase().includes(query) ||
-                (item.symbol && item.symbol.toLowerCase().includes(query)) ||
-                (company && company.toLowerCase().includes(query))
-            );
-        });
-    }, [disclosures, searchQuery, language]);
+        return disclosures;
+    }, [disclosures]);
 
     const FILTERS: { key: ExchangeFilter; label: string; icon: any }[] = [
         { key: 'ALL', label: t('filter.all'), icon: 'layers-outline' },
@@ -193,73 +185,142 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
         if (hideHeader) return null;
 
         return (
-            <View style={[styles.headerWrapper, { paddingTop: Math.max(insets.top, 12) }]}>
-                <View style={styles.headerTop}>
-                    <View>
-                        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('disclosures.title')}</Text>
-                        <Text style={[styles.headerSubtitle, { color: theme.text.tertiary }]}>{t('common.tagline')}</Text>
-                    </View>
-                    <View style={styles.headerActions}>
-                        <TouchableOpacity
-                            style={[styles.actionButton, { backgroundColor: theme.background.tertiary }]}
-                            onPress={toggleLanguage}
-                        >
-                            <Text style={[styles.actionButtonText, { color: theme.primary.main }]}>
-                                {language === 'ar' ? 'EN' : 'AR'}
+            <View style={[
+                styles.headerWrapper,
+                isDesktop && styles.desktopHeaderWrapper,
+                { borderBottomWidth: 1, borderBottomColor: theme.ui.border, paddingBottom: 24 },
+                !isDesktop && { paddingTop: Math.max(insets.top, 12), borderBottomWidth: 0 }
+            ]}>
+                {isDesktop ? (
+                    <>
+                        <View style={{ marginBottom: 24, alignItems: language === 'ar' ? 'flex-end' : 'flex-start' }}>
+                            <Text style={[styles.headerTitle, { color: theme.text.primary, fontSize: 36, textAlign: language === 'ar' ? 'right' : 'left' }]}>
+                                {t('disclosures.title')}
                             </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.actionButton, { backgroundColor: theme.background.tertiary }]}
-                            onPress={toggleTheme}
-                        >
-                            <Ionicons name={isDark ? "sunny" : "moon"} size={20} color={theme.text.primary} />
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                            <Text style={[styles.headerSubtitle, { color: theme.text.tertiary, fontSize: 16, textAlign: language === 'ar' ? 'right' : 'left' }]}>
+                                {t('common.tagline')}
+                            </Text>
+                        </View>
 
-                <View style={[styles.searchContainer, { backgroundColor: theme.background.tertiary }]}>
-                    <Ionicons name="search" size={20} color={theme.text.tertiary} style={styles.searchIcon} />
-                    <TextInput
-                        style={[styles.searchInput, { color: theme.text.primary, textAlign: language === 'ar' ? 'right' : 'left' }]}
-                        placeholder={t('common.search')}
-                        placeholderTextColor={theme.text.tertiary}
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                        clearButtonMode="while-editing"
-                    />
-                </View>
+                        <View style={[styles.desktopToolbar, { flexDirection: language === 'ar' ? 'row-reverse' : 'row' }]}>
+                            <View style={{ flex: 1 }}>
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={[
+                                        styles.filtersScroll,
+                                        { flexDirection: language === 'ar' ? 'row-reverse' : 'row' }
+                                    ]}
+                                >
+                                    {FILTERS.map((f) => {
+                                        const isActive = filter === f.key;
+                                        return (
+                                            <TouchableOpacity
+                                                key={f.key}
+                                                style={[
+                                                    styles.filterChip,
+                                                    {
+                                                        backgroundColor: isActive
+                                                            ? '#3e7a33'
+                                                            : (isDark ? 'rgba(62,122,51,0.1)' : 'rgba(62,122,51,0.06)')
+                                                    },
+                                                    !isActive && { borderColor: isDark ? 'rgba(62,122,51,0.2)' : 'rgba(62,122,51,0.1)', borderWidth: 1 }
+                                                ]}
+                                                onPress={() => setFilter(f.key)}
+                                            >
+                                                <Ionicons
+                                                    name={f.icon}
+                                                    size={18}
+                                                    color={isActive ? '#fff' : '#3e7a33'}
+                                                />
+                                                <Text
+                                                    style={[
+                                                        styles.filterChipText,
+                                                        { color: isActive ? '#fff' : '#3e7a33' },
+                                                    ]}
+                                                >
+                                                    {f.label}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </ScrollView>
+                            </View>
 
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.filtersScroll}
-                >
-                    {FILTERS.map((f) => (
-                        <TouchableOpacity
-                            key={f.key}
-                            style={[
-                                styles.filterChip,
-                                { backgroundColor: theme.background.tertiary },
-                                filter === f.key && { backgroundColor: theme.primary.main }
-                            ]}
-                            onPress={() => setFilter(f.key)}
-                        >
-                            <Ionicons
-                                name={f.icon}
-                                size={16}
-                                color={filter === f.key ? '#fff' : theme.text.secondary}
-                            />
-                            <Text
-                                style={[
-                                    styles.filterChipText,
-                                    { color: filter === f.key ? '#fff' : theme.text.secondary },
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        <View style={styles.headerTop}>
+                            <View style={{ alignItems: language === 'ar' ? 'flex-end' : 'flex-start' }}>
+                                <Text style={[styles.headerTitle, { color: theme.text.primary, textAlign: language === 'ar' ? 'right' : 'left' }]}>{t('disclosures.title')}</Text>
+                                <Text style={[styles.headerSubtitle, { color: theme.text.tertiary, textAlign: language === 'ar' ? 'right' : 'left' }]}>{t('common.tagline')}</Text>
+                            </View>
+                            <View style={styles.headerActions}>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, { backgroundColor: theme.background.tertiary }]}
+                                    onPress={toggleLanguage}
+                                >
+                                    <Text style={[styles.actionButtonText, { color: theme.primary.main }]}>
+                                        {language === 'ar' ? 'EN' : 'AR'}
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, { backgroundColor: theme.background.tertiary }]}
+                                    onPress={toggleTheme}
+                                >
+                                    <Ionicons name={isDark ? "sunny" : "moon"} size={20} color={theme.text.primary} />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+
+
+                        <View style={{ marginTop: 12 }}>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={[
+                                    styles.filtersScroll,
+                                    { flexDirection: language === 'ar' ? 'row-reverse' : 'row' }
                                 ]}
                             >
-                                {f.label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                                {FILTERS.map((f) => {
+                                    const isActive = filter === f.key;
+                                    return (
+                                        <TouchableOpacity
+                                            key={f.key}
+                                            style={[
+                                                styles.filterChip,
+                                                {
+                                                    backgroundColor: isActive
+                                                        ? '#3e7a33'
+                                                        : (isDark ? 'rgba(62,122,51,0.1)' : 'rgba(62,122,51,0.06)')
+                                                },
+                                                !isActive && { borderColor: isDark ? 'rgba(62,122,51,0.2)' : 'rgba(62,122,51,0.1)', borderWidth: 1 }
+                                            ]}
+                                            onPress={() => setFilter(f.key)}
+                                        >
+                                            <Ionicons
+                                                name={f.icon}
+                                                size={18}
+                                                color={isActive ? '#fff' : '#3e7a33'}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.filterChipText,
+                                                    { color: isActive ? '#fff' : '#3e7a33' },
+                                                ]}
+                                            >
+                                                {f.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
+                        </View>
+                    </>
+                )}
             </View>
         );
     };
@@ -386,29 +447,36 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                 {renderHeader()}
 
                 <FlatList
+                    key={`list-${numColumns}`}
                     data={filteredDisclosures}
                     renderItem={renderItem}
                     keyExtractor={(item) => item._id}
                     ListHeaderComponent={
                         <>
                             {ListHeaderComponent}
-                            <FilterChips
-                                options={FILTERS.map(f => ({
-                                    key: f.key,
-                                    labelKey: `filter.${f.key.toLowerCase()}`,
-                                    icon: f.icon
-                                }))}
-                                selected={filter}
-                                onSelect={(key: string) => setFilter(key as any)}
-                            />
+                            {!isDesktop && (
+                                <FilterChips
+                                    options={FILTERS.map(f => ({
+                                        key: f.key,
+                                        labelKey: `filter.${f.key.toLowerCase()}`,
+                                        icon: f.icon
+                                    }))}
+                                    selected={filter}
+                                    onSelect={(key: string) => setFilter(key as any)}
+                                />
+                            )}
                         </>
                     }
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />
                     }
-                    contentContainerStyle={[styles.listContent, isDesktop && styles.desktopList]}
+                    contentContainerStyle={[
+                        styles.listContent,
+                        isDesktop && styles.desktopList,
+                        { paddingBottom: isDesktop ? 100 : 40 }
+                    ]}
                     columnWrapperStyle={isDesktop && filteredDisclosures.length > 0 ? styles.columnWrapper : undefined}
-                    numColumns={isDesktop ? 2 : 1}
+                    numColumns={numColumns}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         !loading ? (
@@ -417,11 +485,23 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                                     <Ionicons name="search-outline" size={40} color={theme.text.tertiary} />
                                 </View>
                                 <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>
-                                    {searchQuery ? 'No results found' : 'No disclosures yet'}
+                                    No disclosures yet
                                 </Text>
                                 <Text style={[styles.emptySubtitle, { color: theme.text.tertiary }]}>
-                                    {searchQuery ? `We couldn't find anything for "${searchQuery}"` : 'Market announcements will appear here once they are published.'}
+                                    Market announcements will appear here once they are published.
                                 </Text>
+                            </View>
+                        ) : null
+                    }
+                    ListFooterComponent={
+                        !loading && disclosures.length > 0 ? (
+                            <View style={styles.footerContainer}>
+                                <TouchableOpacity
+                                    style={[styles.loadMoreButton, { backgroundColor: theme.primary.main }]}
+                                    onPress={loadMore}
+                                >
+                                    <Text style={styles.loadMoreText}>Load More</Text>
+                                </TouchableOpacity>
                             </View>
                         ) : null
                     }
@@ -439,6 +519,27 @@ const styles = StyleSheet.create({
     headerWrapper: {
         paddingHorizontal: spacing.md,
         paddingBottom: spacing.sm,
+    },
+    desktopHeaderWrapper: {
+        paddingHorizontal: spacing.xl,
+        paddingTop: 32,
+    },
+    desktopHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    desktopHeaderActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    desktopToolbar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
     },
     headerTop: {
         flexDirection: 'row',
@@ -471,22 +572,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '800',
     },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderRadius: 16,
-        paddingHorizontal: 16,
-        height: 54,
-        marginBottom: 20,
-    },
-    searchIcon: {
-        marginRight: 12,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: '500',
-    },
     filtersContainer: {
         paddingHorizontal: spacing.md,
         paddingVertical: 12,
@@ -498,13 +583,15 @@ const styles = StyleSheet.create({
     filterChip: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 14,
-        gap: 8,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 30,
+        gap: 10,
+        height: 44,
+        justifyContent: 'center',
     },
     filterChipText: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '700',
     },
     listContent: {
@@ -736,6 +823,20 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         lineHeight: 22,
+    },
+    footerContainer: {
+        paddingVertical: 40,
+        alignItems: 'center',
+    },
+    loadMoreButton: {
+        paddingHorizontal: 40,
+        paddingVertical: 16,
+        borderRadius: 16,
+    },
+    loadMoreText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700',
     },
 });
 

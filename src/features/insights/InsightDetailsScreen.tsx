@@ -57,7 +57,8 @@ export const InsightDetailsScreen: React.FC = () => {
   const { insightId } = route.params;
   const { theme, isDark } = useTheme();
   const { t, isRTL } = useLocalization();
-  const { width: contentWidth } = useWindowDimensions();
+  const { width: contentWidth, width: screenWidth } = useWindowDimensions();
+  const isDesktop = screenWidth >= 1024;
   const styles = useMemo(() => createInsightsStyles(theme), [theme]);
   const inputRef = useRef<TextInput>(null);
 
@@ -237,34 +238,36 @@ export const InsightDetailsScreen: React.FC = () => {
           </Animated.View>
         )}
 
-        {/* Floating Header */}
-        <Animated.View
-          style={[
-            styles.detailHeader,
-            {
-              backgroundColor: isDark ? theme.background.primary : '#FFFFFF',
-              opacity: headerOpacity,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              paddingTop: Platform.OS === 'ios' ? 50 : 30,
-              zIndex: 30,
-            }
-          ]}
-        >
-          <Animated.Text
+        {/* Floating Header (Desktop: Hidden, Mobile: Visible on Scroll) */}
+        {!isDesktop && (
+          <Animated.View
             style={[
-              styles.headerTitleDetail,
+              styles.detailHeader,
               {
-                transform: [{ translateY: headerTranslateY }]
+                backgroundColor: isDark ? theme.background.primary : '#FFFFFF',
+                opacity: headerOpacity,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                paddingTop: Platform.OS === 'ios' ? 50 : 30,
+                zIndex: 30,
               }
             ]}
-            numberOfLines={1}
           >
-            {insight.title}
-          </Animated.Text>
-        </Animated.View>
+            <Animated.Text
+              style={[
+                styles.headerTitleDetail,
+                {
+                  transform: [{ translateY: headerTranslateY }]
+                }
+              ]}
+              numberOfLines={1}
+            >
+              {insight.title}
+            </Animated.Text>
+          </Animated.View>
+        )}
 
         {/* Static Actions (Back/Share) - Always Visible */}
         <View style={[styles.detailHeader, { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'transparent', borderBottomWidth: 0, zIndex: 40, paddingTop: Platform.OS === 'ios' ? 50 : 30 }]}>
@@ -302,239 +305,355 @@ export const InsightDetailsScreen: React.FC = () => {
             />
           }
         >
-          {/* Title Section */}
-          <View style={[styles.detailTitleSection, !insight.coverImage && { paddingTop: Platform.OS === 'ios' ? 100 : 80 }]}>
-            <View style={[styles.typeBadge, { backgroundColor: insight.type === 'premium' ? COLORS.premium : COLORS.free, alignSelf: 'flex-start', marginBottom: 16 }]}>
-              <Ionicons name={insight.type === 'premium' ? "star" : "lock-open-outline"} size={12} color="#FFF" style={{ marginRight: 4 }} />
-              <Text style={styles.typeBadgeText}>
-                {t(`insights.types.${insight.type}`)}
-              </Text>
-            </View>
+          <View style={[isDesktop && { maxWidth: 1200, alignSelf: 'center', width: '100%', paddingHorizontal: 24 }]}>
+            {/* Desktop Hero Header */}
+            {isDesktop && (
+              <View style={[localStyles.heroHeader, { backgroundColor: theme.background.secondary }]}>
+                <View style={localStyles.heroContent}>
+                  <View style={localStyles.topMeta}>
+                    <View style={[styles.typeBadge, { backgroundColor: insight.type === 'premium' ? COLORS.premium : COLORS.free }]}>
+                      <Ionicons name={insight.type === 'premium' ? "star" : "lock-open-outline"} size={12} color="#FFF" style={{ marginRight: 4 }} />
+                      <Text style={styles.typeBadgeText}>
+                        {t(`insights.types.${insight.type}`)}
+                      </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <Text style={styles.detailTimestamp}>{formatTimeAgo(insight.createdAt, t)}</Text>
+                      <Text style={styles.readTime}>{formatReadTime(insight.readTime, t)}</Text>
+                    </View>
+                  </View>
 
-            <Text style={styles.detailTitle}>{insight.title}</Text>
+                  <Text style={[localStyles.heroTitle, { color: theme.text.primary }]}>
+                    {insight.title}
+                  </Text>
 
-            <View style={styles.detailMeta}>
-              <View style={styles.authorInfo}>
-                <View style={[styles.authorAvatar, { backgroundColor: theme.background.tertiary }]}>
-                  <Ionicons name="person" size={24} color={theme.primary.main} />
-                </View>
-                <View>
-                  <Text style={styles.authorName}>{insight.author?.name || t('common.author')}</Text>
-                  <Text style={styles.detailTimestamp}>{formatTimeAgo(insight.createdAt, t)}</Text>
+                  <View style={styles.authorInfo}>
+                    <View style={[styles.authorAvatar, { backgroundColor: theme.background.tertiary }]}>
+                      <Ionicons name="person" size={24} color={theme.primary.main} />
+                    </View>
+                    <View>
+                      <Text style={styles.authorName}>{insight.author?.name || t('common.author')}</Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-              <View style={{ flex: 1 }} />
-              <Text style={styles.readTime}>
-                {formatReadTime(insight.readTime, t)}
-              </Text>
-            </View>
-          </View>
+            )}
 
-          {/* Content Card with Glassmorphism */}
-          <View style={styles.detailBodyContainer}>
-            <LinearGradient
-              colors={isDark
-                ? ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']
-                : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.85)']
-              }
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={styles.detailBody}>
-              {insight.insightFormat === 'signal' && (
-                <View style={styles.signalCard}>
-                  <View style={styles.signalHeader}>
-                    <View style={styles.signalSymbolContainer}>
-                      <View style={styles.signalSymbolIcon}>
-                        <Ionicons name="trending-up" size={24} color={theme.primary.main} />
-                      </View>
-                      <View>
-                        <Text style={styles.signalSymbol}>{insight.symbol}</Text>
-                        <Text style={styles.signalStockName}>
-                          {isRTL ? (insight.stockNameAr || insight.stockName) : (insight.stockName || insight.stockNameAr)}
-                        </Text>
-                      </View>
+            {/* Mobile Title Section */}
+            {!isDesktop && (
+              <View style={[styles.detailTitleSection, !insight.coverImage && { paddingTop: Platform.OS === 'ios' ? 100 : 80 }]}>
+                <View style={[styles.typeBadge, { backgroundColor: insight.type === 'premium' ? COLORS.premium : COLORS.free, alignSelf: 'flex-start', marginBottom: 16 }]}>
+                  <Ionicons name={insight.type === 'premium' ? "star" : "lock-open-outline"} size={12} color="#FFF" style={{ marginRight: 4 }} />
+                  <Text style={styles.typeBadgeText}>
+                    {t(`insights.types.${insight.type}`)}
+                  </Text>
+                </View>
+
+                <Text style={styles.detailTitle}>{insight.title}</Text>
+
+                <View style={styles.detailMeta}>
+                  <View style={styles.authorInfo}>
+                    <View style={[styles.authorAvatar, { backgroundColor: theme.background.tertiary }]}>
+                      <Ionicons name="person" size={24} color={theme.primary.main} />
                     </View>
-                    <View style={styles.signalMarketBadge}>
-                      <Text style={styles.signalMarketText}>{insight.market}</Text>
+                    <View>
+                      <Text style={styles.authorName}>{insight.author?.name || t('common.author')}</Text>
+                      <Text style={styles.detailTimestamp}>{formatTimeAgo(insight.createdAt, t)}</Text>
                     </View>
                   </View>
+                  <View style={{ flex: 1 }} />
+                  <Text style={styles.readTime}>
+                    {formatReadTime(insight.readTime, t)}
+                  </Text>
+                </View>
+              </View>
+            )}
 
-                  <View style={styles.signalGrid}>
-                    <View style={styles.signalRow}>
-                      <View style={styles.signalItem}>
-                        <Text style={styles.signalLabel}>{t('admin.buyPrice')}</Text>
-                        <Text style={[styles.signalValue, styles.signalBuyValue]}>
-                          {insight.buyPrice?.toFixed(2) || '---'}
-                        </Text>
+            <View style={[isDesktop && { flexDirection: 'row', gap: 24, alignItems: 'flex-start' }]}>
+              {/* Main Content Column */}
+              <View style={{ flex: 2 }}>
+                <View style={[styles.detailBodyContainer, isDesktop && localStyles.card]}>
+                  <LinearGradient
+                    colors={isDark
+                      ? ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.02)']
+                      : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.85)']
+                    }
+                    style={[StyleSheet.absoluteFill, isDesktop && { borderRadius: 24 }]}
+                  />
+                  <View style={styles.detailBody}>
+                    {insight.insightFormat === 'signal' && (
+                      <View style={[styles.signalCard, isDesktop && { backgroundColor: theme.background.secondary }]}>
+                        <View style={styles.signalHeader}>
+                          <View style={styles.signalSymbolContainer}>
+                            <View style={styles.signalSymbolIcon}>
+                              <Ionicons name="trending-up" size={24} color={theme.primary.main} />
+                            </View>
+                            <View>
+                              <Text style={styles.signalSymbol}>{insight.symbol}</Text>
+                              <Text style={styles.signalStockName}>
+                                {isRTL ? (insight.stockNameAr || insight.stockName) : (insight.stockName || insight.stockNameAr)}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.signalMarketBadge}>
+                            <Text style={styles.signalMarketText}>{insight.market}</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.signalGrid}>
+                          <View style={styles.signalRow}>
+                            <View style={styles.signalItem}>
+                              <Text style={styles.signalLabel}>{t('admin.buyPrice')}</Text>
+                              <Text style={[styles.signalValue, styles.signalBuyValue]}>
+                                {insight.buyPrice?.toFixed(2) || '---'}
+                              </Text>
+                            </View>
+                            <View style={styles.signalItem}>
+                              <Text style={styles.signalLabel}>{t('admin.stopLoss')}</Text>
+                              <Text style={[styles.signalValue, styles.signalStopValue]}>
+                                {insight.stopLoss?.toFixed(2) || '---'}
+                              </Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.signalRow}>
+                            <View style={styles.signalItem}>
+                              <Text style={styles.signalLabel}>{t('admin.firstGoal')}</Text>
+                              <Text style={[styles.signalValue, styles.signalGoalValue]}>
+                                {insight.firstGoal?.toFixed(2) || '---'}
+                              </Text>
+                            </View>
+                            <View style={styles.signalItem}>
+                              <Text style={styles.signalLabel}>{t('admin.secondGoal')}</Text>
+                              <Text style={[styles.signalValue, styles.signalGoalValue]}>
+                                {insight.secondGoal?.toFixed(2) || '---'}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
                       </View>
-                      <View style={styles.signalItem}>
-                        <Text style={styles.signalLabel}>{t('admin.stopLoss')}</Text>
-                        <Text style={[styles.signalValue, styles.signalStopValue]}>
-                          {insight.stopLoss?.toFixed(2) || '---'}
-                        </Text>
+                    )}
+
+                    {/* HTML Content */}
+                    {canAccess ? (
+                      <RenderHtml
+                        contentWidth={isDesktop ? 700 : contentWidth - 32}
+                        source={{ html: insight.content || '' }}
+                        baseStyle={{
+                          color: theme.text.secondary,
+                          fontSize: 16,
+                          lineHeight: 26,
+                          textAlign: isRTL ? 'right' : 'left',
+                        }}
+                        tagsStyles={{
+                          b: { fontWeight: '700' },
+                          strong: { fontWeight: '700' },
+                          i: { fontStyle: 'italic' },
+                          em: { fontStyle: 'italic' },
+                          u: { textDecorationLine: 'underline' },
+                          h1: { fontSize: 24, fontWeight: '800', marginVertical: 12 },
+                          h2: { fontSize: 20, fontWeight: '700', marginVertical: 10 },
+                          h3: { fontSize: 18, fontWeight: '700', marginVertical: 8 },
+                          p: { marginVertical: 8 },
+                          ul: { paddingLeft: 16 },
+                          ol: { paddingLeft: 16 },
+                          li: { marginVertical: 4 },
+                        }}
+                      />
+                    ) : (
+                      <Text style={styles.detailText}>{insight.excerpt}</Text>
+                    )}
+                  </View>
+
+                  {!canAccess && (
+                    <LinearGradient
+                      colors={['transparent', isDark ? 'rgba(10, 26, 10, 0.8)' : 'rgba(255, 255, 255, 0.9)', isDark ? '#0a1a0a' : '#FFFFFF']}
+                      style={[styles.lockedOverlay, isDesktop && { borderRadius: 24 }]}
+                    >
+                      <View style={styles.lockedIcon}>
+                        <View style={[styles.iconButton, { backgroundColor: 'rgba(251, 191, 36, 0.15)', width: 76, height: 76, borderRadius: 38 }]}>
+                          <Ionicons name="lock-closed" size={32} color="#FBBF24" />
+                        </View>
+                        <Text style={styles.lockedTitle}>{t('insights.premiumTitle')}</Text>
+                        <Text style={styles.lockedMessage}>{t('insights.premiumMessage')}</Text>
+
+                        <TouchableOpacity
+                          style={styles.upgradeButton}
+                          onPress={() => navigation.navigate('Subscription' as never)}
+                        >
+                          <LinearGradient
+                            colors={[COLORS.premium, '#D97706']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={StyleSheet.absoluteFill}
+                          />
+                          <Text style={styles.upgradeButtonText}>{t('insights.upgradeAction')}</Text>
+                        </TouchableOpacity>
                       </View>
+                    </LinearGradient>
+                  )}
+                </View>
+              </View>
+
+              {/* Sidebar (Desktop) */}
+              {isDesktop && (
+                <View style={{ flex: 1 }}>
+                  <View style={[localStyles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}>
+                    {/* Desktop Engagement */}
+                    <View style={styles.detailEngagement}>
+                      <View style={styles.detailEngagementButtons}>
+                        <TouchableOpacity
+                          style={styles.detailEngagementButton}
+                          onPress={toggleInsightLike}
+                        >
+                          <Ionicons
+                            name={insightHasLiked ? "heart" : "heart-outline"}
+                            size={24}
+                            color={insightHasLiked ? COLORS.liked : theme.text.secondary}
+                          />
+                          <Text style={styles.detailEngagementText}>{formatCount(insight.likes)}</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.detailEngagementButton}>
+                          <Ionicons name="chatbubble-outline" size={22} color={theme.text.secondary} />
+                          <Text style={styles.detailEngagementText}>{formatCount(insight.commentsCount)}</Text>
+                        </View>
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.detailEngagementButton}
+                        onPress={() => setIsBookmarked(!isBookmarked)}
+                      >
+                        <Ionicons
+                          name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                          size={24}
+                          color={isBookmarked ? theme.primary.main : theme.text.secondary}
+                        />
+                      </TouchableOpacity>
                     </View>
 
-                    <View style={styles.signalRow}>
-                      <View style={styles.signalItem}>
-                        <Text style={styles.signalLabel}>{t('admin.firstGoal')}</Text>
-                        <Text style={[styles.signalValue, styles.signalGoalValue]}>
-                          {insight.firstGoal?.toFixed(2) || '---'}
-                        </Text>
+                    {/* Comments List Desktop */}
+                    <View style={styles.commentsSection}>
+                      <View style={styles.commentsSectionHeader}>
+                        <Text style={styles.commentsSectionTitle}>{t('insights.comments')}</Text>
+                        <View style={styles.commentsCountBadge}>
+                          <Text style={styles.commentsCountText}>{insight.commentsCount}</Text>
+                        </View>
                       </View>
-                      <View style={styles.signalItem}>
-                        <Text style={styles.signalLabel}>{t('admin.secondGoal')}</Text>
-                        <Text style={[styles.signalValue, styles.signalGoalValue]}>
-                          {insight.secondGoal?.toFixed(2) || '---'}
-                        </Text>
+
+                      <View style={styles.commentsList}>
+                        {comments.map(comment => (
+                          <InsightCommentThread
+                            key={comment._id}
+                            comment={comment}
+                            currentUserId={insight.author?._id || ''}
+                            onReply={handleReply}
+                            onUpdate={refreshComments}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+
+                        {comments.length === 0 && !commentsLoading && (
+                          <View style={styles.emptyCommentsContainer}>
+                            <Ionicons name="chatbubbles-outline" size={48} color={theme.text.tertiary} />
+                            <Text style={styles.emptyCommentsText}>{t('insights.noComments')}</Text>
+                          </View>
+                        )}
                       </View>
                     </View>
                   </View>
                 </View>
               )}
-
-              {/* Content - supports HTML formatting from WYSIWYG editor */}
-              {canAccess ? (
-                <RenderHtml
-                  contentWidth={contentWidth - 32}
-                  source={{ html: insight.content || '' }}
-                  baseStyle={{
-                    color: theme.text.secondary,
-                    fontSize: 16,
-                    lineHeight: 26,
-                    textAlign: isRTL ? 'right' : 'left',
-                  }}
-                  tagsStyles={{
-                    b: { fontWeight: '700' },
-                    strong: { fontWeight: '700' },
-                    i: { fontStyle: 'italic' },
-                    em: { fontStyle: 'italic' },
-                    u: { textDecorationLine: 'underline' },
-                    h1: { fontSize: 24, fontWeight: '800', marginVertical: 12 },
-                    h2: { fontSize: 20, fontWeight: '700', marginVertical: 10 },
-                    h3: { fontSize: 18, fontWeight: '700', marginVertical: 8 },
-                    p: { marginVertical: 8 },
-                    ul: { paddingLeft: 16 },
-                    ol: { paddingLeft: 16 },
-                    li: { marginVertical: 4 },
-                  }}
-                />
-              ) : (
-                <Text style={styles.detailText}>{insight.excerpt}</Text>
-              )}
             </View>
 
-            {!canAccess && (
-              <LinearGradient
-                colors={['transparent', isDark ? 'rgba(10, 26, 10, 0.8)' : 'rgba(255, 255, 255, 0.9)', isDark ? '#0a1a0a' : '#FFFFFF']}
-                style={styles.lockedOverlay}
-              >
-                <View style={styles.lockedIcon}>
-                  <View style={[styles.iconButton, { backgroundColor: 'rgba(251, 191, 36, 0.15)', width: 76, height: 76, borderRadius: 38 }]}>
-                    <Ionicons name="lock-closed" size={32} color="#FBBF24" />
+            {/* Mobile Bottom Section (Engagement + Comments) */}
+            {!isDesktop && (
+              <View>
+                {/* Engagement Summary */}
+                <View style={styles.detailEngagement}>
+                  <LinearGradient
+                    colors={isDark
+                      ? ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.01)']
+                      : ['rgba(0, 0, 0, 0.03)', 'rgba(0, 0, 0, 0.01)']
+                    }
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={styles.detailEngagementButtons}>
+                    <TouchableOpacity
+                      style={styles.detailEngagementButton}
+                      onPress={toggleInsightLike}
+                    >
+                      <Ionicons
+                        name={insightHasLiked ? "heart" : "heart-outline"}
+                        size={24}
+                        color={insightHasLiked ? COLORS.liked : theme.text.secondary}
+                      />
+                      <Text style={styles.detailEngagementText}>{formatCount(insight.likes)}</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.detailEngagementButton}>
+                      <Ionicons name="chatbubble-outline" size={22} color={theme.text.secondary} />
+                      <Text style={styles.detailEngagementText}>{formatCount(insight.commentsCount)}</Text>
+                    </View>
                   </View>
-                  <Text style={styles.lockedTitle}>{t('insights.premiumTitle')}</Text>
-                  <Text style={styles.lockedMessage}>{t('insights.premiumMessage')}</Text>
 
                   <TouchableOpacity
-                    style={styles.upgradeButton}
-                    onPress={() => navigation.navigate('Subscription' as never)}
+                    style={styles.detailEngagementButton}
+                    onPress={() => setIsBookmarked(!isBookmarked)}
                   >
-                    <LinearGradient
-                      colors={[COLORS.premium, '#D97706']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={StyleSheet.absoluteFill}
+                    <Ionicons
+                      name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                      size={24}
+                      color={isBookmarked ? theme.primary.main : theme.text.secondary}
                     />
-                    <Text style={styles.upgradeButtonText}>{t('insights.upgradeAction')}</Text>
                   </TouchableOpacity>
                 </View>
-              </LinearGradient>
-            )}
-          </View>
 
-          {/* Engagement Summary */}
-          <View style={styles.detailEngagement}>
-            <LinearGradient
-              colors={isDark
-                ? ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.01)']
-                : ['rgba(0, 0, 0, 0.03)', 'rgba(0, 0, 0, 0.01)']
-              }
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={styles.detailEngagementButtons}>
-              <TouchableOpacity
-                style={styles.detailEngagementButton}
-                onPress={toggleInsightLike}
-              >
-                <Ionicons
-                  name={insightHasLiked ? "heart" : "heart-outline"}
-                  size={24}
-                  color={insightHasLiked ? COLORS.liked : theme.text.secondary}
-                />
-                <Text style={styles.detailEngagementText}>{formatCount(insight.likes)}</Text>
-              </TouchableOpacity>
+                {/* Comments List Mobile */}
+                <View style={styles.commentsSection}>
+                  <View style={styles.commentsSectionHeader}>
+                    <Text style={styles.commentsSectionTitle}>{t('insights.comments')}</Text>
+                    <View style={styles.commentsCountBadge}>
+                      <Text style={styles.commentsCountText}>{insight.commentsCount}</Text>
+                    </View>
+                  </View>
 
-              <View style={styles.detailEngagementButton}>
-                <Ionicons name="chatbubble-outline" size={22} color={theme.text.secondary} />
-                <Text style={styles.detailEngagementText}>{formatCount(insight.commentsCount)}</Text>
-              </View>
-            </View>
+                  <View style={styles.commentsList}>
+                    {comments.map(comment => (
+                      <InsightCommentThread
+                        key={comment._id}
+                        comment={comment}
+                        currentUserId={insight.author?._id || ''}
+                        onReply={handleReply}
+                        onUpdate={refreshComments}
+                        onDelete={handleDelete}
+                      />
+                    ))}
 
-            <TouchableOpacity
-              style={styles.detailEngagementButton}
-              onPress={() => setIsBookmarked(!isBookmarked)}
-            >
-              <Ionicons
-                name={isBookmarked ? "bookmark" : "bookmark-outline"}
-                size={24}
-                color={isBookmarked ? theme.primary.main : theme.text.secondary}
-              />
-            </TouchableOpacity>
-          </View>
+                    {comments.length === 0 && !commentsLoading && (
+                      <View style={styles.emptyCommentsContainer}>
+                        <Ionicons name="chatbubbles-outline" size={48} color={theme.text.tertiary} />
+                        <Text style={styles.emptyCommentsText}>{t('insights.noComments')}</Text>
+                      </View>
+                    )}
 
-          {/* Comments List */}
-          <View style={styles.commentsSection}>
-            <View style={styles.commentsSectionHeader}>
-              <Text style={styles.commentsSectionTitle}>{t('insights.comments')}</Text>
-              <View style={styles.commentsCountBadge}>
-                <Text style={styles.commentsCountText}>{insight.commentsCount}</Text>
-              </View>
-            </View>
-
-            <View style={styles.commentsList}>
-              {comments.map(comment => (
-                <InsightCommentThread
-                  key={comment._id}
-                  comment={comment}
-                  currentUserId={insight.author?._id || ''}
-                  onReply={handleReply}
-                  onUpdate={refreshComments}
-                  onDelete={handleDelete}
-                />
-              ))}
-
-              {comments.length === 0 && !commentsLoading && (
-                <View style={styles.emptyCommentsContainer}>
-                  <Ionicons name="chatbubbles-outline" size={48} color={theme.text.tertiary} />
-                  <Text style={styles.emptyCommentsText}>{t('insights.noComments')}</Text>
+                    {hasMore && (
+                      <TouchableOpacity
+                        style={styles.loadMoreButton}
+                        onPress={loadMore}
+                        disabled={commentsLoading}
+                      >
+                        {commentsLoading ? (
+                          <ActivityIndicator size="small" color={theme.primary.main} />
+                        ) : (
+                          <Text style={styles.loadMoreText}>{t('insights.loadMore')}</Text>
+                        )}
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
-              )}
-
-              {hasMore && (
-                <TouchableOpacity
-                  style={styles.loadMoreButton}
-                  onPress={loadMore}
-                  disabled={commentsLoading}
-                >
-                  {commentsLoading ? (
-                    <ActivityIndicator size="small" color={theme.primary.main} />
-                  ) : (
-                    <Text style={styles.loadMoreText}>{t('insights.loadMore')}</Text>
-                  )}
-                </TouchableOpacity>
-              )}
-            </View>
+              </View>
+            )}
           </View>
         </Animated.ScrollView>
 
@@ -584,3 +703,33 @@ export const InsightDetailsScreen: React.FC = () => {
     </View>
   );
 };
+
+const localStyles = StyleSheet.create({
+  heroHeader: {
+    paddingBottom: 20,
+    marginBottom: 16,
+    borderRadius: 24,
+    marginTop: 16,
+  },
+  heroContent: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  topMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    lineHeight: 36,
+    marginBottom: 16,
+  },
+  card: {
+    borderWidth: 1,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+});

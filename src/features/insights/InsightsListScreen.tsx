@@ -114,7 +114,9 @@ const InsightCard: React.FC<InsightCardProps> = ({
                 { backgroundColor: item.type === 'premium' ? '#FBBF24' : theme.primary.main },
               ]}
             >
-              <Text style={styles.typeBadgeText}>{item.type.toUpperCase()}</Text>
+              <Text style={styles.typeBadgeText}>
+                {item.type === 'premium' ? t('filter.premium') : t('filter.free')}
+              </Text>
             </View>
             <Text style={[styles.timestamp, { color: theme.text.tertiary }]}>{formatTimeAgo(item.publishedAt || item.createdAt, t)}</Text>
           </View>
@@ -200,7 +202,6 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark), [theme, isDesktop, isDark]);
   const { canAccessInsight } = useSubscriptionAccess();
 
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Filter state
   const [typeFilter, setTypeFilter] = useState<'all' | 'free' | 'premium'>('all');
@@ -208,7 +209,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
 
   // Build query params based on filters
   const queryParams = React.useMemo(() => {
-    const params: any = { search: searchQuery };
+    const params: any = {};
     if (typeFilter !== 'all') params.type = typeFilter;
     if (marketFilter === 'signal') {
       params.insightFormat = 'signal';
@@ -216,7 +217,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
       params.market = marketFilter;
     }
     return params;
-  }, [searchQuery, typeFilter, marketFilter]);
+  }, [typeFilter, marketFilter]);
 
   const {
     insights,
@@ -306,37 +307,53 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <ResponsiveContainer style={{ flex: 1 }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-        {/* Header - only show if not hidden */}
         {!hideHeader && (
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t('insights.freeInsights')}</Text>
-            <View style={styles.headerActions}>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={22} color={isDark ? "#FFF" : "#000"} />
-              </TouchableOpacity>
+          <View style={[
+            styles.headerWrapper,
+            isDesktop && styles.desktopHeaderWrapper,
+            { borderBottomWidth: 1, borderBottomColor: theme.ui.border, paddingBottom: 24 },
+            !isDesktop && { paddingTop: 20, borderBottomWidth: 0 }
+          ]}>
+            <View style={{ marginBottom: isDesktop ? 6 : 8, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+              <Text style={[styles.headerTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
+                {t('insights.freeInsights')}
+              </Text>
+              <Text style={[styles.headerSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
+                {t('common.tagline')}
+              </Text>
+            </View>
+
+            <View style={{ gap: 12 }}>
+              {!hideAccessFilter && (
+                <FilterChips
+                  options={[
+                    { key: 'all', labelKey: 'filter.all' },
+                    { key: 'free', labelKey: 'filter.free' },
+                    { key: 'premium', labelKey: 'filter.premium' },
+                  ]}
+                  selected={typeFilter}
+                  onSelect={(key: string) => setTypeFilter(key as any)}
+                />
+              )}
+              <FilterChips
+                options={[
+                  { key: 'all', labelKey: 'filter.general' },
+                  { key: 'ADX', labelKey: 'filter.adx' },
+                  { key: 'DFM', labelKey: 'filter.dfm' },
+                  { key: 'Other', labelKey: 'filter.others' },
+                  { key: 'signal', labelKey: 'filter.specific' },
+                ]}
+                selected={marketFilter}
+                onSelect={(key: string) => setMarketFilter(key as any)}
+              />
             </View>
           </View>
         )}
 
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBarWrapper}>
-            <Ionicons name="search" size={18} color={isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t('insights.searchPlaceholder') || 'Search insights...'}
-              placeholderTextColor={isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              clearButtonMode="while-editing"
-            />
-          </View>
-        </View>
 
         {/* Insights List */}
         <FlatList
@@ -351,30 +368,6 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
           ListHeaderComponent={
             <>
               {ListHeaderComponent}
-              {!hideAccessFilter && (
-                <FilterChips
-                  title={t('filter.accessType')}
-                  options={[
-                    { key: 'all', labelKey: 'filter.all' },
-                    { key: 'free', labelKey: 'filter.free' },
-                    { key: 'premium', labelKey: 'filter.premium' },
-                  ]}
-                  selected={typeFilter}
-                  onSelect={(key: string) => setTypeFilter(key as any)}
-                />
-              )}
-              <FilterChips
-                title={t('filter.market')}
-                options={[
-                  { key: 'all', labelKey: 'filter.general' },
-                  { key: 'ADX', labelKey: 'filter.adx' },
-                  { key: 'DFM', labelKey: 'filter.dfm' },
-                  { key: 'Other', labelKey: 'filter.others' },
-                  { key: 'signal', labelKey: 'filter.specific' },
-                ]}
-                selected={marketFilter}
-                onSelect={(key: string) => setMarketFilter(key as any)}
-              />
             </>
           }
           refreshControl={
@@ -385,10 +378,25 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
               colors={[theme.primary.main]}
             />
           }
-          onEndReached={loadMore}
+          onEndReached={!isDesktop ? loadMore : undefined}
           onEndReachedThreshold={0.5}
           ListEmptyComponent={renderEmpty}
-          ListFooterComponent={renderFooter}
+          ListFooterComponent={
+            isDesktop && insights.length > 0 ? (
+              <View style={styles.desktopFooter}>
+                <TouchableOpacity
+                  style={[styles.loadMoreButton, { backgroundColor: theme.primary.main }]}
+                  onPress={loadMore}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFF" />
+                  ) : (
+                    <Text style={styles.loadMoreText}>{t('common.loadMore') || 'Load More'}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : renderFooter()
+          }
           showsVerticalScrollIndicator={false}
         />
       </ResponsiveContainer>
@@ -399,20 +407,6 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
 const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: 16,
-    zIndex: 10,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    letterSpacing: -0.5,
   },
   headerActions: {
     flexDirection: 'row',
@@ -426,57 +420,23 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
     justifyContent: 'center',
     borderWidth: 1,
   },
-  searchContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+  headerWrapper: {
+    paddingHorizontal: isDesktop ? 24 : 16,
+    paddingBottom: 16,
   },
-  searchBarWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 52,
-    borderWidth: 1,
+  desktopHeaderWrapper: {
+    paddingHorizontal: 32,
+    paddingTop: 16,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
+  headerTitle: {
+    fontSize: isDesktop ? 32 : 28,
+    fontWeight: '900',
+    letterSpacing: -1,
   },
-  filtersSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  filterLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.text.secondary,
-    marginRight: 8,
-  },
-  filtersScroll: {
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-    borderWidth: 1,
-    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-  },
-  filterChipActive: {
-    backgroundColor: theme.primary.main,
-    borderColor: 'transparent',
-  },
-  filterChipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.text.secondary,
-  },
-  filterChipTextActive: {
-    color: '#FFFFFF',
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 4,
   },
   listContent: {
     paddingHorizontal: isDesktop ? 24 : 16,
@@ -638,5 +598,28 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
     fontSize: 15,
     fontWeight: '700',
     color: '#FFF',
+  },
+  desktopFooter: {
+    paddingVertical: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadMoreButton: {
+    paddingHorizontal: 48,
+    paddingVertical: 16,
+    borderRadius: 16,
+    minWidth: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: theme.primary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  loadMoreText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
   },
 });

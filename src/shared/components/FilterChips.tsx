@@ -140,6 +140,8 @@ const getStyles = (theme: any, isDark: boolean, isDesktop: boolean) =>
             gap: 8,
         },
         chip: {
+            flexDirection: 'row',
+            alignItems: 'center',
             paddingHorizontal: isDesktop ? 18 : 14,
             paddingVertical: isDesktop ? 10 : 8,
             borderRadius: 20,
