@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
   SUBSCRIPTION_RENEW: '/api/subscriptions/renew',
   SUBSCRIPTION_CANCEL: '/api/subscriptions/cancel',
   SUBSCRIPTION_BENEFITS: '/api/subscriptions/benefits',
+  SUBSCRIPTION_VALIDATE_PROMO: '/api/subscriptions/validate-promo',
   MAGIC_LINK_GENERATE: '/api/magic-link/generate',
 } as const;
 
@@ -97,6 +98,8 @@ export const MESSAGES = {
   CANCEL_CONFIRM_TITLE: 'Cancel Subscription',
   CANCEL_CONFIRM_MESSAGE: 'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.',
   RENEW_SUCCESS: 'Your subscription has been renewed!',
+  PROMO_APPLIED: 'Promo code applied successfully!',
+  PROMO_INVALID: 'Invalid or expired promo code.',
   ERROR_LOADING: 'Failed to load subscription information. Please try again.',
   ERROR_CHECKOUT: 'Failed to initiate checkout. Please try again.',
   ERROR_CANCEL: 'Failed to cancel subscription. Please try again.',

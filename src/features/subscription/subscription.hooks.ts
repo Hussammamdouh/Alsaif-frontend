@@ -17,6 +17,7 @@ import {
   mapPlanResponse,
   mapHistoryResponse,
   mapCheckoutResponse,
+  mapPromoValidationResponse,
 } from './subscription.mapper';
 import { API_ENDPOINTS, MESSAGES } from './subscription.constants';
 import { mapStripeError } from './subscription.utils';
@@ -202,7 +203,7 @@ export const useCheckout = () => {
   const [error, setError] = useState<string | null>(null);
 
   const initiateCheckout = useCallback(
-    async (planId: string, billingCycle: BillingCycle) => {
+    async (planId: string, billingCycle: BillingCycle, promoCode?: string) => {
       try {
         setLoading(true);
         setError(null);
@@ -214,6 +215,7 @@ export const useCheckout = () => {
           const response = await apiClient.post(API_ENDPOINTS.SUBSCRIPTION_CHECKOUT, {
             planId,
             billingCycle,
+            promoCode,
           }) as any;
 
           if (response.success && response.data.checkoutUrl) {
@@ -252,6 +254,7 @@ export const useCheckout = () => {
             purpose: 'checkout',
             planId,
             billingCycle,
+            promoCode,
             returnUrl: 'alsaif-analysis://payment-success',
           }) as any;
 
@@ -335,11 +338,38 @@ export const useCheckout = () => {
     []
   );
 
+  const validatePromoCode = useCallback(
+    async (code: string, planId: string, billingCycle: BillingCycle) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await apiClient.get(
+          `${API_ENDPOINTS.SUBSCRIPTION_VALIDATE_PROMO}/${code}?tier=${planId}&billingCycle=${billingCycle}`
+        ) as any;
+
+        if (response.success && response.data) {
+          return mapPromoValidationResponse(response.data);
+        } else {
+          throw new Error(response.message || 'Invalid promo code');
+        }
+      } catch (err: any) {
+        console.error('Error validating promo code:', err);
+        setError(err.message || 'Error validating promo code');
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     loading,
     error,
     initiateCheckout,
     initiateRenewal,
+    validatePromoCode,
   };
 };
 

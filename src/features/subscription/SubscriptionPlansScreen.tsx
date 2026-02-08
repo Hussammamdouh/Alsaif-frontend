@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, StatusBar, Dimensions, Alert, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, StatusBar, Dimensions, Alert, Animated, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,11 +14,12 @@ import {
   useCheckout,
   useSystemSettings,
 } from './subscription.hooks';
-import { BillingCycle } from './subscription.types';
+import { BillingCycle, PromoValidation } from './subscription.types';
 import { formatCurrency } from './subscription.mapper';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { SubscriptionTermsModal } from './components/SubscriptionTermsModal';
+import { MESSAGES } from './subscription.constants';
 
 const { width } = Dimensions.get('window');
 
@@ -33,7 +34,11 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
   const { plans: allPlans, loading: plansLoading, refetch: refetchPlans } = useSubscriptionPlans();
   const { settings, loading: settingsLoading } = useSystemSettings();
-  const { loading: checkoutLoading, initiateCheckout } = useCheckout();
+  const { loading: checkoutLoading, initiateCheckout, validatePromoCode } = useCheckout();
+
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<PromoValidation | null>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
   const loading = plansLoading || settingsLoading;
 
   // Filter plans based on selected billing cycle
@@ -61,7 +66,7 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const handleTermsAccepted = async () => {
     setShowTermsModal(false);
     if (pendingPlanId) {
-      const success = await initiateCheckout(pendingPlanId, billingCycle);
+      const success = await initiateCheckout(pendingPlanId, billingCycle, appliedPromo?.code);
       if (success) {
         // Handled by hook
       }
@@ -72,6 +77,35 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const handleTermsClose = () => {
     setShowTermsModal(false);
     setPendingPlanId(null);
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+
+    // We validate against a hypothetical selected plan or just generally
+    // In this UI, they enter promo code then click checkout.
+    // Let's validate generally first.
+    setValidatingPromo(true);
+    try {
+      const result = await validatePromoCode(promoCode.trim(), 'premium', billingCycle);
+      if (result) {
+        setAppliedPromo(result);
+        Alert.alert('Success', MESSAGES.PROMO_APPLIED);
+      } else {
+        setAppliedPromo(null);
+        Alert.alert('Error', MESSAGES.PROMO_INVALID);
+      }
+    } catch (err) {
+      setAppliedPromo(null);
+      Alert.alert('Error', MESSAGES.PROMO_INVALID);
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
   };
 
   if (loading) {
@@ -160,6 +194,46 @@ export const SubscriptionPlansScreen: React.FC = () => {
           </View>
         )}
 
+        {/* Promo Code Input */}
+        <View style={styles.promoContainer}>
+          <Text style={[styles.promoLabel, { color: isDark ? '#FFF' : '#333' }]}>
+            {t('plans.havePromoCode')}
+          </Text>
+          <View style={[styles.promoInputWrapper, { borderColor: appliedPromo ? theme.primary.main : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]}>
+            <TextInput
+              style={[styles.promoInput, { color: isDark ? '#FFF' : '#000' }]}
+              placeholder={t('plans.promoPlaceholder')}
+              placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
+              value={promoCode}
+              onChangeText={setPromoCode}
+              autoCapitalize="characters"
+              editable={!appliedPromo && !validatingPromo}
+            />
+            {appliedPromo ? (
+              <TouchableOpacity onPress={handleRemovePromo} style={styles.promoButton}>
+                <Ionicons name="close-circle" size={24} color={theme.primary.main} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={handleApplyPromo}
+                style={[styles.promoButton, !promoCode.trim() && { opacity: 0.5 }]}
+                disabled={!promoCode.trim() || validatingPromo}
+              >
+                {validatingPromo ? (
+                  <ActivityIndicator size="small" color={theme.primary.main} />
+                ) : (
+                  <Text style={[styles.applyText, { color: theme.primary.main }]}>{t('plans.apply')}</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+          {appliedPromo && (
+            <Text style={styles.appliedPromoText}>
+              {appliedPromo.description || `${appliedPromo.value}${appliedPromo.type === 'percentage' ? '%' : ''} discount applied!`}
+            </Text>
+          )}
+        </View>
+
         {/* Plans */}
         <View style={styles.plansList}>
           {investorPlan && (
@@ -171,7 +245,15 @@ export const SubscriptionPlansScreen: React.FC = () => {
               <Text style={styles.planTierName}>{investorPlan.name}</Text>
               <View style={styles.priceContainer}>
                 <Text style={styles.priceSign}>{investorPlan.currency === 'USD' ? '$' : investorPlan.currency}</Text>
-                <Text style={styles.priceValue}>{investorPlan.price}</Text>
+                <Text style={[styles.priceValue, appliedPromo && styles.strikethrough]}>{investorPlan.price}</Text>
+                {appliedPromo && (
+                  <Text style={[styles.priceValue, { marginLeft: 8 }]}>
+                    {appliedPromo.type === 'percentage'
+                      ? (investorPlan.price * (1 - appliedPromo.value / 100)).toFixed(2)
+                      : Math.max(0, investorPlan.price - appliedPromo.value).toFixed(2)
+                    }
+                  </Text>
+                )}
                 <Text style={styles.pricePeriod}>{t('plans.perMonth')}</Text>
               </View>
 
@@ -225,7 +307,15 @@ export const SubscriptionPlansScreen: React.FC = () => {
               <Text style={[styles.planTierName, { color: theme.primary.main }]}>{professionalPlan.name}</Text>
               <View style={styles.priceContainer}>
                 <Text style={[styles.priceSign, { color: isDark ? '#FFF' : '#000' }]}>{professionalPlan.currency === 'USD' ? '$' : professionalPlan.currency}</Text>
-                <Text style={[styles.priceValue, { color: isDark ? '#FFF' : '#000' }]}>{professionalPlan.price}</Text>
+                <Text style={[styles.priceValue, { color: isDark ? '#FFF' : '#000' }, appliedPromo && styles.strikethrough]}>{professionalPlan.price}</Text>
+                {appliedPromo && (
+                  <Text style={[styles.priceValue, { color: isDark ? '#FFF' : '#000', marginLeft: 8 }]}>
+                    {appliedPromo.type === 'percentage'
+                      ? (professionalPlan.price * (1 - appliedPromo.value / 100)).toFixed(2)
+                      : Math.max(0, professionalPlan.price - appliedPromo.value).toFixed(2)
+                    }
+                  </Text>
+                )}
                 <Text style={[styles.pricePeriod, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }]}>{t('plans.perMonth')}</Text>
               </View>
 
@@ -507,5 +597,51 @@ const getStyles = (theme: any) => StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     width: width,
     opacity: 0.5,
+  },
+  promoContainer: {
+    marginHorizontal: 24,
+    marginTop: 32,
+    padding: 20,
+    backgroundColor: theme.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+    borderRadius: 20,
+  },
+  promoLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  promoInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingLeft: 16,
+    height: 56,
+  },
+  promoInput: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  promoButton: {
+    paddingHorizontal: 16,
+    height: '100%',
+    justifyContent: 'center',
+  },
+  applyText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  appliedPromoText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#34c759',
+    fontWeight: '600',
+  },
+  strikethrough: {
+    textDecorationLine: 'line-through',
+    fontSize: 24,
+    opacity: 0.5,
+    marginTop: 10,
   },
 });

@@ -63,6 +63,13 @@ export interface CheckoutSession {
   billingCycle: BillingCycle;
 }
 
+export interface PromoValidation {
+  code: string;
+  type: 'percentage' | 'fixed_amount' | 'free_trial';
+  value: number;
+  description?: string;
+}
+
 export interface SubscriptionState {
   currentSubscription: UserSubscription | null;
   availablePlans: SubscriptionPlan[];

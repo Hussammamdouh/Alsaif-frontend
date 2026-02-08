@@ -178,6 +178,7 @@ export const AdminDiscountCodesScreen: React.FC = () => {
         value: formType !== 'free_trial' ? Number(formValue) : undefined,
         trialDays: formType === 'free_trial' ? Number(formTrialDays) : undefined,
         maxUses: formMaxUses ? Number(formMaxUses) : undefined,
+        validFrom: new Date().toISOString(),
         validUntil: formValidUntil ? new Date(formValidUntil).toISOString() : undefined,
         applicableTiers: formApplicableTiers,
         isActive: formIsActive,

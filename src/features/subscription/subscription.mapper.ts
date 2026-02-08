@@ -8,6 +8,7 @@ import {
   SubscriptionPlan,
   SubscriptionHistory,
   CheckoutSession,
+  PromoValidation,
 } from './subscription.types';
 import { EXPIRY_WARNING_DAYS } from './subscription.constants';
 
@@ -161,4 +162,16 @@ export const getTotalPrice = (
 
   const baseTotal = monthlyPrice * multipliers[billingCycle];
   return calculateDiscountedPrice(baseTotal, billingCycle);
+};
+
+/**
+ * Map promo validation response
+ */
+export const mapPromoValidationResponse = (apiPromo: any): PromoValidation => {
+  return {
+    code: apiPromo.code,
+    type: apiPromo.type,
+    value: apiPromo.value,
+    description: apiPromo.description,
+  };
 };
