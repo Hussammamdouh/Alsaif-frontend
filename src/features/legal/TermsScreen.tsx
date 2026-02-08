@@ -19,6 +19,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
+import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +31,32 @@ interface TermsScreenProps {
 export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
     const { t, isRTL } = useLocalization();
     const { theme, isDark } = useTheme();
+    const navigation = useNavigation<any>();
+    const { width } = Dimensions.get('window');
+    const isDesktop = width >= 1024;
+
+    const handleTabChange = React.useCallback((tab: SettingsTab) => {
+        switch (tab) {
+            case 'profile':
+                navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } });
+                break;
+            case 'preferences':
+                navigation.navigate('Main', { screen: 'Settings' });
+                break;
+            case 'security':
+                navigation.navigate('Main', { screen: 'Security' });
+                break;
+            case 'subscription':
+                navigation.navigate('Main', { screen: 'Subscription' });
+                break;
+            case 'terms':
+                // Already here
+                break;
+            case 'about':
+                navigation.navigate('Main', { screen: 'About' });
+                break;
+        }
+    }, [navigation]);
 
     const renderSection = (titleKey: string, contentKey: string | string[]) => {
         return (
@@ -55,6 +83,107 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
             </View>
         );
     };
+
+    const content = (
+        <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+        >
+            {/* Hero Card */}
+            <View
+                style={[
+                    styles.heroCard,
+                    {
+                        borderColor: theme.border.main,
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+                    }
+                ]}
+            >
+                <LinearGradient
+                    colors={[theme.primary.main + '20', theme.primary.main + '05']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                />
+                <View style={styles.heroHeader}>
+                    <View style={[styles.iconContainer, { backgroundColor: theme.primary.main + '20' }]}>
+                        <Ionicons name="document-text-outline" size={32} color={theme.primary.main} />
+                    </View>
+                    <Text style={[styles.heroTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
+                        {t('legal.terms.header')}
+                    </Text>
+                </View>
+                <Text style={[styles.heroSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
+                    {t('settings.version')} 1.0.0 • {new Date().toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { month: 'long', year: 'numeric' })}
+                </Text>
+            </View>
+
+            {/* Content Sections */}
+            <View style={styles.content}>
+                {renderSection('legal.terms.sec1Title', 'legal.terms.sec1Content')}
+
+                {renderSection('legal.terms.sec2Title', [
+                    'legal.terms.sec2Content1',
+                    'legal.terms.sec2Content2',
+                    'legal.terms.sec2Content3'
+                ])}
+
+                {renderSection('legal.terms.sec3Title', [
+                    'legal.terms.sec3Content1',
+                    'legal.terms.sec3Content2'
+                ])}
+
+                {renderSection('legal.terms.sec4Title', [
+                    'legal.terms.sec4Content1',
+                    'legal.terms.sec4Content2',
+                    'legal.terms.sec4Content3'
+                ])}
+
+                {renderSection('legal.terms.sec5Title', [
+                    'legal.terms.sec5Content1',
+                    'legal.terms.sec5Content2',
+                    'legal.terms.sec5Content3'
+                ])}
+
+                {renderSection('legal.terms.sec6Title', 'legal.terms.sec6Content')}
+
+                {renderSection('legal.terms.sec7Title', 'legal.terms.sec7Content')}
+
+                {renderSection('legal.terms.sec8Title', 'legal.terms.sec8Content')}
+
+                {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
+
+                {renderSection('legal.terms.sec10Title', [
+                    'legal.terms.sec10Content1',
+                    'legal.terms.sec10Content2',
+                    'legal.terms.sec10Bullet1',
+                    'legal.terms.sec10Bullet2',
+                    'legal.terms.sec10Bullet3',
+                    'legal.terms.sec10Bullet4'
+                ])}
+
+                {renderSection('legal.terms.sec11Title', 'legal.terms.sec11Content')}
+            </View>
+
+            <View style={styles.footer}>
+                <Text style={[styles.footerText, { color: theme.text.tertiary }]}>
+                    © {new Date().getFullYear()} Elsaif Analysis. All rights reserved.
+                </Text>
+            </View>
+        </ScrollView>
+    );
+
+    if (isDesktop) {
+        return (
+            <SettingsLayout
+                activeTab="terms"
+                onTabChange={handleTabChange}
+                onLogout={() => { }}
+            >
+                {content}
+            </SettingsLayout>
+        );
+    }
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
@@ -89,92 +218,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                     <View style={{ width: 40 }} />
                 </View>
 
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Hero Card */}
-                    <View
-                        style={[
-                            styles.heroCard,
-                            {
-                                borderColor: theme.border.main,
-                                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
-                            }
-                        ]}
-                    >
-                        <LinearGradient
-                            colors={[theme.primary.main + '20', theme.primary.main + '05']}
-                            style={StyleSheet.absoluteFill}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                        />
-                        <View style={styles.heroHeader}>
-                            <View style={[styles.iconContainer, { backgroundColor: theme.primary.main + '20' }]}>
-                                <Ionicons name="document-text-outline" size={32} color={theme.primary.main} />
-                            </View>
-                            <Text style={[styles.heroTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-                                {t('legal.terms.header')}
-                            </Text>
-                        </View>
-                        <Text style={[styles.heroSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
-                            {t('settings.version')} 1.0.0 • {new Date().toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { month: 'long', year: 'numeric' })}
-                        </Text>
-                    </View>
-
-                    {/* Content Sections */}
-                    <View style={styles.content}>
-                        {renderSection('legal.terms.sec1Title', 'legal.terms.sec1Content')}
-
-                        {renderSection('legal.terms.sec2Title', [
-                            'legal.terms.sec2Content1',
-                            'legal.terms.sec2Content2',
-                            'legal.terms.sec2Content3'
-                        ])}
-
-                        {renderSection('legal.terms.sec3Title', [
-                            'legal.terms.sec3Content1',
-                            'legal.terms.sec3Content2'
-                        ])}
-
-                        {renderSection('legal.terms.sec4Title', [
-                            'legal.terms.sec4Content1',
-                            'legal.terms.sec4Content2',
-                            'legal.terms.sec4Content3'
-                        ])}
-
-                        {renderSection('legal.terms.sec5Title', [
-                            'legal.terms.sec5Content1',
-                            'legal.terms.sec5Content2',
-                            'legal.terms.sec5Content3'
-                        ])}
-
-                        {renderSection('legal.terms.sec6Title', 'legal.terms.sec6Content')}
-
-                        {renderSection('legal.terms.sec7Title', 'legal.terms.sec7Content')}
-
-                        {renderSection('legal.terms.sec8Title', 'legal.terms.sec8Content')}
-
-                        {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
-
-                        {renderSection('legal.terms.sec10Title', [
-                            'legal.terms.sec10Content1',
-                            'legal.terms.sec10Content2',
-                            'legal.terms.sec10Bullet1',
-                            'legal.terms.sec10Bullet2',
-                            'legal.terms.sec10Bullet3',
-                            'legal.terms.sec10Bullet4'
-                        ])}
-
-                        {renderSection('legal.terms.sec11Title', 'legal.terms.sec11Content')}
-                    </View>
-
-                    <View style={styles.footer}>
-                        <Text style={[styles.footerText, { color: theme.text.tertiary }]}>
-                            © {new Date().getFullYear()} Elsaif Analysis. All rights reserved.
-                        </Text>
-                    </View>
-                </ScrollView>
+                {content}
             </SafeAreaView>
         </View>
     );

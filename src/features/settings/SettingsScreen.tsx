@@ -25,7 +25,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { styles } from './settings.styles';
+import { useNavigation } from '@react-navigation/native';
 import { ResponsiveContainer } from '../../shared/components';
+import { SettingsLayout, SettingsTab } from './SettingsLayout';
 import { useSettings, useDeviceManagement, useNotificationSettings, useSubscriptionCancellation } from './settings.hooks';
 import { useProfile } from '../profile/profile.hooks';
 import { useTheme } from '../../app/providers/ThemeProvider';
@@ -70,7 +72,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
     const { t, language, setLanguage } = useLocalization();
     const { logout: authLogout } = useAuth();
     const { width } = useWindowDimensions();
-    const isDesktop = width > 768;
+    const isDesktop = width >= 1024;
+    const navigation = useNavigation<any>();
 
     // Local state for modals and inputs
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -697,25 +700,36 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
       }
     }, []);
 
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]} edges={['top']}>
-        {/* Header */}
-        <Animated.View
-          style={[
-            styles.header,
-            { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main },
-            {
-              opacity: headerOpacity,
-              transform: [{ translateY: headerTranslateY }],
-            },
-          ]}
-        >
-          <TouchableOpacity onPress={onNavigateBack} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('common.settings')}</Text>
-          <View style={styles.headerSpacer} />
-        </Animated.View>
+    /**
+     * Handle sidebar tab change for Desktop
+     */
+    const handleTabChange = useCallback((tab: SettingsTab) => {
+      switch (tab) {
+        case 'profile':
+          navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } });
+          break;
+        case 'preferences':
+          // Already here
+          break;
+        case 'security':
+          onNavigateToSecurity();
+          break;
+        case 'subscription':
+          if (onNavigateToSubscription) {
+            onNavigateToSubscription(subscription?.tier === 'premium');
+          }
+          break;
+        case 'terms':
+          navigation.navigate('Main', { screen: 'Terms' });
+          break;
+        case 'about':
+          navigation.navigate('Main', { screen: 'About' });
+          break;
+      }
+    }, [onNavigateToSecurity, onNavigateToSubscription, subscription, navigation]);
+
+    const renderSettingsContent = () => (
+      <View style={isDesktop ? { width: '100%' } : null}>
 
         {/* Deletion Status Banner */}
         {profile?.deletionRequestedAt && daysUntilDeletion !== null && daysUntilDeletion > 0 && (
@@ -1048,7 +1062,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     <Switch
                       value={preferences?.globalSettings?.pushEnabled || false}
                       onValueChange={(value) => {
-                        updatePreferences({ globalSettings: { pushEnabled: value } });
+                        updatePreferences({ globalSettings: { ...preferences?.globalSettings, pushEnabled: value } as any });
                       }}
                       trackColor={{ false: theme.border.main, true: theme.primary.main }}
                       thumbColor={theme.background.primary}
@@ -1063,7 +1077,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     <Switch
                       value={preferences?.globalSettings?.emailEnabled || false}
                       onValueChange={(value) => {
-                        updatePreferences({ globalSettings: { emailEnabled: value } });
+                        updatePreferences({ globalSettings: { ...preferences?.globalSettings, emailEnabled: value } as any });
                       }}
                       trackColor={{ false: theme.border.main, true: theme.primary.main }}
                       thumbColor={theme.background.primary}
@@ -1203,6 +1217,44 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
             </ResponsiveContainer>
           </View>
         </ScrollView>
+      </View>
+    );
+
+    return (
+      <>
+        {isDesktop ? (
+          <SettingsLayout
+            activeTab="preferences"
+            onTabChange={handleTabChange}
+            onLogout={authLogout}
+          >
+            {renderSettingsContent()}
+          </SettingsLayout>
+        ) : (
+          <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]} edges={['top']}>
+            {/* Header */}
+            <Animated.View
+              style={[
+                styles.header,
+                { backgroundColor: theme.background.primary, borderBottomColor: theme.border.main },
+                {
+                  opacity: headerOpacity,
+                  transform: [{ translateY: headerTranslateY }],
+                },
+              ]}
+            >
+              <TouchableOpacity onPress={onNavigateBack} style={styles.backButton}>
+                <Icon name="arrow-back" size={24} color={theme.text.primary} />
+              </TouchableOpacity>
+              <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('common.settings')}</Text>
+              <View style={styles.headerSpacer} />
+            </Animated.View>
+
+            <ScrollView style={[styles.scrollView, { backgroundColor: theme.background.primary }]} showsVerticalScrollIndicator={false} contentContainerStyle={isDesktop && { flexGrow: 1, justifyContent: 'center' }}>
+              {renderSettingsContent()}
+            </ScrollView>
+          </SafeAreaView>
+        )}
 
         {/* Change Password Modal */}
         <Modal
@@ -1708,7 +1760,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.subscription?.renewals || false}
                     onValueChange={(value) => {
-                      updatePreferences({ subscription: { ...preferences?.subscription, renewals: value } });
+                      updatePreferences({ subscription: { ...preferences?.subscription, renewals: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1719,7 +1771,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.subscription?.cancellations || false}
                     onValueChange={(value) => {
-                      updatePreferences({ subscription: { ...preferences?.subscription, cancellations: value } });
+                      updatePreferences({ subscription: { ...preferences?.subscription, cancellations: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1730,7 +1782,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.subscription?.upgrades || false}
                     onValueChange={(value) => {
-                      updatePreferences({ subscription: { ...preferences?.subscription, upgrades: value } });
+                      updatePreferences({ subscription: { ...preferences?.subscription, upgrades: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1746,7 +1798,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.content?.newInsights || false}
                     onValueChange={(value) => {
-                      updatePreferences({ content: { ...preferences?.content, newInsights: value } });
+                      updatePreferences({ content: { ...preferences?.content, newInsights: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1757,7 +1809,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.content?.savedContent || false}
                     onValueChange={(value) => {
-                      updatePreferences({ content: { ...preferences?.content, savedContent: value } });
+                      updatePreferences({ content: { ...preferences?.content, savedContent: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1773,7 +1825,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.engagement?.likes || false}
                     onValueChange={(value) => {
-                      updatePreferences({ engagement: { ...preferences?.engagement, likes: value } });
+                      updatePreferences({ engagement: { ...preferences?.engagement, likes: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1784,7 +1836,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.engagement?.comments || false}
                     onValueChange={(value) => {
-                      updatePreferences({ engagement: { ...preferences?.engagement, comments: value } });
+                      updatePreferences({ engagement: { ...preferences?.engagement, comments: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1795,7 +1847,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.engagement?.follows || false}
                     onValueChange={(value) => {
-                      updatePreferences({ engagement: { ...preferences?.engagement, mentions: value } });
+                      updatePreferences({ engagement: { ...preferences?.engagement, follows: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1811,7 +1863,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.system?.securityAlerts || false}
                     onValueChange={(value) => {
-                      updatePreferences({ system: { ...preferences?.system, securityAlerts: value } });
+                      updatePreferences({ system: { ...preferences?.system, securityAlerts: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1822,7 +1874,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.system?.accountActivity || false}
                     onValueChange={(value) => {
-                      updatePreferences({ system: { ...preferences?.system, accountActivity: value } });
+                      updatePreferences({ system: { ...preferences?.system, accountActivity: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1833,7 +1885,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.system?.policyChanges || false}
                     onValueChange={(value) => {
-                      updatePreferences({ system: { ...preferences?.system, policyChanges: value } });
+                      updatePreferences({ system: { ...preferences?.system, policyChanges: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1849,7 +1901,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.marketing?.promotions || false}
                     onValueChange={(value) => {
-                      updatePreferences({ marketing: { ...preferences?.marketing, promotions: value } });
+                      updatePreferences({ marketing: { ...preferences?.marketing, promotions: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1860,7 +1912,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   <Switch
                     value={preferences?.marketing?.newsletter || false}
                     onValueChange={(value) => {
-                      updatePreferences({ marketing: { ...preferences?.marketing, newsletter: value } });
+                      updatePreferences({ marketing: { ...preferences?.marketing, newsletter: value } as any });
                     }}
                     trackColor={{ false: theme.border.main, true: theme.primary.main }}
                     thumbColor={theme.background.primary}
@@ -1870,7 +1922,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
             </View>
           </View>
         </Modal>
-      </SafeAreaView>
+      </>
     );
   }
 );

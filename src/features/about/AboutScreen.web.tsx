@@ -13,11 +13,38 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../app/navigation/types';
 import { Asset } from 'expo-asset';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
+import { Dimensions } from 'react-native';
 
 export const AboutScreen = () => {
     const { theme } = useTheme();
     const { t } = useLocalization();
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+    const { width } = Dimensions.get('window');
+    const isDesktop = width >= 1024;
+
+    const handleTabChange = React.useCallback((tab: SettingsTab) => {
+        switch (tab) {
+            case 'profile':
+                navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } });
+                break;
+            case 'preferences':
+                navigation.navigate('Main', { screen: 'Settings' });
+                break;
+            case 'security':
+                navigation.navigate('Main', { screen: 'Security' });
+                break;
+            case 'subscription':
+                navigation.navigate('Main', { screen: 'Subscription' });
+                break;
+            case 'terms':
+                navigation.navigate('Main', { screen: 'Terms' });
+                break;
+            case 'about':
+                // Already here
+                break;
+        }
+    }, [navigation]);
 
     // For web, we navigate to PdfViewerScreen which handles the iframe/proxy
     const openPDF = () => {
@@ -33,6 +60,96 @@ export const AboutScreen = () => {
         });
     };
 
+    const content = (
+        <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+        >
+            {/* App Logo/Name */}
+            <View style={styles.logoSection}>
+                <Text style={[styles.appName, { color: theme.primary.main }]}>Alsaif Analysis</Text>
+                <Text style={[styles.tagline, { color: theme.text.secondary }]}>{t('about.tagline')}</Text>
+            </View>
+
+            {/* Description */}
+            <View style={[styles.section, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('about.whatIsIt')}</Text>
+                <Text style={[styles.descriptionText, { color: theme.text.secondary }]}>
+                    {t('about.description')}
+                </Text>
+            </View>
+
+            {/* Features */}
+            <View style={[styles.section, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('about.keyFeatures')}</Text>
+
+                <View style={styles.featureItem}>
+                    <Icon name="trending-up" size={20} color={theme.primary.main} style={styles.featureIcon} />
+                    <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature1')}</Text>
+                </View>
+
+                <View style={styles.featureItem}>
+                    <Icon name="bulb" size={20} color={theme.primary.main} style={styles.featureIcon} />
+                    <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature2')}</Text>
+                </View>
+
+                <View style={styles.featureItem}>
+                    <Icon name="chatbubbles" size={20} color={theme.primary.main} style={styles.featureIcon} />
+                    <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature3')}</Text>
+                </View>
+
+                <View style={styles.featureItem}>
+                    <Icon name="newspaper" size={20} color={theme.primary.main} style={styles.featureIcon} />
+                    <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature4')}</Text>
+                </View>
+
+                <View style={styles.featureItem}>
+                    <Icon name="document-text" size={20} color={theme.primary.main} style={styles.featureIcon} />
+                    <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature5')}</Text>
+                </View>
+            </View>
+
+            {/* Financial Recommendation Document */}
+            <View style={[styles.section, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('about.license')}</Text>
+                <Text style={[styles.descriptionText, { color: theme.text.secondary }]}>
+                    {t('about.licenseDescription')}
+                </Text>
+
+                <TouchableOpacity
+                    style={[styles.pdfButton, { backgroundColor: theme.primary.main }]}
+                    onPress={openPDF}
+                >
+                    <Icon name="document" size={20} color="#FFFFFF" />
+                    <Text style={styles.pdfButtonText}>{t('about.viewDocument')}</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Version Info */}
+            <View style={styles.versionInfo}>
+                <Text style={[styles.versionText, { color: theme.text.tertiary }]}>
+                    {t('about.version')} 1.0.0
+                </Text>
+                <Text style={[styles.versionText, { color: theme.text.tertiary }]}>
+                    © 2024 Alsaif Analysis
+                </Text>
+            </View>
+        </ScrollView>
+    );
+
+    if (isDesktop) {
+        return (
+            <SettingsLayout
+                activeTab="about"
+                onTabChange={handleTabChange}
+                onLogout={() => { }}
+            >
+                {content}
+            </SettingsLayout>
+        );
+    }
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
             {/* Header */}
@@ -44,81 +161,7 @@ export const AboutScreen = () => {
                 <View style={{ width: 24 }} />
             </View>
 
-            <ScrollView
-                style={styles.content}
-                contentContainerStyle={styles.contentContainer}
-                showsVerticalScrollIndicator={false}
-            >
-                {/* App Logo/Name */}
-                <View style={styles.logoSection}>
-                    <Text style={[styles.appName, { color: theme.primary.main }]}>Alsaif Analysis</Text>
-                    <Text style={[styles.tagline, { color: theme.text.secondary }]}>{t('about.tagline')}</Text>
-                </View>
-
-                {/* Description */}
-                <View style={[styles.section, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
-                    <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('about.whatIsIt')}</Text>
-                    <Text style={[styles.descriptionText, { color: theme.text.secondary }]}>
-                        {t('about.description')}
-                    </Text>
-                </View>
-
-                {/* Features */}
-                <View style={[styles.section, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
-                    <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('about.keyFeatures')}</Text>
-
-                    <View style={styles.featureItem}>
-                        <Icon name="trending-up" size={20} color={theme.primary.main} style={styles.featureIcon} />
-                        <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature1')}</Text>
-                    </View>
-
-                    <View style={styles.featureItem}>
-                        <Icon name="bulb" size={20} color={theme.primary.main} style={styles.featureIcon} />
-                        <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature2')}</Text>
-                    </View>
-
-                    <View style={styles.featureItem}>
-                        <Icon name="chatbubbles" size={20} color={theme.primary.main} style={styles.featureIcon} />
-                        <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature3')}</Text>
-                    </View>
-
-                    <View style={styles.featureItem}>
-                        <Icon name="newspaper" size={20} color={theme.primary.main} style={styles.featureIcon} />
-                        <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature4')}</Text>
-                    </View>
-
-                    <View style={styles.featureItem}>
-                        <Icon name="document-text" size={20} color={theme.primary.main} style={styles.featureIcon} />
-                        <Text style={[styles.featureText, { color: theme.text.secondary }]}>{t('about.feature5')}</Text>
-                    </View>
-                </View>
-
-                {/* Financial Recommendation Document */}
-                <View style={[styles.section, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
-                    <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('about.license')}</Text>
-                    <Text style={[styles.descriptionText, { color: theme.text.secondary }]}>
-                        {t('about.licenseDescription')}
-                    </Text>
-
-                    <TouchableOpacity
-                        style={[styles.pdfButton, { backgroundColor: theme.primary.main }]}
-                        onPress={openPDF}
-                    >
-                        <Icon name="document" size={20} color="#FFFFFF" />
-                        <Text style={styles.pdfButtonText}>{t('about.viewDocument')}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Version Info */}
-                <View style={styles.versionInfo}>
-                    <Text style={[styles.versionText, { color: theme.text.tertiary }]}>
-                        {t('about.version')} 1.0.0
-                    </Text>
-                    <Text style={[styles.versionText, { color: theme.text.tertiary }]}>
-                        © 2024 Alsaif Analysis
-                    </Text>
-                </View>
-            </ScrollView>
+            {content}
         </SafeAreaView>
     );
 };

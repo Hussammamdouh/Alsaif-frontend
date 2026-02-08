@@ -3,7 +3,7 @@
  * Manage user subscriptions, view plans, upgrade, and cancel
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { useLocalization, useTheme } from '../../app/providers';
+import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
+import { ResponsiveContainer } from '../../shared/components';
 import { subscriptionStyles as styles } from './subscription.styles';
 import {
   useSubscription,
@@ -28,14 +33,45 @@ import {
 } from './subscription.constants';
 import { BillingCycle } from './subscription.types';
 import { formatCurrency, formatDate, formatRelativeTime } from './subscription.mapper';
+import { useAuth } from '../../app/auth';
 
 export const SubscriptionScreen: React.FC = () => {
+  const { theme } = useTheme();
+  const { t, isRTL } = useLocalization();
+  const { width } = useWindowDimensions();
+  const navigation = useNavigation<any>();
+  const isDesktop = width >= 1024;
+  const { logout: authLogout } = useAuth();
+
   const { subscription, loading: subLoading, refetch, cancelSubscription } = useSubscription();
   const { plans, loading: plansLoading } = useSubscriptionPlans();
   const { loading: checkoutLoading, initiateCheckout, initiateRenewal } = useCheckout();
 
   const [selectedBillingCycle, setSelectedBillingCycle] = useState<BillingCycle>('monthly');
   const [refreshing, setRefreshing] = useState(false);
+
+  const handleTabChange = useCallback((tab: SettingsTab) => {
+    switch (tab) {
+      case 'profile':
+        navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } });
+        break;
+      case 'preferences':
+        navigation.navigate('Main', { screen: 'Settings' });
+        break;
+      case 'security':
+        navigation.navigate('Main', { screen: 'Security' });
+        break;
+      case 'subscription':
+        // Already on subscription
+        break;
+      case 'terms':
+        navigation.navigate('Main', { screen: 'Terms' });
+        break;
+      case 'about':
+        navigation.navigate('Main', { screen: 'About' });
+        break;
+    }
+  }, [navigation]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -172,8 +208,8 @@ export const SubscriptionScreen: React.FC = () => {
   };
 
   const renderPlanCard = (plan: any) => {
-    const tierColor = TIER_COLORS[plan.tier] || TIER_COLORS.free;
-    const tierIcon = TIER_ICONS[plan.tier] || TIER_ICONS.free;
+    const tierColor = TIER_COLORS[plan.tier as keyof typeof TIER_COLORS] || TIER_COLORS.free;
+    const tierIcon = TIER_ICONS[plan.tier as keyof typeof TIER_ICONS] || TIER_ICONS.free;
 
     const isCurrentPlan = subscription?.tier === plan.tier && subscription?.status === 'active';
     const canSelect = subscription?.canUpgrade || subscription?.canRenew;
@@ -285,12 +321,99 @@ export const SubscriptionScreen: React.FC = () => {
     );
   };
 
+  const renderSubscriptionContent = () => (
+    <View style={isDesktop ? { width: '100%' } : null}>
+      <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
+        <ResponsiveContainer maxWidth={isDesktop ? 1000 : undefined}>
+          <View style={isDesktop ? {
+            backgroundColor: theme.background.secondary,
+            borderRadius: 24,
+            padding: 32,
+            borderWidth: 1,
+            borderColor: theme.border.main,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 12,
+            elevation: 5,
+          } : null}>
+            {/* Header (Desktop) */}
+            {isDesktop && (
+              <View style={[styles.header, { marginBottom: 32, alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[styles.headerTitle, { fontSize: 28 }]}>{t('profile.subscription')}</Text>
+                <Text style={styles.headerSubtitle}>
+                  {t('profile.manageSubscription')}
+                </Text>
+              </View>
+            )}
+
+            {/* Current Plan */}
+            {renderCurrentPlan()}
+
+            {/* Expiry Warning */}
+            {renderExpiryWarning()}
+
+            {/* Action Buttons */}
+            {renderActionButtons()}
+
+            {/* Available Plans */}
+            {(subscription?.canUpgrade || subscription?.canRenew) && (
+              <>
+                <Text style={[styles.sectionTitle, isDesktop && { marginTop: 40 }]}>
+                  {subscription.canRenew ? t('plans.renewSubscription') || 'Renew Subscription' : t('plans.upgradeToPremium') || 'Upgrade to Premium'}
+                </Text>
+
+                {renderBillingCycleSelector()}
+
+                {plansLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={theme.primary.main} />
+                  </View>
+                ) : plans.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Ionicons name="card-outline" size={64} color={theme.border.main} style={styles.emptyStateIcon} />
+                    <Text style={styles.emptyStateTitle}>No Plans Available</Text>
+                    <Text style={styles.emptyStateText}>{MESSAGES.NO_PLANS_AVAILABLE}</Text>
+                  </View>
+                ) : (
+                  <View style={isDesktop ? { flexDirection: 'row', flexWrap: 'wrap', gap: 20, justifyContent: 'center' } : null}>
+                    {plans.map(renderPlanCard)}
+                  </View>
+                )}
+              </>
+            )}
+          </View>
+        </ResponsiveContainer>
+      </View>
+    </View>
+  );
+
   if (subLoading && !subscription) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007aff" />
+        <ActivityIndicator size="large" color={theme.primary.main} />
         <Text style={styles.loadingText}>Loading subscription...</Text>
       </View>
+    );
+  }
+
+  if (isDesktop) {
+    return (
+      <SettingsLayout
+        activeTab="subscription"
+        onTabChange={handleTabChange}
+        onLogout={authLogout}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        >
+          {renderSubscriptionContent()}
+        </ScrollView>
+      </SettingsLayout>
     );
   }
 
@@ -310,39 +433,7 @@ export const SubscriptionScreen: React.FC = () => {
         </Text>
       </View>
 
-      {/* Current Plan */}
-      {renderCurrentPlan()}
-
-      {/* Expiry Warning */}
-      {renderExpiryWarning()}
-
-      {/* Action Buttons */}
-      {renderActionButtons()}
-
-      {/* Available Plans */}
-      {(subscription?.canUpgrade || subscription?.canRenew) && (
-        <>
-          <Text style={styles.sectionTitle}>
-            {subscription.canRenew ? t('plans.renewSubscription') || 'Renew Subscription' : t('plans.upgradeToPremium') || 'Upgrade to Premium'}
-          </Text>
-
-          {renderBillingCycleSelector()}
-
-          {plansLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#007aff" />
-            </View>
-          ) : plans.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="card-outline" size={64} color="#c7c7cc" style={styles.emptyStateIcon} />
-              <Text style={styles.emptyStateTitle}>No Plans Available</Text>
-              <Text style={styles.emptyStateText}>{MESSAGES.NO_PLANS_AVAILABLE}</Text>
-            </View>
-          ) : (
-            plans.map(renderPlanCard)
-          )}
-        </>
-      )}
+      {renderSubscriptionContent()}
     </ScrollView>
   );
 };

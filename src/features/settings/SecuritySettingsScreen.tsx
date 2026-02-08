@@ -14,34 +14,59 @@ import {
     Alert,
     RefreshControl,
     Animated,
+    useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useWindowDimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme, useLocalization } from '../../app/providers';
 import { Button, ResponsiveContainer } from '../../shared/components';
 import * as SettingsService from '../../core/services/settings/settingsService';
 import { useAuth } from '../../app/auth';
-
 import { ActiveSession } from '../settings/settings.types';
+import { SettingsLayout, SettingsTab } from './SettingsLayout';
 
 interface SecuritySettingsScreenProps {
     onNavigateBack: () => void;
+    onNavigateToSettings: () => void;
+    onNavigateToSubscription?: (isPremium: boolean) => void;
 }
 
 export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     onNavigateBack,
+    onNavigateToSettings,
+    onNavigateToSubscription,
 }) => {
     const { theme } = useTheme();
     const { t, isRTL } = useLocalization();
-    const { logout: authLogout } = useAuth(); // Removed logoutAll which was causing lints
+    const { logout: authLogout } = useAuth();
     const { width } = useWindowDimensions();
-    const isDesktop = width > 768;
+    const navigation = useNavigation<any>();
+    const isDesktop = width >= 1024;
 
     const [sessions, setSessions] = useState<ActiveSession[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [revokingId, setRevokingId] = useState<string | null>(null);
+
+    // Animation values
+    const [headerOpacity] = useState(new Animated.Value(0));
+    const [headerTranslateY] = useState(new Animated.Value(-20));
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(headerOpacity, {
+                toValue: 1,
+                duration: 600,
+                useNativeDriver: true,
+            }),
+            Animated.timing(headerTranslateY, {
+                toValue: 0,
+                duration: 600,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, []);
 
     const fetchSessions = useCallback(async (showLoading = true) => {
         if (showLoading) setLoading(true);
@@ -65,6 +90,34 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
         setRefreshing(true);
         fetchSessions(false);
     }, [fetchSessions]);
+
+    /**
+     * Handle sidebar tab change for Desktop
+     */
+    const handleTabChange = useCallback((tab: SettingsTab) => {
+        switch (tab) {
+            case 'profile':
+                navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } });
+                break;
+            case 'preferences':
+                onNavigateToSettings();
+                break;
+            case 'security':
+                // Already on security
+                break;
+            case 'subscription':
+                // We don't have subscription info here, but we can try to navigate if we had it
+                // For now, just navigate to settings where subscription management usually lives
+                onNavigateToSettings();
+                break;
+            case 'terms':
+                navigation.navigate('Main', { screen: 'Terms' });
+                break;
+            case 'about':
+                navigation.navigate('Main', { screen: 'About' });
+                break;
+        }
+    }, [onNavigateToSettings, navigation]);
 
     const handleRevokeSession = async (sessionId: string) => {
         Alert.alert(
@@ -175,6 +228,77 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
         </View>
     );
 
+    const renderSecurityContent = () => (
+        <View style={isDesktop ? { width: '100%' } : null}>
+            <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
+                <ResponsiveContainer maxWidth={isDesktop ? 800 : undefined}>
+                    <View style={isDesktop ? {
+                        backgroundColor: theme.ui.card,
+                        borderRadius: 24,
+                        padding: 32,
+                        borderWidth: 1,
+                        borderColor: theme.ui.border,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 12,
+                        elevation: 5,
+                    } : null}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Active Sessions</Text>
+                            <Text style={[styles.sectionSubtitle, { color: theme.text.secondary }]}>
+                                These devices are currently logged into your account.
+                            </Text>
+                        </View>
+
+                        {loading ? (
+                            <ActivityIndicator style={{ marginTop: 40 }} color={theme.primary.main} />
+                        ) : sessions.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Icon name="shield-outline" size={64} color={theme.ui.border} />
+                                <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No other active sessions found.</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.sessionsList}>
+                                {sessions.map(renderSessionItem)}
+                            </View>
+                        )}
+
+                        <View style={styles.dangerZone}>
+                            <Text style={[styles.dangerTitle, { color: theme.accent.error }]}>Danger Zone</Text>
+                            <TouchableOpacity
+                                onPress={handleLogoutAll}
+                                style={[styles.logoutAllButton, { borderColor: theme.accent.error }]}
+                            >
+                                <Icon name="power-outline" size={20} color={theme.accent.error} />
+                                <Text style={[styles.logoutAllText, { color: theme.accent.error }]}>Logout All Other Devices</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.infoBox}>
+                            <Icon name="information-circle-outline" size={20} color={theme.text.tertiary} />
+                            <Text style={[styles.infoText, { color: theme.text.tertiary }]}>
+                                If you see any suspicious activity, we recommend changing your password and logging out of all devices.
+                            </Text>
+                        </View>
+                    </View>
+                </ResponsiveContainer>
+            </View>
+        </View>
+    );
+
+    if (isDesktop) {
+        return (
+            <SettingsLayout
+                activeTab="security"
+                onTabChange={handleTabChange}
+                onLogout={authLogout}
+            >
+                {renderSecurityContent()}
+            </SettingsLayout>
+        );
+    }
+
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
             <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -193,60 +317,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
                 >
-                    <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
-                        <ResponsiveContainer maxWidth={isDesktop ? 800 : undefined}>
-                            <View style={isDesktop ? {
-                                backgroundColor: theme.ui.card,
-                                borderRadius: 24,
-                                padding: 32,
-                                borderWidth: 1,
-                                borderColor: theme.ui.border,
-                                shadowColor: "#000",
-                                shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 12,
-                                elevation: 5,
-                            } : null}>
-                                <View style={styles.sectionHeader}>
-                                    <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Active Sessions</Text>
-                                    <Text style={[styles.sectionSubtitle, { color: theme.text.secondary }]}>
-                                        These devices are currently logged into your account.
-                                    </Text>
-                                </View>
-
-                                {loading ? (
-                                    <ActivityIndicator style={{ marginTop: 40 }} color={theme.primary.main} />
-                                ) : sessions.length === 0 ? (
-                                    <View style={styles.emptyState}>
-                                        <Icon name="shield-outline" size={64} color={theme.ui.border} />
-                                        <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No other active sessions found.</Text>
-                                    </View>
-                                ) : (
-                                    <View style={styles.sessionsList}>
-                                        {sessions.map(renderSessionItem)}
-                                    </View>
-                                )}
-
-                                <View style={styles.dangerZone}>
-                                    <Text style={[styles.dangerTitle, { color: theme.accent.error }]}>Danger Zone</Text>
-                                    <TouchableOpacity
-                                        onPress={handleLogoutAll}
-                                        style={[styles.logoutAllButton, { borderColor: theme.accent.error }]}
-                                    >
-                                        <Icon name="power-outline" size={20} color={theme.accent.error} />
-                                        <Text style={[styles.logoutAllText, { color: theme.accent.error }]}>Logout All Other Devices</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-                                <View style={styles.infoBox}>
-                                    <Icon name="information-circle-outline" size={20} color={theme.text.tertiary} />
-                                    <Text style={[styles.infoText, { color: theme.text.tertiary }]}>
-                                        If you see any suspicious activity, we recommend changing your password and logging out of all devices.
-                                    </Text>
-                                </View>
-                            </View>
-                        </ResponsiveContainer>
-                    </View>
+                    {renderSecurityContent()}
                 </ScrollView>
             </SafeAreaView>
         </View>
