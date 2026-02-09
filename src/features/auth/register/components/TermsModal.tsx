@@ -75,13 +75,12 @@ export const TermsModal: React.FC<TermsModalProps> = ({
                 styles.modalOverlay,
                 isDesktop && styles.desktopOverlay
             ]}>
-                <SafeAreaView
+                <View
                     style={[
                         styles.modalContent,
                         { backgroundColor: theme.background.primary },
                         isDesktop && styles.desktopModalContent
                     ]}
-                    edges={['top', 'bottom']}
                 >
                     <View style={[styles.header, { borderBottomColor: theme.ui.border, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                         <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
@@ -177,7 +176,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({
                             style={styles.acceptButton}
                         />
                     </View>
-                </SafeAreaView>
+                </View>
             </View>
         </Modal>
     );
@@ -186,28 +185,37 @@ export const TermsModal: React.FC<TermsModalProps> = ({
 const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: 'rgba(0,0,0,0.7)',
     },
     desktopOverlay: {
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 40,
+        padding: 20,
+        zIndex: 1000,
     },
     modalContent: {
         flex: 1,
-        marginTop: 60,
+        marginTop: Platform.OS === 'ios' ? 60 : 20,
         borderTopLeftRadius: 32,
         borderTopRightRadius: 32,
         overflow: 'hidden',
+        zIndex: 1001,
     },
     desktopModalContent: {
-        flex: 0,
-        width: '100%',
-        maxWidth: 600,
-        maxHeight: '90%',
-        marginTop: 0,
+        flex: 1,
+        width: '95%',
+        maxWidth: 800,
+        maxHeight: '85%',
         borderRadius: 24,
+        marginTop: 0,
+        // Ensure white background is visible
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 10,
     },
+
     header: {
         padding: 20,
         borderBottomWidth: 1,

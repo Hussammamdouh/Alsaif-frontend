@@ -16,10 +16,11 @@ import {
     Animated,
     Easing,
     useWindowDimensions,
+    ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Button, ThemeLanguageToggle, ResponsiveContainer } from '../../../shared/components';
+import { Button, ThemeLanguageToggle, ResponsiveContainer, CodeInput } from '../../../shared/components';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { useAuth } from '../../../app/auth';
 
@@ -44,25 +45,26 @@ export const VerificationScreen: React.FC<VerificationScreenProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [resendTimer, setResendTimer] = useState(60);
     const [canResend, setCanResend] = useState(false);
+    const [hasError, setHasError] = useState(false);
 
     const { width } = useWindowDimensions();
     const isDesktop = width > 768;
 
     // Animations
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(20)).current;
+    const slideAnim = useRef(new Animated.Value(30)).current;
 
     useEffect(() => {
         Animated.parallel([
             Animated.timing(fadeAnim, {
                 toValue: 1,
-                duration: 600,
+                duration: 800,
                 easing: Easing.out(Easing.cubic),
                 useNativeDriver: true,
             }),
             Animated.timing(slideAnim, {
                 toValue: 0,
-                duration: 600,
+                duration: 800,
                 easing: Easing.out(Easing.cubic),
                 useNativeDriver: true,
             }),
@@ -83,17 +85,17 @@ export const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
     const handleVerify = async () => {
         if (code.length !== 6) {
-            Alert.alert('Error', 'Please enter a valid 6-digit code');
+            setHasError(true);
+            setTimeout(() => setHasError(false), 500);
             return;
         }
 
         setIsLoading(true);
         try {
             await verifyAccount(userId, code);
-            Alert.alert('Success', 'Account verified successfully!', [
-                { text: 'OK', onPress: onVerificationSuccess },
-            ]);
+            onVerificationSuccess();
         } catch (error: any) {
+            setHasError(true);
             Alert.alert('Verification Failed', error.message || 'Invalid code');
         } finally {
             setIsLoading(false);
@@ -116,12 +118,7 @@ export const VerificationScreen: React.FC<VerificationScreenProps> = ({
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
             {isDesktop && (
-                <View style={{
-                    position: 'absolute',
-                    top: 24,
-                    right: 24,
-                    zIndex: 10,
-                }}>
+                <View style={[styles.absoluteToggles, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemeLanguageToggle />
                 </View>
             )}
@@ -129,79 +126,105 @@ export const VerificationScreen: React.FC<VerificationScreenProps> = ({
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={{ flex: 1 }}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >
                     {!isDesktop && (
-                        <View style={styles.header}>
+                        <View style={[styles.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                             <TouchableOpacity onPress={onBackToLogin} style={styles.backButton}>
-                                <Icon name="arrow-back" size={24} color={theme.text.primary} />
+                                <Icon name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
                             </TouchableOpacity>
                             <ThemeLanguageToggle />
                         </View>
                     )}
 
-                    <View style={isDesktop ? [styles.desktopWrapper, { flex: 0, minHeight: '100%', paddingVertical: 20 }] : null}>
+                    <ScrollView
+                        contentContainerStyle={[
+                            styles.scrollContent,
+                            isDesktop && styles.desktopScrollContent
+                        ]}
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}
+                    >
                         <ResponsiveContainer maxWidth={isDesktop ? 1200 : 480}>
-                            <View style={isDesktop ? [styles.loginCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border, alignSelf: 'center' }] : null}>
-                                <Animated.View style={[styles.main, { flex: 0, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-                                    <View style={[styles.iconContainer, isDesktop && { marginBottom: 16 }]}>
-                                        <Icon name="mail-open-outline" size={isDesktop ? 48 : 60} color={theme.primary.main} />
+                            <View style={isDesktop ? [styles.loginCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border }] : null}>
+                                <Animated.View style={[
+                                    styles.main,
+                                    {
+                                        opacity: fadeAnim,
+                                        transform: [{ translateY: slideAnim }]
+                                    }
+                                ]}>
+                                    <View style={[styles.iconContainer, { backgroundColor: `${theme.primary.main}15` }]}>
+                                        <Icon name="mail-unread-outline" size={40} color={theme.primary.main} />
                                     </View>
 
-                                    <Text style={[styles.title, { color: theme.text.primary }]}>Verify Your Email</Text>
+                                    <Text style={[styles.title, { color: theme.text.primary }]}>
+                                        {t('register.verifyTitle') || 'Verify Your Email'}
+                                    </Text>
                                     <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
-                                        We've sent a 6-digit verification code to
+                                        {t('register.verifySubtitle') || "We've sent a 6-digit verification code to"}
                                         {"\n"}
-                                        <Text style={{ fontWeight: 'bold', color: theme.text.primary }}>{email}</Text>
+                                        <Text style={{ fontWeight: 'bold', color: theme.primary.main }}>{email}</Text>
                                     </Text>
 
-                                    <View style={styles.inputContainer}>
-                                        <TextInput
-                                            style={[styles.codeInput, {
-                                                color: theme.text.primary,
-                                                borderColor: theme.ui.border,
-                                                backgroundColor: theme.ui.card,
-                                                letterSpacing: 10
-                                            }]}
+                                    <View style={styles.inputSection}>
+                                        <CodeInput
                                             value={code}
-                                            onChangeText={setCode}
-                                            placeholder="000000"
-                                            placeholderTextColor={theme.text.tertiary}
-                                            keyboardType="number-pad"
-                                            maxLength={6}
-                                            autoFocus
-                                            textAlign="center"
+                                            onChangeText={(text) => {
+                                                setCode(text);
+                                                if (hasError) setHasError(false);
+                                            }}
+                                            error={hasError}
                                         />
+                                        <Text style={[styles.codeHelper, { color: theme.text.tertiary }]}>
+                                            {t('register.enterCode') || 'Enter the 6-digit code to continue'}
+                                        </Text>
                                     </View>
 
                                     <Button
-                                        title="Verify Account"
+                                        title={t('register.verifyButton') || "Verify Account"}
                                         onPress={handleVerify}
                                         loading={isLoading}
+                                        disabled={code.length !== 6 || isLoading}
                                         style={styles.verifyButton}
                                     />
 
                                     <View style={styles.resendContainer}>
                                         <Text style={[styles.resendText, { color: theme.text.secondary }]}>
-                                            Didn't receive the code?
+                                            {t('register.noCode') || "Didn't receive the code?"}
                                         </Text>
                                         <TouchableOpacity onPress={handleResend} disabled={!canResend}>
                                             <Text style={[
                                                 styles.resendLink,
                                                 { color: canResend ? theme.primary.main : theme.text.tertiary }
                                             ]}>
-                                                {canResend ? 'Resend Code' : `Resend in ${resendTimer}s`}
+                                                {canResend
+                                                    ? (t('register.resendLink') || 'Resend Code')
+                                                    : `${t('register.resendIn') || 'Resend in'} ${resendTimer}s`}
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
+
+                                    {isDesktop && (
+                                        <TouchableOpacity
+                                            onPress={onBackToLogin}
+                                            style={styles.desktopBackButton}
+                                        >
+                                            <Text style={{ color: theme.text.secondary }}>
+                                                {t('common.backToLogin') || 'Back to Login'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
                                 </Animated.View>
                             </View>
                         </ResponsiveContainer>
-                    </View>
+                    </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -210,29 +233,37 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
     },
-    desktopWrapper: {
-        flex: 1,
+    absoluteToggles: {
+        position: 'absolute',
+        top: 24,
+        right: 24,
+        zIndex: 10,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingHorizontal: 20,
+    },
+    desktopScrollContent: {
         justifyContent: 'center',
         paddingVertical: 40,
     },
     loginCard: {
         borderRadius: 24,
-        padding: 32,
+        padding: 40,
         width: '100%',
-        maxWidth: 580,
+        maxWidth: 500,
         alignSelf: 'center',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 5,
         borderWidth: 1,
-        borderColor: '#333',
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         paddingTop: 10,
         alignItems: 'center'
     },
@@ -240,12 +271,15 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     main: {
-        paddingHorizontal: 30,
         alignItems: 'center',
-        paddingTop: 20, // Reduced from 40
     },
     iconContainer: {
-        marginBottom: 20, // Reduced from 30
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 24,
     },
     title: {
         fontSize: 28,
@@ -257,18 +291,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textAlign: 'center',
         lineHeight: 24,
-        marginBottom: 20, // Further reduced
+        marginBottom: 32,
     },
-    inputContainer: {
+    inputSection: {
         width: '100%',
-        marginBottom: 16, // Further reduced
+        alignItems: 'center',
+        marginBottom: 32,
     },
-    codeInput: {
-        height: 60,
-        borderRadius: 12,
-        borderWidth: 1,
-        fontSize: 32,
-        fontWeight: 'bold',
+    codeHelper: {
+        fontSize: 13,
+        marginTop: 8,
     },
     verifyButton: {
         width: '100%',
@@ -276,7 +308,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
     resendContainer: {
-        marginTop: 30,
+        marginTop: 32,
         alignItems: 'center',
     },
     resendText: {
@@ -287,4 +319,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+    desktopBackButton: {
+        marginTop: 24,
+        padding: 8,
+    }
 });
+

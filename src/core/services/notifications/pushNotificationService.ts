@@ -220,7 +220,7 @@ export const displayLocalNotification = async (
     const channelId = data?.channelId || 'default';
 
     await notifee.displayNotification({
-      title: title || 'Vertex Capital',
+      title: title || 'AlSaif Analysis',
       body: body || '',
       data,
       android: {

@@ -76,6 +76,13 @@ const translations = {
     'register.acceptTermsButton': 'Accept and Continue',
     'register.alreadyHaveAccount': 'Already have an account? ',
     'register.logIn': 'Log in',
+    'register.verifyTitle': 'Verify Your Email',
+    'register.verifySubtitle': "We've sent a 6-digit verification code to",
+    'register.enterCode': 'Enter the 6-digit code to continue',
+    'register.verifyButton': 'Verify Account',
+    'register.noCode': "Didn't receive the code?",
+    'register.resendLink': 'Resend Code',
+    'register.resendIn': 'Resend in',
 
     // Forgot Password Screen
     'forgotPassword.title': 'Forgot Password?',
@@ -210,6 +217,7 @@ const translations = {
     'common.ad': 'Ad',
     'common.tagline': 'Smarter decisions. Higher returns.',
     'common.settings': 'Settings',
+    'common.backToLogin': 'Back to Login',
     'common.theme': 'Theme',
     'common.language': 'Language',
     'common.dark': 'Dark',
@@ -1197,6 +1205,13 @@ const translations = {
     'register.acceptTermsButton': 'قبول ومتابعة',
     'register.alreadyHaveAccount': 'لديك حساب بالفعل؟ ',
     'register.logIn': 'تسجيل الدخول',
+    'register.verifyTitle': 'التحقق من البريد الإلكتروني',
+    'register.verifySubtitle': 'لقد أرسلنا رمز تحقق مكون من 6 أرقام إلى',
+    'register.enterCode': 'أدخل الرمز المكون من 6 أرقام للمتابعة',
+    'register.verifyButton': 'تحقق من الحساب',
+    'register.noCode': 'لم تستلم الرمز؟',
+    'register.resendLink': 'إعادة إرسال الرمز',
+    'register.resendIn': 'إعادة الإرسال خلال',
 
     // Forgot Password Screen
     'forgotPassword.title': 'هل نسيت كلمة السر؟',
@@ -1331,6 +1346,7 @@ const translations = {
     'common.ad': 'إعلان',
     'common.tagline': 'قرارات أذكى. عوائد أعلى.',
     'common.settings': 'الإعدادات',
+    'common.backToLogin': 'العودة لتسجيل الدخول',
     'common.theme': 'المظهر',
     'common.language': 'اللغة',
     'common.dark': 'داكن',
