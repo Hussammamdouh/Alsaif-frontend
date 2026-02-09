@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useInsights } from '../../insights/insights.hooks';
+import { useMarketData } from '../../../core/hooks/useMarketData';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -9,10 +10,33 @@ import { spacing } from '../../../core/theme/spacing';
 export const InsightsFeedSection: React.FC = () => {
     const { theme } = useTheme();
     const { t } = useLocalization();
-    const { insights, loading, hasMore, loadMore } = useInsights({ limit: 4 });
+    const { insights, loading: insightsLoading, hasMore, loadMore } = useInsights({ limit: 10 }); // Fetch more to allow for filtering
+    const { marketData, loading: marketLoading } = useMarketData(0);
+    const loading = insightsLoading || marketLoading;
     const navigation = useNavigation<any>();
 
-    if (loading && insights.length === 0) {
+    // Filter insights based on active market data
+    const filteredInsights = React.useMemo(() => {
+        if (marketLoading || marketData.length === 0) return insights.slice(0, 4);
+
+        const activeSymbols = new Set(
+            marketData
+                .filter(item => (item.price && item.price > 0) || (item.volume && item.volume > 0))
+                .map(item => item.symbol.toUpperCase())
+        );
+
+        return insights
+            .filter(insight => {
+                const symbol = insight.tags && insight.tags[0]?.toUpperCase();
+                if (!symbol) return true;
+                const isSymbolInMarket = marketData.some(m => m.symbol.toUpperCase() === symbol);
+                if (isSymbolInMarket && !activeSymbols.has(symbol)) return false;
+                return true;
+            })
+            .slice(0, 4);
+    }, [insights, marketData, marketLoading]);
+
+    if (loading && filteredInsights.length === 0) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={theme.primary.main} />
@@ -28,7 +52,7 @@ export const InsightsFeedSection: React.FC = () => {
                 </Text>
             </View>
 
-            {insights.map((item) => {
+            {filteredInsights.map((item) => {
                 const isPremium = item.type === 'premium';
 
                 return (

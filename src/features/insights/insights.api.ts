@@ -37,6 +37,8 @@ export const getPublishedInsights = async (
     ...(params.type && { type: params.type }),
     ...(params.category && { category: params.category }),
     ...(params.search && { search: params.search }),
+    ...(params.market && { market: params.market }),
+    ...(params.insightFormat && { insightFormat: params.insightFormat }),
   };
 
   return apiClient.get(API_ENDPOINTS.INSIGHTS_PUBLISHED, queryParams);

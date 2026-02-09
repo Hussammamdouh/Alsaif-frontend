@@ -15,7 +15,12 @@ export const MarketWatchWidget: React.FC<MarketWatchWidgetProps> = ({ data, exch
     const { t } = useLocalization();
 
     const filteredData = useMemo(() => {
-        return data.filter(item => item.exchange === exchange).slice(0, 5);
+        return data
+            .filter(item => {
+                const hasData = (item.price && item.price > 0) || (item.volume && item.volume > 0);
+                return hasData && item.exchange === exchange;
+            })
+            .slice(0, 5);
     }, [data, exchange]);
 
     return (

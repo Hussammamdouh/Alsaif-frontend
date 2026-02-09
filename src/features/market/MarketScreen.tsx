@@ -115,11 +115,20 @@ export const MarketScreen = () => {
 
     // Filter Data
     const filteredData = useMemo(() => {
-        if (!selectedExchange) return [];
-        if (selectedExchange === 'FAVORITES') {
-            return marketData.filter(item => favorites.includes(item.symbol));
-        }
-        return marketData.filter(item => item.exchange === selectedExchange);
+        const baseFiltered = marketData.filter(item => {
+            // Filter out companies with no trading data
+            // (price is 0 or null, AND volume is 0 or null)
+            const hasData = (item.price && item.price > 0) || (item.volume && item.volume > 0);
+            if (!hasData) return false;
+
+            if (!selectedExchange) return true;
+            if (selectedExchange === 'FAVORITES') {
+                return favorites.includes(item.symbol);
+            }
+            return item.exchange === selectedExchange;
+        });
+
+        return baseFiltered;
     }, [marketData, selectedExchange, favorites]);
 
     const renderExchangeSelector = () => (

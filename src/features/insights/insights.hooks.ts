@@ -91,7 +91,7 @@ export const useInsights = (initialParams: InsightsQueryParams = {}) => {
 
   useEffect(() => {
     fetchInsights();
-  }, []);
+  }, [initialParams, fetchInsights]);
 
   return {
     insights,

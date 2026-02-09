@@ -28,6 +28,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { ResponsiveContainer, FilterChips } from '../../shared/components';
 import { useInsights } from './insights.hooks';
+import { useMarketData } from '../../core/hooks/useMarketData';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription';
 import {
@@ -206,28 +207,62 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   // Filter state
   const [typeFilter, setTypeFilter] = useState<'all' | 'free' | 'premium'>('all');
   const [marketFilter, setMarketFilter] = useState<'all' | 'ADX' | 'DFM' | 'Other' | 'signal'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Build query params based on filters
   const queryParams = React.useMemo(() => {
     const params: any = {};
     if (typeFilter !== 'all') params.type = typeFilter;
+    if (searchQuery) params.search = searchQuery;
     if (marketFilter === 'signal') {
       params.insightFormat = 'signal';
     } else if (marketFilter !== 'all') {
       params.market = marketFilter;
     }
     return params;
-  }, [typeFilter, marketFilter]);
+  }, [typeFilter, marketFilter, searchQuery]);
 
   const {
     insights,
-    loading,
+    loading: insightsLoading,
     refreshing,
     error,
     refresh,
     loadMore,
     updateInsightInList,
   } = useInsights(queryParams);
+
+  const { marketData, loading: marketLoading } = useMarketData(0); // Fetch once for filtering
+  const loading = insightsLoading || marketLoading;
+
+  // Memoized active symbols for efficient filtering
+  const activeSymbols = React.useMemo(() => {
+    return new Set(
+      marketData
+        .filter(item => (item.price && item.price > 0) || (item.volume && item.volume > 0))
+        .map(item => item.symbol.toUpperCase())
+    );
+  }, [marketData]);
+
+  // Filter insights based on active market data
+  const filteredInsights = React.useMemo(() => {
+    if (marketLoading || marketData.length === 0) return insights;
+
+    return insights.filter(insight => {
+      // If the insight has tags, check if the first tag (usually symbol) is active
+      // If no tags, or symbol not in market, we show it (general insight)
+      const symbol = insight.tags && insight.tags[0]?.toUpperCase();
+      if (!symbol) return true;
+
+      // If it's a known symbol but not active, hide it
+      const isSymbolInMarket = marketData.some(m => m.symbol.toUpperCase() === symbol);
+      if (isSymbolInMarket && !activeSymbols.has(symbol)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [insights, activeSymbols, marketData, marketLoading]);
 
   // Refresh when filters change
   React.useEffect(() => {
@@ -283,7 +318,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   };
 
   const renderFooter = () => {
-    if (!loading || refreshing) return null;
+    if (!insightsLoading || refreshing) return null;
 
     return (
       <View style={styles.loadMoreContainer}>
@@ -292,7 +327,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
     );
   };
 
-  if (error && insights.length === 0) {
+  if (error && filteredInsights.length === 0) {
     return (
       <View style={styles.container}>
         <View style={styles.errorContainer}>
@@ -359,7 +394,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
         <FlatList
           style={{ flex: 1 }}
           key={isDesktop ? `grid-${columnCount}` : 'list'}
-          data={insights}
+          data={filteredInsights}
           renderItem={renderInsightCard}
           keyExtractor={(item) => item._id}
           numColumns={isDesktop ? columnCount : 1}
@@ -382,13 +417,13 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
           onEndReachedThreshold={0.5}
           ListEmptyComponent={renderEmpty}
           ListFooterComponent={
-            isDesktop && insights.length > 0 ? (
+            isDesktop && filteredInsights.length > 0 ? (
               <View style={styles.desktopFooter}>
                 <TouchableOpacity
                   style={[styles.loadMoreButton, { backgroundColor: theme.primary.main }]}
                   onPress={loadMore}
                 >
-                  {loading ? (
+                  {insightsLoading ? (
                     <ActivityIndicator color="#FFF" />
                   ) : (
                     <Text style={styles.loadMoreText}>{t('common.loadMore') || 'Load More'}</Text>

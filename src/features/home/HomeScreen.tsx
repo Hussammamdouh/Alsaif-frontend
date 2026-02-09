@@ -131,16 +131,15 @@ export const HomeScreen: React.FC = React.memo(() => {
   );
 
   const renderTabs = () => (
-    <View style={[styles.tabsWrapper, { backgroundColor: theme.background.primary }]}>
-      <View style={[styles.tabsContainer, { backgroundColor: theme.background.tertiary }]}>
+    <View style={styles.tabsWrapper}>
+      <View style={styles.tabsContainer}>
         <Animated.View
           style={[
             styles.animatedIndicator,
             {
-              width: tabWidth,
+              width: tabWidth - 8,
               transform: [{ translateX: indicatorX }],
-              backgroundColor: theme.background.primary,
-              shadowColor: '#000',
+              backgroundColor: theme.primary.main,
             }
           ]}
         />
@@ -148,9 +147,12 @@ export const HomeScreen: React.FC = React.memo(() => {
         <TouchableOpacity
           style={styles.tab}
           onPress={() => handleTabChange('disclosures')}
-          activeOpacity={0.9}
+          activeOpacity={0.7}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'disclosures' ? theme.primary.main : theme.text.tertiary }]}>
+          <Text
+            style={[styles.tabText, { color: activeTab === 'disclosures' ? '#FFFFFF' : theme.text.tertiary }]}
+            numberOfLines={1}
+          >
             {t('tabs.disclosures')}
           </Text>
         </TouchableOpacity>
@@ -158,9 +160,12 @@ export const HomeScreen: React.FC = React.memo(() => {
         <TouchableOpacity
           style={styles.tab}
           onPress={() => handleTabChange('free')}
-          activeOpacity={0.9}
+          activeOpacity={0.7}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'free' ? theme.primary.main : theme.text.tertiary }]}>
+          <Text
+            style={[styles.tabText, { color: activeTab === 'free' ? '#FFFFFF' : theme.text.tertiary }]}
+            numberOfLines={1}
+          >
             {t('insights.freeInsights')}
           </Text>
         </TouchableOpacity>
@@ -168,20 +173,28 @@ export const HomeScreen: React.FC = React.memo(() => {
         <TouchableOpacity
           style={styles.tab}
           onPress={() => handleTabChange('premium')}
-          activeOpacity={0.9}
+          activeOpacity={0.7}
         >
           <View style={styles.tabContent}>
-            <Text style={[styles.tabText, { color: activeTab === 'premium' ? theme.primary.main : theme.text.tertiary }]}>
-              {t('insights.premiumInsights')}
-            </Text>
-            <LinearGradient
-              colors={[theme.primary.main, theme.primary.dark]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.premiumBadge}
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === 'premium' ? '#FFFFFF' : theme.text.tertiary }
+              ]}
+              numberOfLines={1}
             >
-              <Text style={styles.premiumBadgeText}>PRO</Text>
-            </LinearGradient>
+              {t('common.premium')}
+            </Text>
+            {!hasPremiumAccess && (
+              <LinearGradient
+                colors={activeTab === 'premium' ? ['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)'] : [theme.primary.main, theme.primary.dark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.premiumBadge}
+              >
+                <Text style={[styles.premiumBadgeText, { color: activeTab === 'premium' ? '#FFFFFF' : '#FFFFFF' }]}>PRO</Text>
+              </LinearGradient>
+            )}
           </View>
         </TouchableOpacity>
       </View>
@@ -288,24 +301,30 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
   },
   tabsWrapper: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 20,
     paddingTop: 8,
   },
   tabsContainer: {
     flexDirection: 'row',
-    height: 48,
-    borderRadius: 24,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
     padding: 4,
     position: 'relative',
     alignItems: 'center',
-    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
   },
   animatedIndicator: {
     position: 'absolute',
-    height: 40,
+    height: 44,
     left: 4,
-    borderRadius: 20,
-    elevation: 3,
+    borderRadius: 22,
+    shadowColor: theme.primary.main,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   tab: {
     flex: 1,
@@ -321,16 +340,19 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   premiumBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   premiumBadgeText: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.5,
   },

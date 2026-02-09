@@ -34,13 +34,20 @@ const DataRow = ({ label, value, change, isPositive, theme }: any) => (
 export const InsightsSection: React.FC<InsightsSectionProps> = ({ marketData }) => {
     const { theme } = useTheme();
 
+    const activeMarketData = useMemo(() => {
+        return marketData.filter(item => {
+            const hasData = (item.price && item.price > 0) || (item.volume && item.volume > 0);
+            return hasData;
+        });
+    }, [marketData]);
+
     const topGainers = useMemo(() =>
-        [...marketData].sort((a, b) => b.changePercent - a.changePercent).slice(0, 3)
-        , [marketData]);
+        [...activeMarketData].sort((a, b) => b.changePercent - a.changePercent).slice(0, 3)
+        , [activeMarketData]);
 
     const topLosers = useMemo(() =>
-        [...marketData].sort((a, b) => a.changePercent - b.changePercent).slice(0, 3)
-        , [marketData]);
+        [...activeMarketData].sort((a, b) => a.changePercent - b.changePercent).slice(0, 3)
+        , [activeMarketData]);
 
     return (
         <View style={styles.container}>

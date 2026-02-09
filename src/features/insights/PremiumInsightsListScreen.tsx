@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { ResponsiveContainer } from '../../shared/components';
 import { useInsights } from './insights.hooks';
+import { useMarketData } from '../../core/hooks/useMarketData';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription';
 import {
@@ -198,13 +199,40 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
   }, [searchQuery, marketFilter]);
   const {
     insights,
-    loading,
+    loading: insightsLoading,
     refreshing,
     error,
     refresh,
     loadMore,
     updateInsightInList,
   } = useInsights(queryParams);
+
+  const { marketData, loading: marketLoading } = useMarketData(0);
+  const loading = insightsLoading || marketLoading;
+
+  const activeSymbols = React.useMemo(() => {
+    return new Set(
+      marketData
+        .filter(item => (item.price && item.price > 0) || (item.volume && item.volume > 0))
+        .map(item => item.symbol.toUpperCase())
+    );
+  }, [marketData]);
+
+  const filteredInsights = React.useMemo(() => {
+    if (marketLoading || marketData.length === 0) return insights;
+    return insights.filter(insight => {
+      const symbol = insight.tags && insight.tags[0]?.toUpperCase();
+      if (!symbol) return true;
+      const isSymbolInMarket = marketData.some(m => m.symbol.toUpperCase() === symbol);
+      if (isSymbolInMarket && !activeSymbols.has(symbol)) return false;
+      return true;
+    });
+  }, [insights, activeSymbols, marketData, marketLoading]);
+
+  // Refresh when filters change
+  React.useEffect(() => {
+    refresh(queryParams);
+  }, [marketFilter, searchQuery]);
 
   const handleInsightPress = (insight: InsightListItem) => {
     if (!hasPremiumAccess) {
@@ -245,7 +273,7 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
   );
 
   const renderEmpty = () => {
-    if (loading && !refreshing) return null;
+    if (insightsLoading && !refreshing) return null;
 
     return (
       <View style={styles.emptyContainer}>
@@ -259,7 +287,7 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
   };
 
   const renderFooter = () => {
-    if (!loading || refreshing) return null;
+    if (!insightsLoading || refreshing) return null;
 
     return (
       <View style={styles.loadMoreContainer}>
@@ -268,7 +296,7 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
     );
   };
 
-  if (error && insights.length === 0) {
+  if (error && filteredInsights.length === 0) {
     return (
       <View style={styles.container}>
         <View style={styles.errorContainer}>
@@ -312,7 +340,7 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
 
         <FlatList
           key={isDesktop ? `grid-${columnCount}` : 'list'}
-          data={insights}
+          data={filteredInsights}
           renderItem={renderInsightCard}
           keyExtractor={(item) => item._id}
           numColumns={isDesktop ? columnCount : 1}
