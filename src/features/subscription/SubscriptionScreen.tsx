@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useLocalization, useTheme } from '../../app/providers';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
-import { ResponsiveContainer } from '../../shared/components';
+import { ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
 import { subscriptionStyles as styles } from './subscription.styles';
 import {
   useSubscription,
@@ -425,15 +425,21 @@ export const SubscriptionScreen: React.FC = () => {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('profile.subscription')}</Text>
-        <Text style={styles.headerSubtitle}>
-          {t('profile.manageSubscription')}
-        </Text>
-      </View>
+      <AuthRequiredGate
+        title={t('profile.subscription') || 'Subscription Management'}
+        message={t('profile.loginMessage') || 'Please log in to manage your subscription and view active plans.'}
+        icon="card-outline"
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{t('profile.subscription')}</Text>
+          <Text style={styles.headerSubtitle}>
+            {t('profile.manageSubscription')}
+          </Text>
+        </View>
 
-      {renderSubscriptionContent()}
+        {renderSubscriptionContent()}
+      </AuthRequiredGate>
     </ScrollView>
   );
 };

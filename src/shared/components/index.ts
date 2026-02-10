@@ -8,3 +8,4 @@ export { ResponsiveContainer } from './ResponsiveContainer';
 export { FilterChips } from './FilterChips';
 export { RichTextEditor } from './RichTextEditor';
 export { CodeInput } from './CodeInput';
+export { AuthRequiredGate } from './AuthRequiredGate';

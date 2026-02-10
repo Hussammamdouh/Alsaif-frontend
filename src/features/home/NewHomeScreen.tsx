@@ -13,7 +13,7 @@ export const NewHomeScreen: React.FC = () => {
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
     const [marketData, setMarketData] = useState<MarketTicker[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [marketLoading, setMarketLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -25,7 +25,7 @@ export const NewHomeScreen: React.FC = () => {
             } catch (error) {
                 console.error('Failed to fetch market data for NewHomeScreen:', error);
             } finally {
-                setLoading(false);
+                setMarketLoading(false);
             }
         };
 
@@ -34,7 +34,7 @@ export const NewHomeScreen: React.FC = () => {
         return () => clearInterval(interval);
     }, []);
 
-    if (loading) {
+    if (marketLoading && marketData.length === 0) {
         return (
             <View style={[styles.loadingContainer, { backgroundColor: theme.background.primary }]}>
                 <ActivityIndicator size="large" color={theme.primary.main} />
@@ -69,7 +69,7 @@ export const NewHomeScreen: React.FC = () => {
 
                     {/* Column 3: Insights */}
                     <View style={styles.rightColumn}>
-                        <InsightsFeedSection />
+                        <InsightsFeedSection marketData={marketData} loading={marketLoading} />
                     </View>
                 </View>
             </ScrollView>

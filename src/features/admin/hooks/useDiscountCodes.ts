@@ -3,7 +3,7 @@
  * Manages discount codes operations
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { discountCodesService, DiscountCodeData } from '../../../core/services/api/adminEnhancements.service';
 
 interface UseDiscountCodesOptions {
@@ -32,8 +32,25 @@ export const useDiscountCodes = (options: UseDiscountCodesOptions = {}) => {
   const [isActive, setIsActive] = useState<boolean | undefined>();
   const [type, setType] = useState<'percentage' | 'fixed_amount' | 'free_trial' | undefined>();
 
+  const isFetchingRef = useRef(false);
+  const lastFetchParamsRef = useRef({ page, limit, isActive, type });
+
   // Fetch all codes
-  const fetchCodes = useCallback(async () => {
+  const fetchCodes = useCallback(async (force = false) => {
+    // If not forced and params haven't changed, skip
+    if (!force &&
+      !isFetchingRef.current &&
+      lastFetchParamsRef.current.page === page &&
+      lastFetchParamsRef.current.limit === limit &&
+      lastFetchParamsRef.current.isActive === isActive &&
+      lastFetchParamsRef.current.type === type &&
+      codes.length > 0) {
+      return;
+    }
+
+    if (isFetchingRef.current) return;
+
+    isFetchingRef.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -46,12 +63,14 @@ export const useDiscountCodes = (options: UseDiscountCodesOptions = {}) => {
       setCodes(data.codes || data);
       setTotalPages(data.totalPages || 1);
       setTotalItems(data.total || data.length);
+      lastFetchParamsRef.current = { page, limit, isActive, type };
     } catch (err: any) {
       setError(err.message || 'Failed to fetch discount codes');
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [page, limit, isActive, type]);
+  }, [page, limit, isActive, type, codes.length]);
 
   // Fetch code by ID
   const fetchCodeById = useCallback(async (id: string) => {
@@ -91,7 +110,7 @@ export const useDiscountCodes = (options: UseDiscountCodesOptions = {}) => {
       setError(null);
       try {
         const result = await discountCodesService.createCode(data);
-        await fetchCodes(); // Refresh list
+        await fetchCodes(true); // Forced refresh
         return result;
       } catch (err: any) {
         setError(err.message || 'Failed to create discount code');
@@ -110,7 +129,7 @@ export const useDiscountCodes = (options: UseDiscountCodesOptions = {}) => {
       setError(null);
       try {
         const result = await discountCodesService.updateCode(id, data);
-        await fetchCodes(); // Refresh list
+        await fetchCodes(true); // Forced refresh
         if (selectedCode?._id === id) {
           setSelectedCode(result);
         }
@@ -132,7 +151,7 @@ export const useDiscountCodes = (options: UseDiscountCodesOptions = {}) => {
       setError(null);
       try {
         await discountCodesService.deleteCode(id);
-        await fetchCodes(); // Refresh list
+        await fetchCodes(true); // Forced refresh
         if (selectedCode?._id === id) {
           setSelectedCode(null);
         }
@@ -153,7 +172,7 @@ export const useDiscountCodes = (options: UseDiscountCodesOptions = {}) => {
       setError(null);
       try {
         const result = await discountCodesService.activateCode(id);
-        await fetchCodes(); // Refresh list
+        await fetchCodes(true); // Forced refresh
         if (selectedCode?._id === id) {
           setSelectedCode(result);
         }
@@ -175,7 +194,7 @@ export const useDiscountCodes = (options: UseDiscountCodesOptions = {}) => {
       setError(null);
       try {
         const result = await discountCodesService.deactivateCode(id);
-        await fetchCodes(); // Refresh list
+        await fetchCodes(true); // Forced refresh
         if (selectedCode?._id === id) {
           setSelectedCode(result);
         }

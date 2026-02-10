@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { marketService, MarketTicker } from '../services/market/market.service';
 
-export const useMarketData = (refreshInterval = 60000) => {
+export const useMarketData = (refreshInterval = 60000, skipInitialFetch = false) => {
     const [marketData, setMarketData] = useState<MarketTicker[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!skipInitialFetch);
     const [error, setError] = useState<Error | null>(null);
 
     const fetchData = async () => {
@@ -21,12 +21,15 @@ export const useMarketData = (refreshInterval = 60000) => {
     };
 
     useEffect(() => {
-        fetchData();
+        if (!skipInitialFetch) {
+            fetchData();
+        }
+
         if (refreshInterval > 0) {
             const interval = setInterval(fetchData, refreshInterval);
             return () => clearInterval(interval);
         }
-    }, [refreshInterval]);
+    }, [refreshInterval, skipInitialFetch]);
 
     return { marketData, loading, error, refresh: fetchData };
 };

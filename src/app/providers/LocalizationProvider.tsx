@@ -45,6 +45,10 @@ const translations = {
     'login.signUp': 'Sign Up',
     'login.identifier': 'Email or Phone Number',
     'login.identifierPlaceholder': 'email@example.com or +1...',
+    'auth.loginRequired': 'Login Required',
+    'auth.loginMessage': 'Please log in or create an account to access this feature.',
+    'auth.login': 'Log In',
+    'auth.register': 'Create Account',
 
     // Register Screen
     'register.title': 'Create Your Account',
@@ -128,6 +132,8 @@ const translations = {
     'chatList.noConversationsMessage': 'Start a conversation to connect with advisors and groups.',
     'chatList.noResults': 'No Results',
     'chatList.noResultsMessage': 'Try adjusting your search or filters.',
+    'chatList.noChatSelected': 'No Chat Selected',
+    'chatList.noChatSelectedMessage': 'Select a conversation from the list or start a new one.',
     'chatList.errorTitle': 'Connection Error',
     'chatList.errorMessage': 'Unable to load conversations. Please check your connection.',
     'chatList.tryAgain': 'Try Again',
@@ -144,6 +150,10 @@ const translations = {
     'chatList.archive': 'Archive',
     'chatList.delete': 'Delete',
     'chatList.block': 'Block',
+    'chatList.loginRequired': 'Chat Access',
+    'chatList.loginMessage': 'Please log in to chat with our experts and community.',
+    'notifications.loginRequired': 'Stay Updated',
+    'notifications.loginMessage': 'Log in to receive personalized alerts, market updates, and exclusive analysis notifications.',
 
     // Conversation Screen
     'conversation.typeMessage': 'Type a message...',
@@ -370,6 +380,8 @@ const translations = {
     'profile.themeChangedMessage': 'Theme has been updated successfully!',
     'profile.languageChanged': 'Language Changed',
     'profile.languageChangedMessage': 'App will restart to apply language changes.',
+    'profile.loginRequired': 'Profile Access',
+    'profile.loginMessage': 'Log in to view your profile, manage settings, and track your subscriptions.',
 
     // Insights Screen
     'insights.title': 'Insights',
@@ -414,6 +426,8 @@ const translations = {
     'insights.reportHarassment': 'Harassment',
     'insights.reportInappropriate': 'Inappropriate content',
     'insights.reportOther': 'Other',
+    'insights.premiumLoginRequired': 'Premium Insights',
+    'insights.premiumLoginMessage': 'Log in or subscribe to access our exclusive market analysis and premium insights.',
 
     // Paywall Screen
     'paywall.badge': 'ALSAIF PRO',
@@ -449,6 +463,11 @@ const translations = {
     'plans.goProfessional': 'Go Professional',
     'plans.secureTransactions': 'Secure Transactions',
     'plans.autoRenews': 'Auto-renews',
+    'plans.havePromoCode': 'Have a promo code?',
+    'plans.promoPlaceholder': 'Enter code',
+    'plans.apply': 'Apply',
+    'plans.temporarilyDisabled': 'Promo codes are temporarily disabled',
+    'plans.loginMessage': 'Log in or create an account to choose a plan and start your premium journey.',
 
     // Settings Screen
     'settings.title': 'Settings',
@@ -682,6 +701,11 @@ const translations = {
     'admin.saveCode': 'Save Code',
     'admin.expired': 'Expired',
     'admin.valid': 'Valid',
+    'admin.noExpiry': 'No Expiry',
+    'admin.oneMonth': '1 Month',
+    'admin.threeMonths': '3 Months',
+    'admin.sixMonths': '6 Months',
+    'admin.oneYear': '1 Year',
     'admin.insightRequests': 'Insight Proposals',
     'admin.moderateRequest': 'Moderate Proposal',
     'admin.banFromInsights': 'Ban from Insights',
@@ -1174,6 +1198,10 @@ const translations = {
     'login.signUp': 'سجل الآن',
     'login.identifier': 'البريد الإلكتروني أو رقم الهاتف',
     'login.identifierPlaceholder': 'email@example.com أو +1...',
+    'auth.loginRequired': 'تسجيل الدخول مطلوب',
+    'auth.loginMessage': 'يرجى تسجيل الدخول أو إنشاء حساب للوصول إلى هذه الميزة.',
+    'auth.login': 'تسجيل الدخول',
+    'auth.register': 'إنشاء حساب',
 
     // Register Screen
     'register.title': 'أنشئ حسابك',
@@ -1257,6 +1285,8 @@ const translations = {
     'chatList.noConversationsMessage': 'ابدأ محادثة للتواصل مع المستشارين والمجموعات.',
     'chatList.noResults': 'لا توجد نتائج',
     'chatList.noResultsMessage': 'حاول تعديل البحث أو الفلاتر.',
+    'chatList.noChatSelected': 'لا توجد محادثة محددة',
+    'chatList.noChatSelectedMessage': 'اختر محادثة من القائمة أو ابدأ محادثة جديدة.',
     'chatList.errorTitle': 'خطأ في الاتصال',
     'chatList.errorMessage': 'تعذر تحميل المحادثات. يرجى التحقق من اتصالك.',
     'chatList.tryAgain': 'حاول مرة أخرى',
@@ -1273,6 +1303,10 @@ const translations = {
     'chatList.archive': 'أرشفة',
     'chatList.delete': 'حذف',
     'chatList.block': 'حظر',
+    'chatList.loginRequired': 'الوصول إلى الدردشة',
+    'chatList.loginMessage': 'يرجى تسجيل الدخول للدردشة مع خبرائنا ومجتمعنا.',
+    'notifications.loginRequired': 'ابق على اطلاع',
+    'notifications.loginMessage': 'سجل الدخول لتلقي تنبيهات مخصصة، وتحديثات السوق، وإشعارات التحليل الحصرية.',
 
     // Conversation Screen
     'conversation.typeMessage': 'اكتب رسالة...',
@@ -1499,6 +1533,8 @@ const translations = {
     'profile.themeChangedMessage': 'تم تحديث السمة بنجاح!',
     'profile.languageChanged': 'تم تغيير اللغة',
     'profile.languageChangedMessage': 'سيتم إعادة تشغيل التطبيق لتطبيق تغييرات اللغة.',
+    'profile.loginRequired': 'الوصول إلى الملف الشخصي',
+    'profile.loginMessage': 'سجل الدخول لعرض ملفك الشخصي وإدارة الإعدادات وتتبع اشتراكاتك.',
 
     // Insights Screen
     'insights.title': 'التوصية',
@@ -1544,6 +1580,8 @@ const translations = {
     'insights.reportHarassment': 'تحرش/مضايقة',
     'insights.reportInappropriate': 'محتوى غير لائق',
     'insights.reportOther': 'سبب آخر',
+    'insights.premiumLoginRequired': 'توصية مميزة',
+    'insights.premiumLoginMessage': 'سجل الدخول أو اشترك للوصول إلى تحليلات السوق الحصرية والتوصية المميزة لدينا.',
 
     // Paywall Screen
     'paywall.badge': 'السيف برو',
@@ -1579,6 +1617,11 @@ const translations = {
     'plans.goProfessional': 'انتقل للمستوى الاحترافي',
     'plans.secureTransactions': 'عمليات آمنة',
     'plans.autoRenews': 'تجديد تلقائي',
+    'plans.havePromoCode': 'هل لديك كود خصم؟',
+    'plans.promoPlaceholder': 'أدخل الكود',
+    'plans.apply': 'تطبيق',
+    'plans.temporarilyDisabled': 'أكواد الخصم معطلة مؤقتاً',
+    'plans.loginMessage': 'سجل الدخول أو أنشئ حساباً لاختيار خطة وبدء رحلتك المميزة.',
 
     // Settings Screen
     'settings.title': 'الإعدادات',
@@ -1771,6 +1814,11 @@ const translations = {
     'admin.saveCode': 'حفظ الكود',
     'admin.expired': 'منتهي',
     'admin.valid': 'صالح',
+    'admin.noExpiry': 'بدون انتهاء',
+    'admin.oneMonth': 'شهر واحد',
+    'admin.threeMonths': '3 أشهر',
+    'admin.sixMonths': '6 أشهر',
+    'admin.oneYear': 'سنة واحدة',
     'admin.insightRequests': 'اقتراحات التوصية',
     'admin.moderateRequest': 'الإشراف على الاقتراح',
     'admin.banFromInsights': 'حظر من الاقتراحات',

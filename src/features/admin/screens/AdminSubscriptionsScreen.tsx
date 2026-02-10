@@ -80,9 +80,6 @@ export const AdminSubscriptionsScreen: React.FC = () => {
   // Revoke form state
   const [revokeReason, setRevokeReason] = useState('');
 
-  useEffect(() => {
-    refresh();
-  }, []);
 
   useEffect(() => {
     const delaySearch = setTimeout(() => {

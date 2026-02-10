@@ -28,7 +28,7 @@ import { useProfile } from './profile.hooks';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useAuth } from '../../app/auth';
-import { ResponsiveContainer } from '../../shared/components';
+import { ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
 
 /**
@@ -497,13 +497,19 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
 
   if (isDesktop) {
     return (
-      <SettingsLayout
-        activeTab="profile"
-        onTabChange={handleTabChange}
-        onLogout={handleLogoutPress}
+      <AuthRequiredGate
+        title={t('profile.loginRequired') || 'Profile Access'}
+        message={t('profile.loginMessage') || 'Log in to view your profile, manage settings, and track your subscriptions.'}
+        icon="person-outline"
       >
-        {renderProfileContent()}
-      </SettingsLayout>
+        <SettingsLayout
+          activeTab="profile"
+          onTabChange={handleTabChange}
+          onLogout={handleLogoutPress}
+        >
+          {renderProfileContent()}
+        </SettingsLayout>
+      </AuthRequiredGate>
     );
   }
 
@@ -512,29 +518,35 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
       style={[styles.safeArea, { backgroundColor: theme.background.primary }]}
       edges={['top']}
     >
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: theme.border.main, height: isDesktop ? 80 : undefined, paddingTop: isDesktop ? 0 : 20, justifyContent: 'center' }]}>
-        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
-          {t('profile.title')}
-        </Text>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, isDesktop && { flexGrow: 1, justifyContent: 'center' }]}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={loadProfile}
-            tintColor={theme.primary.main}
-            colors={[theme.primary.main]}
-          />
-        }
+      <AuthRequiredGate
+        title={t('profile.loginRequired') || 'Profile Access'}
+        message={t('profile.loginMessage') || 'Log in to view your profile, manage settings, and track your subscriptions.'}
+        icon="person-outline"
       >
-        <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
-          {renderProfileContent()}
+        {/* Header */}
+        <View style={[styles.header, { borderBottomColor: theme.border.main, height: isDesktop ? 80 : undefined, paddingTop: isDesktop ? 0 : 20, justifyContent: 'center' }]}>
+          <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
+            {t('profile.title')}
+          </Text>
         </View>
-      </ScrollView>
+
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, isDesktop && { flexGrow: 1, justifyContent: 'center' }]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={loadProfile}
+              tintColor={theme.primary.main}
+              colors={[theme.primary.main]}
+            />
+          }
+        >
+          <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
+            {renderProfileContent()}
+          </View>
+        </ScrollView>
+      </AuthRequiredGate>
     </SafeAreaView >
   );
 };

@@ -216,31 +216,31 @@ export const bannerService = {
    * Get all banners (Admin)
    */
   getAll: () =>
-    apiClient.get<Banner[]>('/api/admin/banners').then(res => res.data || res),
+    apiClient.get<any>('/api/admin/banners').then(res => res.data || res),
 
   /**
    * Create a new banner (Admin)
    */
   create: (data: Partial<Banner>) =>
-    apiClient.post<Banner>('/api/admin/banners', data).then(res => res.data || res),
+    apiClient.post<any>('/api/admin/banners', data).then(res => res.data || res),
 
   /**
    * Update a banner (Admin)
    */
   update: (id: string, data: Partial<Banner>) =>
-    apiClient.patch<Banner>(`/api/admin/banners/${id}`, data).then(res => res.data || res),
+    apiClient.patch<any>(`/api/admin/banners/${id}`, data).then(res => res.data || res),
 
   /**
    * Delete a banner (Admin)
    */
   delete: (id: string) =>
-    apiClient.delete(`/api/admin/banners/${id}`).then(res => res.data || res),
+    apiClient.delete<any>(`/api/admin/banners/${id}`).then(res => res.data || res),
 
   /**
    * Get active banners (App)
    */
   getActive: (type?: 'free' | 'premium') =>
-    apiClient.get<Banner[]>('/api/banners', { type }).then(res => res.data || res),
+    apiClient.get<any>('/api/banners', { type }, false).then(res => res.data || res),
 };
 
 // ============================================================================

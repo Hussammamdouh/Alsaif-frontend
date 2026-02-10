@@ -22,6 +22,10 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     autoFetch = true,
   } = options;
 
+  // Use string versions of dates for stable dependencies
+  const startStr = startDate.toISOString();
+  const endStr = endDate.toISOString();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,8 +89,8 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setError(null);
     try {
       const data = await analyticsService.getUserGrowth({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: startStr,
+        endDate: endStr,
         period,
       }) as any[];
       setUserGrowth(data);
@@ -95,7 +99,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setUserGrowthLoading(false);
     }
-  }, [startDate, endDate, period]);
+  }, [startStr, endStr, period]);
 
   // Fetch Engagement Metrics
   const fetchEngagementMetrics = useCallback(async () => {
@@ -103,8 +107,8 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setError(null);
     try {
       const data = await analyticsService.getEngagementOverview({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: startStr,
+        endDate: endStr,
       });
       setEngagementMetrics(data);
     } catch (err: any) {
@@ -112,7 +116,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setEngagementLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch Content Performance
   const fetchContentPerformance = useCallback(async () => {
@@ -120,8 +124,8 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setError(null);
     try {
       const data = await analyticsService.getContentPerformance({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: startStr,
+        endDate: endStr,
         limit: 10,
       }) as any[];
       setContentPerformance(data);
@@ -130,7 +134,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setContentLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch Subscription Analytics
   const fetchSubscriptionAnalytics = useCallback(async () => {
@@ -152,8 +156,8 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setError(null);
     try {
       const data = await analyticsService.getConversionFunnel({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: startStr,
+        endDate: endStr,
       }) as any[];
       setConversionFunnel(data);
     } catch (err: any) {
@@ -161,7 +165,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setConversionLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch Retention Cohorts
   const fetchRetentionCohorts = useCallback(async () => {
@@ -169,8 +173,8 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setError(null);
     try {
       const data = await analyticsService.getRetentionCohorts({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: startStr,
+        endDate: endStr,
       }) as any[];
       setRetentionCohorts(data);
     } catch (err: any) {
@@ -178,7 +182,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setRetentionLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch Feature Usage
   const fetchFeatureUsage = useCallback(async () => {
@@ -186,8 +190,8 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setError(null);
     try {
       const data = await analyticsService.getFeatureUsage({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: startStr,
+        endDate: endStr,
       }) as any[];
       setFeatureUsage(data);
     } catch (err: any) {
@@ -195,7 +199,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setFeatureLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch Geographic Distribution
   const fetchGeoDistribution = useCallback(async () => {
@@ -230,8 +234,8 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setRevenueLoading(true);
     try {
       const data = await analyticsService.getRevenueOverview({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: startStr,
+        endDate: endStr,
       });
       setRevenueOverview(data);
     } catch (err: any) {
@@ -239,20 +243,20 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setRevenueLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch Detailed Revenue Breakdown (Merged from useRevenue)
   const fetchRevenueBreakdown = useCallback(async () => {
     setBreakdownLoading(true);
     try {
       const [trends, methods, failed, forecast, churn, arpuData, ltvData] = await Promise.all([
-        revenueService.getTrends({ startDate: startDate.toISOString(), endDate: endDate.toISOString(), period: 'month' }),
-        revenueService.getPaymentBreakdown({ startDate: startDate.toISOString(), endDate: endDate.toISOString() }),
-        revenueService.getFailedPayments({ limit: 5, startDate: startDate.toISOString(), endDate: endDate.toISOString() }),
+        revenueService.getTrends({ startDate: startStr, endDate: endStr, period: 'month' }),
+        revenueService.getPaymentBreakdown({ startDate: startStr, endDate: endStr }),
+        revenueService.getFailedPayments({ limit: 5, startDate: startStr, endDate: endStr }),
         revenueService.getForecast({ months: 6 }),
-        revenueService.getOverview({ startDate: startDate.toISOString(), endDate: endDate.toISOString() }), // Churn
-        revenueService.getOverview({ startDate: startDate.toISOString(), endDate: endDate.toISOString() }), // ARPU
-        revenueService.getOverview({ startDate: startDate.toISOString(), endDate: endDate.toISOString() }), // LTV
+        revenueService.getOverview({ startDate: startStr, endDate: endStr }), // Churn
+        revenueService.getOverview({ startDate: startStr, endDate: endStr }), // ARPU
+        revenueService.getOverview({ startDate: startStr, endDate: endStr }), // LTV
       ]) as [any, any, any, any, any, any, any];
 
       setRevenueTrends(trends || []);
@@ -271,19 +275,21 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setBreakdownLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch Comparison data
   const fetchComparison = useCallback(async () => {
     setComparisonLoading(true);
     try {
-      const duration = endDate.getTime() - startDate.getTime();
-      const previousStart = new Date(startDate.getTime() - duration);
-      const previousEnd = new Date(endDate.getTime() - duration);
+      const start = new Date(startStr);
+      const end = new Date(endStr);
+      const duration = end.getTime() - start.getTime();
+      const previousStart = new Date(start.getTime() - duration);
+      const previousEnd = new Date(end.getTime() - duration);
 
       const data = await analyticsService.comparePeriods({
-        currentStart: startDate.toISOString(),
-        currentEnd: endDate.toISOString(),
+        currentStart: startStr,
+        currentEnd: endStr,
         previousStart: previousStart.toISOString(),
         previousEnd: previousEnd.toISOString(),
       });
@@ -293,7 +299,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } finally {
       setComparisonLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startStr, endStr]);
 
   // Fetch All Analytics
   const fetchAll = useCallback(async () => {

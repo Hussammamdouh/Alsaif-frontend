@@ -249,6 +249,9 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
     if (marketLoading || marketData.length === 0) return insights;
 
     return insights.filter(insight => {
+      // Always show free insights
+      if (insight.type === 'free') return true;
+
       // If the insight has tags, check if the first tag (usually symbol) is active
       // If no tags, or symbol not in market, we show it (general insight)
       const symbol = insight.tags && insight.tags[0]?.toUpperCase();

@@ -40,20 +40,20 @@ export const marketService = {
      * Optimized for startup
      */
     getAllMarketData: async (): Promise<MarketResponse> => {
-        return apiClient.get<MarketResponse>('/api/market/all');
+        return apiClient.get<MarketResponse>('/api/market/all', undefined, false);
     },
 
     /**
      * Get specific exchange data
      */
     getExchangeData: async (exchange: 'DFM' | 'ADX'): Promise<MarketResponse> => {
-        return apiClient.get<MarketResponse>(`/api/market/${exchange.toLowerCase()}`);
+        return apiClient.get<MarketResponse>(`/api/market/${exchange.toLowerCase()}`, undefined, false);
     },
 
     /**
      * Get specific symbol details
      */
     getSymbolDetails: async (symbol: string, exchange: 'DFM' | 'ADX'): Promise<{ success: boolean; data: MarketTicker }> => {
-        return apiClient.get<{ success: boolean; data: MarketTicker }>(`/api/market/${exchange}/${symbol}`);
+        return apiClient.get<{ success: boolean; data: MarketTicker }>(`/api/market/${exchange}/${symbol}`, undefined, false);
     }
 };

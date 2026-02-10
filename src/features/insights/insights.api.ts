@@ -41,21 +41,21 @@ export const getPublishedInsights = async (
     ...(params.insightFormat && { insightFormat: params.insightFormat }),
   };
 
-  return apiClient.get(API_ENDPOINTS.INSIGHTS_PUBLISHED, queryParams);
+  return apiClient.get(API_ENDPOINTS.INSIGHTS_PUBLISHED, queryParams, false);
 };
 
 /**
  * Get featured insights
  */
 export const getFeaturedInsights = async (): Promise<InsightsListResponse> => {
-  return apiClient.get(API_ENDPOINTS.INSIGHTS_FEATURED);
+  return apiClient.get(API_ENDPOINTS.INSIGHTS_FEATURED, {}, false);
 };
 
 /**
  * Get single insight by ID
  */
 export const getInsightById = async (id: string): Promise<InsightDetailResponse> => {
-  return apiClient.get(API_ENDPOINTS.INSIGHT_BY_ID(id));
+  return apiClient.get(API_ENDPOINTS.INSIGHT_BY_ID(id), {}, false);
 };
 
 /**

@@ -29,7 +29,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../app/navigation/types';
 
 import { useTheme, useLocalization } from '../../../app/providers';
-import { ResponsiveContainer } from '../../../shared/components';
+import { ResponsiveContainer, AuthRequiredGate } from '../../../shared/components';
 import { useUser } from '../../../app/auth/auth.hooks';
 import { getStyles } from './chatList.styles';
 import { useChatList, useConversationPress } from './chatList.hooks';
@@ -635,41 +635,47 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
         <View
           style={[styles.gradient, { backgroundColor: theme.background.primary }]}
         >
-          <View style={[styles.desktopCenterContainer, { flex: 1 }]}>
-            <View style={[styles.splitViewCard, { flex: 1, backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
-              {/* Sidebar */}
-              <View style={[styles.sidebar, { borderRightColor: theme.border.main }]}>
-                {renderHeader()}
-                {renderChatListContent()}
-              </View>
+          <AuthRequiredGate
+            title={t('chatList.loginRequired') || 'Chat Required Login'}
+            message={t('chatList.loginMessage') || 'Please log in to chat with our experts and community.'}
+            icon="chatbubbles-outline"
+          >
+            <View style={[styles.desktopCenterContainer, { flex: 1 }]}>
+              <View style={[styles.splitViewCard, { flex: 1, backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+                {/* Sidebar */}
+                <View style={[styles.sidebar, { borderRightColor: theme.border.main }]}>
+                  {renderHeader()}
+                  {renderChatListContent()}
+                </View>
 
-              {/* Chat Detail Area */}
-              <View style={styles.mainArea}>
-                {selectedConversationId ? (
-                  <ConversationView
-                    conversationId={selectedConversationId}
-                    hideBackButton
-                    isSplitView
-                  />
-                ) : (
-                  <View style={styles.noChatSelected}>
-                    <Icon name="chatbubbles-outline" size={64} color={theme.text.tertiary} />
-                    <Text style={[styles.noChatText, { color: theme.text.primary }]}>{t('chatList.noChatSelected')}</Text>
-                    <Text style={[styles.noChatMessage, { color: theme.text.secondary }]}>{t('chatList.noChatSelectedMessage')}</Text>
-                  </View>
-                )}
+                {/* Chat Detail Area */}
+                <View style={styles.mainArea}>
+                  {selectedConversationId ? (
+                    <ConversationView
+                      conversationId={selectedConversationId}
+                      hideBackButton
+                      isSplitView
+                    />
+                  ) : (
+                    <View style={styles.noChatSelected}>
+                      <Icon name="chatbubbles-outline" size={64} color={theme.text.tertiary} />
+                      <Text style={[styles.noChatText, { color: theme.text.primary }]}>{t('chatList.noChatSelected')}</Text>
+                      <Text style={[styles.noChatMessage, { color: theme.text.secondary }]}>{t('chatList.noChatSelectedMessage')}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
-          <NewChatModal
-            isVisible={isNewChatModalVisible}
-            onClose={() => setIsNewChatModalVisible(false)}
-            onChatCreated={(chatId) => {
-              setIsNewChatModalVisible(false);
-              setSelectedConversationId(chatId);
-              handleRefresh();
-            }}
-          />
+            <NewChatModal
+              isVisible={isNewChatModalVisible}
+              onClose={() => setIsNewChatModalVisible(false)}
+              onChatCreated={(chatId) => {
+                setIsNewChatModalVisible(false);
+                setSelectedConversationId(chatId);
+                handleRefresh();
+              }}
+            />
+          </AuthRequiredGate>
         </View>
       );
     }
@@ -679,7 +685,13 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
         style={[styles.gradient, { backgroundColor: theme.background.primary }]}
       >
         <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-          {mainContent}
+          <AuthRequiredGate
+            title={t('chatList.loginRequired') || 'Chat Required Login'}
+            message={t('chatList.loginMessage') || 'Please log in to chat with our experts and community.'}
+            icon="chatbubbles-outline"
+          >
+            {mainContent}
+          </AuthRequiredGate>
         </SafeAreaView>
       </View>
     );

@@ -42,7 +42,7 @@ import { navigateByUrl } from '../../app/navigation/navigationUtils';
 import { Notification } from './notifications.types';
 import { createStyles } from './notifications.styles';
 import { NOTIFICATION_CATEGORIES } from './notifications.constants';
-import { ResponsiveContainer } from '../../shared/components';
+import { AuthRequiredGate, ResponsiveContainer } from '../../shared/components';
 
 const { width } = Dimensions.get('window');
 const isDesktop = width > 768;
@@ -476,109 +476,115 @@ const NotificationsScreen: React.FC = () => {
     >
       <StatusBar barStyle="light-content" />
 
-      {/* Standardized Dashboard Header for Desktop */}
-      {isDesktop ? (
-        <View style={styles.dashboardHeader}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
-          >
-            <Icon name="chevron-back" size={24} color={theme.text.primary} />
-            <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('notifications.title')}</Text>
-          </TouchableOpacity>
-
-          {notifications.length > 0 && (
-            <TouchableOpacity
-              style={styles.markAllReadButton}
-              onPress={handleMarkAllAsRead}
-              disabled={isUpdating || unreadCount === 0}
-            >
-              <Text
-                style={[
-                  styles.markAllReadButtonText,
-                  (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
-                ]}
-              >
-                {t('notifications.markAllRead')}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      ) : (
-        /* Mobile Header */
-        <View style={styles.header}>
-          <View style={styles.headerTitleContainer}>
+      <AuthRequiredGate
+        title={t('notifications.loginRequired') || 'Stay Updated'}
+        message={t('notifications.loginMessage') || 'Log in to receive personalized alerts, market updates, and exclusive analysis notifications.'}
+        icon="notifications-outline"
+      >
+        {/* Standardized Dashboard Header for Desktop */}
+        {isDesktop ? (
+          <View style={styles.dashboardHeader}>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
-              style={{ marginRight: 12 }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
             >
-              <Icon name="arrow-back" size={24} color={theme.text.primary} />
+              <Icon name="chevron-back" size={24} color={theme.text.primary} />
+              <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('notifications.title')}</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
-            {unreadCount > 0 ? (
-              <View style={styles.unreadBadge}>
-                <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-              </View>
-            ) : null}
-          </View>
 
-          {notifications.length > 0 && (
-            <TouchableOpacity
-              style={styles.markAllReadButton}
-              onPress={handleMarkAllAsRead}
-              disabled={isUpdating || unreadCount === 0}
-            >
-              <Text
-                style={[
-                  styles.markAllReadButtonText,
-                  (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
-                ]}
+            {notifications.length > 0 && (
+              <TouchableOpacity
+                style={styles.markAllReadButton}
+                onPress={handleMarkAllAsRead}
+                disabled={isUpdating || unreadCount === 0}
               >
-                {t('notifications.markAllRead')}
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.markAllReadButtonText,
+                    (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
+                  ]}
+                >
+                  {t('notifications.markAllRead')}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          /* Mobile Header */
+          <View style={styles.header}>
+            <View style={styles.headerTitleContainer}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{ marginRight: 12 }}
+              >
+                <Icon name="arrow-back" size={24} color={theme.text.primary} />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
+              {unreadCount > 0 ? (
+                <View style={styles.unreadBadge}>
+                  <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {notifications.length > 0 && (
+              <TouchableOpacity
+                style={styles.markAllReadButton}
+                onPress={handleMarkAllAsRead}
+                disabled={isUpdating || unreadCount === 0}
+              >
+                <Text
+                  style={[
+                    styles.markAllReadButtonText,
+                    (isUpdating || unreadCount === 0) && styles.markAllReadButtonTextDisabled,
+                  ]}
+                >
+                  {t('notifications.markAllRead')}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        <View style={styles.desktopContentWrapper}>
+          {/* Category Filter */}
+          {notifications.length > 0 && renderCategoryFilter()}
+
+          {/* Content */}
+          {error ? (
+            renderErrorState()
+          ) : notifications.length === 0 && !isFetching ? (
+            renderEmptyState()
+          ) : (
+            <FlatList
+              data={listData}
+              renderItem={({ item }: any) => {
+                if (item.type === 'header') {
+                  return renderSectionHeader(item.title);
+                }
+                return renderNotificationItem(item);
+              }}
+              keyExtractor={(item: any, index) =>
+                item.type === 'header' ? `header-${item.title}` : item.id || `item-${index}`
+              }
+              refreshControl={
+                <RefreshControl
+                  refreshing={isFetching && notifications.length === 0}
+                  onRefresh={refreshNotifications}
+                  tintColor={theme.primary.main}
+                />
+              }
+              onEndReached={handleEndReached}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={renderLoadingFooter}
+              contentContainerStyle={[
+                styles.listContent,
+                notifications.length === 0 ? { flex: 1, justifyContent: 'center' } : undefined
+              ]}
+            />
           )}
         </View>
-      )}
-
-      <View style={styles.desktopContentWrapper}>
-        {/* Category Filter */}
-        {notifications.length > 0 && renderCategoryFilter()}
-
-        {/* Content */}
-        {error ? (
-          renderErrorState()
-        ) : notifications.length === 0 && !isFetching ? (
-          renderEmptyState()
-        ) : (
-          <FlatList
-            data={listData}
-            renderItem={({ item }: any) => {
-              if (item.type === 'header') {
-                return renderSectionHeader(item.title);
-              }
-              return renderNotificationItem(item);
-            }}
-            keyExtractor={(item: any, index) =>
-              item.type === 'header' ? `header-${item.title}` : item.id || `item-${index}`
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={isFetching && notifications.length === 0}
-                onRefresh={refreshNotifications}
-                tintColor={theme.primary.main}
-              />
-            }
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={renderLoadingFooter}
-            contentContainerStyle={[
-              styles.listContent,
-              notifications.length === 0 ? { flex: 1, justifyContent: 'center' } : undefined
-            ]}
-          />
-        )}
-      </View>
+      </AuthRequiredGate>
     </SafeAreaView>
   );
 };

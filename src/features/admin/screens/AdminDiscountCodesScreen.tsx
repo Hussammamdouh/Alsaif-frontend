@@ -66,6 +66,24 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   const [formIsActive, setFormIsActive] = useState(true);
   const [selectedCode, setSelectedCode] = useState<any | null>(null);
 
+  const EXPIRATION_PRESETS = [
+    { label: t('admin.oneMonth'), months: 1 },
+    { label: t('admin.threeMonths'), months: 3 },
+    { label: t('admin.sixMonths'), months: 6 },
+    { label: t('admin.oneYear'), months: 12 },
+    { label: t('admin.noExpiry'), months: 0 },
+  ];
+
+  const handlePresetSelect = (months: number) => {
+    if (months === 0) {
+      setFormValidUntil('');
+      return;
+    }
+    const date = new Date();
+    date.setMonth(date.getMonth() + months);
+    setFormValidUntil(date.toISOString().split('T')[0]);
+  };
+
   const {
     codes,
     loading,
@@ -244,6 +262,7 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   };
 
   const renderCodeItem = ({ item }: { item: any }) => {
+    const isExpired = item.validUntil ? new Date(item.validUntil) < new Date() : false;
     const usagePercent = item.maxUses
       ? ((item.usageCount || 0) / item.maxUses) * 100
       : 0;
@@ -272,10 +291,18 @@ export const AdminDiscountCodesScreen: React.FC = () => {
           <View
             style={[
               localStyles.statusIndicator,
-              { backgroundColor: item.isActive ? theme.success.main : theme.text.tertiary },
+              { backgroundColor: !item.isActive ? theme.text.tertiary : isExpired ? theme.error.main : theme.success.main },
             ]}
           />
         </View>
+
+        {isExpired && (
+          <View style={[localStyles.expiredBadge, { backgroundColor: `${theme.error.main}15` }]}>
+            <Text style={[localStyles.expiredText, { color: theme.error.main }]}>
+              {t('admin.expired').toUpperCase()}
+            </Text>
+          </View>
+        )}
 
         <Text style={localStyles.discountValue}>{formatDiscount(item)}</Text>
 
@@ -613,6 +640,17 @@ export const AdminDiscountCodesScreen: React.FC = () => {
 
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.validUntil')} (YYYY-MM-DD)</Text>
+                  <View style={[localStyles.typeContainer, { marginBottom: 12 }]}>
+                    {EXPIRATION_PRESETS.map((preset) => (
+                      <TouchableOpacity
+                        key={preset.months}
+                        style={localStyles.typeChip}
+                        onPress={() => handlePresetSelect(preset.months)}
+                      >
+                        <Text style={localStyles.typeChipText}>{preset.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                   <TextInput
                     style={localStyles.input}
                     value={formValidUntil}
@@ -931,5 +969,16 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: theme.primary.contrast,
+  },
+  expiredBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  expiredText: {
+    fontSize: 10,
+    fontWeight: '800',
   },
 });

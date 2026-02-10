@@ -101,9 +101,6 @@ export const AdminUsersScreen: React.FC = () => {
     { label: 'Admins', value: 'admin', labelKey: 'admin.admins' },
   ];
 
-  useEffect(() => {
-    refresh();
-  }, []);
 
   // Filter out superadmin users
   const filteredUsers = useMemo(() => {

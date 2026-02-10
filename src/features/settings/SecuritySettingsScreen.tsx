@@ -20,7 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme, useLocalization } from '../../app/providers';
-import { Button, ResponsiveContainer } from '../../shared/components';
+import { Button, ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
 import * as SettingsService from '../../core/services/settings/settingsService';
 import { useAuth } from '../../app/auth';
 import { ActiveSession } from '../settings/settings.types';
@@ -287,40 +287,65 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
         </View>
     );
 
-    if (isDesktop) {
-        return (
-            <SettingsLayout
-                activeTab="security"
-                onTabChange={handleTabChange}
-                onLogout={authLogout}
-            >
-                {renderSecurityContent()}
-            </SettingsLayout>
-        );
-    }
-
     return (
-        <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-            <SafeAreaView style={styles.safeArea} edges={['top']}>
-                <View style={[styles.header, { borderBottomColor: theme.ui.border }]}>
-                    <TouchableOpacity onPress={onNavigateBack} style={styles.backButton}>
-                        <Icon name={isRTL ? 'chevron-forward' : 'chevron-back'} size={24} color={theme.text.primary} />
-                    </TouchableOpacity>
-                    <Text style={[styles.title, { color: theme.text.primary }]}>Security & Sessions</Text>
-                    <View style={{ width: 40 }} />
-                </View>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]} edges={['top']}>
+            <AuthRequiredGate
+                title={t('settings.security') || 'Security Settings'}
+                message={t('settings.securityLoginMessage') || 'Please log in to manage your active sessions and account security.'}
+                icon="shield-checkmark-outline"
+            >
+                {isDesktop ? (
+                    <SettingsLayout
+                        activeTab="security"
+                        onTabChange={handleTabChange}
+                        onLogout={authLogout}
+                    >
+                        <ScrollView
+                            style={{ flex: 1 }}
+                            contentContainerStyle={styles.content}
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                            }
+                        >
+                            {renderSecurityContent()}
+                        </ScrollView>
+                    </SettingsLayout>
+                ) : (
+                    <>
+                        {/* Header */}
+                        <Animated.View
+                            style={[
+                                styles.header,
+                                {
+                                    opacity: headerOpacity,
+                                    transform: [{ translateY: headerTranslateY }],
+                                },
+                            ]}
+                        >
+                            <TouchableOpacity onPress={onNavigateBack} style={styles.backButton}>
+                                <Icon
+                                    name={isRTL ? 'chevron-forward' : 'chevron-back'}
+                                    size={28}
+                                    color={theme.text.primary}
+                                />
+                            </TouchableOpacity>
+                            <Text style={styles.title}>{t('settings.security')}</Text>
+                            <View style={{ width: 40 }} />
+                        </Animated.View>
 
-                <ScrollView
-                    style={styles.content}
-                    contentContainerStyle={isDesktop && { flexGrow: 1, justifyContent: 'center' }}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
-                >
-                    {renderSecurityContent()}
-                </ScrollView>
-            </SafeAreaView>
-        </View>
+                        <ScrollView
+                            style={styles.content}
+                            showsVerticalScrollIndicator={false}
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                            }
+                        >
+                            <ResponsiveContainer>{renderSecurityContent()}</ResponsiveContainer>
+                        </ScrollView>
+                    </>
+                )}
+            </AuthRequiredGate>
+        </SafeAreaView>
     );
 };
 

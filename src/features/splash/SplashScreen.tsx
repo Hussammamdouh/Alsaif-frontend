@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from './splash.styles';
 import { APP_CONFIG } from '../../core/constants';
 import { useTheme, useLocalization } from '../../app/providers';
+import { getApiBaseUrl } from '../../core/config/env';
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -36,6 +37,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
+
+  // Readiness state
+  const [healthChecked, setHealthChecked] = React.useState(false);
+  const [minDurationElapsed, setMinDurationElapsed] = React.useState(false);
 
   useEffect(() => {
     const useNativeDriver = Platform.OS !== 'web';
@@ -139,15 +144,52 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
   }, [dot1, dot2, dot3, logoOpacity, logoScale, loaderOpacity, pulseAnim, taglineOpacity, titleOpacity, titleTranslateY]);
 
   /**
-   * Auto-navigate after splash duration
+   * Minimum duration timer
    */
   useEffect(() => {
     const timer = setTimeout(() => {
-      onFinish();
+      setMinDurationElapsed(true);
     }, APP_CONFIG.splashDuration);
 
     return () => clearTimeout(timer);
-  }, [onFinish]);
+  }, []);
+
+  /**
+   * Health check polling
+   */
+  useEffect(() => {
+    let isMounted = true;
+    let pollTimer: NodeJS.Timeout;
+
+    const checkHealth = async () => {
+      try {
+        const response = await fetch(`${getApiBaseUrl()}/health`);
+        if (response.ok) {
+          if (isMounted) setHealthChecked(true);
+        } else {
+          if (isMounted) pollTimer = setTimeout(checkHealth, 2000);
+        }
+      } catch (error) {
+        if (isMounted) pollTimer = setTimeout(checkHealth, 2000);
+      }
+    };
+
+    checkHealth();
+
+    return () => {
+      isMounted = false;
+      if (pollTimer) clearTimeout(pollTimer);
+    };
+  }, []);
+
+  /**
+   * Auto-navigate after both conditions met
+   */
+  useEffect(() => {
+    if (healthChecked && minDurationElapsed) {
+      onFinish();
+    }
+  }, [healthChecked, minDurationElapsed, onFinish]);
 
   return (
     <LinearGradient

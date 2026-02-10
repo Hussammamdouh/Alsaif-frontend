@@ -7,34 +7,53 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { spacing } from '../../../core/theme/spacing';
 
-export const InsightsFeedSection: React.FC = () => {
+interface InsightsFeedSectionProps {
+    marketData?: any[];
+    loading?: boolean;
+}
+
+export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
+    marketData: propMarketData,
+    loading: propLoading
+}) => {
     const { theme } = useTheme();
     const { t } = useLocalization();
-    const { insights, loading: insightsLoading, hasMore, loadMore } = useInsights({ limit: 10 }); // Fetch more to allow for filtering
-    const { marketData, loading: marketLoading } = useMarketData(0);
-    const loading = insightsLoading || marketLoading;
+
+    // Stabilize initial params for useInsights to prevent redundant fetches
+    const insightsParams = React.useMemo(() => ({ limit: 10 }), []);
+    const { insights, loading: insightsLoading, hasMore, loadMore } = useInsights(insightsParams);
+
+    // Use passed market data or fetch it if not provided
+    const { marketData: fetchedMarketData, loading: marketLoading } = useMarketData(propMarketData ? 0 : 60000, !!propMarketData);
+
+    const activeMarketData = propMarketData || fetchedMarketData;
+    const activeMarketLoading = propMarketData ? !!propLoading : marketLoading;
+    const loading = insightsLoading || activeMarketLoading;
     const navigation = useNavigation<any>();
 
     // Filter insights based on active market data
     const filteredInsights = React.useMemo(() => {
-        if (marketLoading || marketData.length === 0) return insights.slice(0, 4);
+        if (activeMarketLoading || activeMarketData.length === 0) return insights.slice(0, 4);
 
         const activeSymbols = new Set(
-            marketData
+            activeMarketData
                 .filter(item => (item.price && item.price > 0) || (item.volume && item.volume > 0))
                 .map(item => item.symbol.toUpperCase())
         );
 
         return insights
             .filter(insight => {
+                // Always show free insights
+                if (insight.type === 'free') return true;
+
                 const symbol = insight.tags && insight.tags[0]?.toUpperCase();
                 if (!symbol) return true;
-                const isSymbolInMarket = marketData.some(m => m.symbol.toUpperCase() === symbol);
+                const isSymbolInMarket = activeMarketData.some(m => m.symbol.toUpperCase() === symbol);
                 if (isSymbolInMarket && !activeSymbols.has(symbol)) return false;
                 return true;
             })
             .slice(0, 4);
-    }, [insights, marketData, marketLoading]);
+    }, [insights, activeMarketData, activeMarketLoading]);
 
     if (loading && filteredInsights.length === 0) {
         return (

@@ -21,7 +21,7 @@ interface ButtonProps {
   loading?: boolean;
   disabled?: boolean;
   variant?: 'primary' | 'secondary' | 'ghost';
-  style?: ViewStyle;
+  style?: import('react-native').StyleProp<ViewStyle>;
   textStyle?: TextStyle;
   accessibilityLabel?: string;
   accessibilityHint?: string;

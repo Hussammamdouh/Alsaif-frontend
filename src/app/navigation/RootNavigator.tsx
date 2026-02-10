@@ -57,6 +57,11 @@ const MainStack = createNativeStackNavigator<MainStackParamList>();
  * Manages app-wide navigation flow
  * Splash → Auth → Main
  */
+/**
+ * Root Navigator Component
+ * Manages app-wide navigation flow
+ * Splash → Auth → Main
+ */
 export const RootNavigator: React.FC = () => {
   const { state: authState } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
@@ -76,333 +81,333 @@ export const RootNavigator: React.FC = () => {
   }, []);
 
   /**
-   * Handle successful login
-   * Called by LoginScreen after successful authentication
-   */
-  const handleLoginSuccess = useCallback(() => {
-    // Auth state is already updated by login action
-    // Navigation will update automatically based on authState.isAuthenticated
-  }, []);
-
-  /**
    * Handle successful registration
-   * Called by RegisterScreen after successful registration
    */
   const handleRegisterSuccess = useCallback((userId: string, email: string, navigation: any) => {
-    // Navigate to Verification screen
     navigation.navigate('Auth', {
       screen: 'Verification',
       params: { userId, email }
     });
   }, []);
 
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
   return (
     <NavigationContainer>
-      {showSplash ? (
-        // Show splash screen on initial load
-        <SplashScreen onFinish={handleSplashFinish} />
-      ) : (
-        // Main app navigation
-        <RootStack.Navigator
-          screenOptions={{
-            headerShown: false,
-            animation: 'fade',
-            animationDuration: 300,
-          }}
-        >
-          {!authState.isAuthenticated ? (
-            // Show auth flow if not authenticated
-            <RootStack.Screen name="Auth">
-              {({ navigation }) => (
-                <AuthStack.Navigator
-                  screenOptions={{
-                    headerShown: false,
-                    animation: 'slide_from_right',
-                  }}
-                  initialRouteName="Login"
-                >
-                  <AuthStack.Screen name="Login">
-                    {() => (
-                      <LoginScreen
-                        onLoginSuccess={handleLoginSuccess}
-                        onNavigateToRegister={() => navigation.navigate('Auth', {
-                          screen: 'Register',
-                        })}
-                        onNavigateToForgotPassword={() => navigation.navigate('Auth', {
-                          screen: 'ForgotPassword',
-                        })}
-                      />
-                    )}
-                  </AuthStack.Screen>
-                  <AuthStack.Screen name="Register">
-                    {({ navigation: regNav }) => (
-                      <RegisterScreen
-                        onRegisterSuccess={(userId: string, email: string) => handleRegisterSuccess(userId, email, regNav)}
-                        onNavigateToLogin={() => regNav.navigate('Login')}
-                      />
-                    )}
-                  </AuthStack.Screen>
-                  <AuthStack.Screen name="Verification">
-                    {({ route }) => (
-                      <VerificationScreen
-                        userId={route.params.userId}
-                        email={route.params.email}
-                        onVerificationSuccess={() => navigation.navigate('Auth', {
-                          screen: 'Login'
-                        })}
-                        onBackToLogin={() => navigation.navigate('Auth', {
-                          screen: 'Login'
-                        })}
-                      />
-                    )}
-                  </AuthStack.Screen>
-                  <AuthStack.Screen name="ForgotPassword">
-                    {() => (
-                      <ForgotPasswordScreen
-                        onBackToLogin={() => navigation.navigate('Auth', {
-                          screen: 'Login',
-                        })}
-                        onResetEmailSent={(email) => navigation.navigate('Auth', {
-                          screen: 'ResetPassword',
-                          params: { email },
-                        })}
-                      />
-                    )}
-                  </AuthStack.Screen>
-                  <AuthStack.Screen name="ResetPassword">
-                    {({ route }) => (
-                      <ResetPasswordScreen
-                        email={route.params?.email}
-                        onBackToLogin={() => navigation.navigate('Auth', {
-                          screen: 'Login',
-                        })}
-                        onResetSuccess={() => navigation.navigate('Auth', {
-                          screen: 'Login',
-                        })}
-                      />
-                    )}
-                  </AuthStack.Screen>
-                </AuthStack.Navigator>
-              )}
-            </RootStack.Screen>
-          ) : (
-            // Show main app if authenticated
-            <RootStack.Screen name="Main">
-              {({ navigation }) => (
-                <MainStack.Navigator
-                  screenOptions={{
-                    headerShown: false,
-                    animation: 'slide_from_right',
-                  }}
-                  initialRouteName="MainTabs"
-                >
-                  {/* Bottom Tab Navigator */}
-                  <MainStack.Screen name="MainTabs">
-                    {() => (
-                      <BottomTabNavigator
-                        onNavigateToChat={(conversationId) =>
-                          navigation.navigate('Main', {
-                            screen: 'ChatRoom',
-                            params: { conversationId },
-                          })
-                        }
-                        onNavigateToInsightDetail={(insightId, title) =>
-                          navigation.navigate('Main', {
-                            screen: 'InsightDetail',
-                            params: { insightId, title },
-                          })
-                        }
-                        onNavigateToSettings={() =>
-                          navigation.navigate('Main', {
-                            screen: 'Settings',
-                          })
-                        }
-                        onNavigateToSubscription={(isSubscribed: boolean) =>
-                          navigation.navigate('Main', {
-                            screen: isSubscribed ? 'Subscription' : 'Paywall',
-                          })
-                        }
-                        onNavigateToTerms={() =>
-                          navigation.navigate('Main', {
-                            screen: 'Terms',
-                          })
-                        }
-                        onNavigateToAbout={() =>
-                          navigation.navigate('Main', {
-                            screen: 'About',
-                          })
-                        }
-                        onNavigateToInsightRequests={() =>
-                          navigation.navigate('Main', {
-                            screen: 'InsightRequests',
-                          })
-                        }
-                        onLogout={() => {
-                          // Logout is handled by ProfileScreen via authLogout()
-                        }}
-                      />
-                    )}
-                  </MainStack.Screen>
+      <RootStack.Navigator
+        screenOptions={{
+          headerShown: false,
+          animation: 'fade',
+          animationDuration: 300,
+        }}
+        initialRouteName="Main"
+      >
+        <RootStack.Screen name="Main" component={MainStackScreens} />
 
-                  {/* Modal/Detail Screens */}
-                  <MainStack.Screen name="ChatRoom">
-                    {({ route, navigation }) => (
-                      <ConversationScreen
-                        conversationId={route.params.conversationId}
-                        onNavigateBack={() => navigation.goBack()}
-                      />
-                    )}
-                  </MainStack.Screen>
-
-                  <MainStack.Screen name="InsightDetail" component={InsightDetailsScreen} />
-                  <MainStack.Screen name="PdfViewer" component={PdfViewerScreen} />
-                  <MainStack.Screen name="DisclosureDetails" component={DisclosureDetailsScreen} />
-                  <MainStack.Screen name="InsightRequests" component={UserRequestHistoryScreen} />
-                  <MainStack.Screen name="Notifications" component={NotificationsScreen} />
-
-                  {/* Settings Screen */}
-                  <MainStack.Screen name="Settings">
-                    {({ navigation: settingsNav }) => (
-                      <SettingsScreen
-                        onNavigateBack={() => settingsNav.goBack()}
-                        onNavigateToSecurity={() => settingsNav.navigate('Security')}
-                        onNavigateToSubscription={(isSubscribed: boolean) =>
-                          settingsNav.navigate(isSubscribed ? 'Subscription' : 'Paywall')
-                        }
-                        onNavigateToTerms={() =>
-                          navigation.navigate('Main', {
-                            screen: 'Terms',
-                          })
-                        }
-                        onNavigateToAbout={() =>
-                          settingsNav.navigate('About')
-                        }
-                        onLogout={() => {
-                          // Logout is handled by ProfileScreen via authLogout()
-                        }}
-                      />
-                    )}
-                  </MainStack.Screen>
-
-                  <MainStack.Screen name="Security">
-                    {({ navigation: securityNav }) => (
-                      <SecuritySettingsScreen
-                        onNavigateBack={() => securityNav.goBack()}
-                      />
-                    )}
-                  </MainStack.Screen>
-
-                  {/* User Subscription Screens */}
-                  <MainStack.Screen name="Subscription" component={SubscriptionScreen} />
-                  <MainStack.Screen name="Paywall" component={PaywallScreen} />
-                  <MainStack.Screen name="SubscriptionPlans" component={SubscriptionPlansScreen} />
-                  <MainStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
-                  <MainStack.Screen name="Terms">
-                    {({ navigation: termsNav }) => (
-                      <TermsScreen onNavigateBack={() => termsNav.goBack()} />
-                    )}
-                  </MainStack.Screen>
-
-                  {/* About Screen */}
-                  <MainStack.Screen name="About">
-                    {({ navigation: aboutNav }) => (
-                      <AboutScreen />
-                    )}
-                  </MainStack.Screen>
-
-                  {/* Admin Screens - Protected by AdminGuard */}
-                  <MainStack.Screen name="AdminDashboard">
-                    {() => (
-                      <AdminGuard>
-                        <AdminDashboardScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminUsers">
-                    {() => (
-                      <AdminGuard>
-                        <AdminUsersScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminInsights">
-                    {() => (
-                      <AdminGuard>
-                        <AdminInsightsScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminSubscriptions">
-                    {() => (
-                      <AdminGuard>
-                        <AdminSubscriptionsScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminBroadcast">
-                    {() => (
-                      <AdminGuard>
-                        <AdminBroadcastScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminAuditLogs">
-                    {() => (
-                      <SuperadminGuard>
-                        <AdminAuditLogsScreen />
-                      </SuperadminGuard>
-                    )}
-                  </MainStack.Screen>
-
-                  {/* New Admin Enhancement Screens */}
-                  <MainStack.Screen name="AdminAnalytics">
-                    {() => (
-                      <AdminGuard>
-                        <AdminAnalyticsScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminModeration">
-                    {() => (
-                      <AdminGuard>
-                        <AdminModerationScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminSubscriptionPlans">
-                    {() => (
-                      <AdminGuard>
-                        <AdminSubscriptionPlansScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminDiscountCodes">
-                    {() => (
-                      <AdminGuard>
-                        <AdminDiscountCodesScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminBanners">
-                    {() => (
-                      <AdminGuard>
-                        <AdminBannersScreen />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                  <MainStack.Screen name="AdminGroupChat">
-                    {({ navigation: adminNav }) => (
-                      <AdminGuard>
-                        <AdminGroupChatScreen onNavigateBack={() => adminNav.goBack()} />
-                      </AdminGuard>
-                    )}
-                  </MainStack.Screen>
-                </MainStack.Navigator>
-              )}
-            </RootStack.Screen>
-          )}
-        </RootStack.Navigator>
-      )}
+        {!authState.isAuthenticated && (
+          <RootStack.Screen name="Auth">
+            {(props) => <AuthStackScreens {...props} onRegisterSuccess={handleRegisterSuccess} />}
+          </RootStack.Screen>
+        )}
+      </RootStack.Navigator>
     </NavigationContainer>
+  );
+};
+
+/**
+ * Main Stack Screens
+ * Extracted into a stable component to prevent unmounting on RootNavigator state changes
+ */
+const MainStackScreens: React.FC<any> = ({ navigation }) => {
+  return (
+    <MainStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+      }}
+      initialRouteName="MainTabs"
+    >
+      {/* Bottom Tab Navigator */}
+      <MainStack.Screen name="MainTabs">
+        {() => (
+          <BottomTabNavigator
+            onNavigateToChat={(conversationId) =>
+              navigation.navigate('Main', {
+                screen: 'ChatRoom',
+                params: { conversationId },
+              })
+            }
+            onNavigateToInsightDetail={(insightId, title) =>
+              navigation.navigate('Main', {
+                screen: 'InsightDetail',
+                params: { insightId, title },
+              })
+            }
+            onNavigateToSettings={() =>
+              navigation.navigate('Main', {
+                screen: 'Settings',
+              })
+            }
+            onNavigateToSubscription={(isSubscribed: boolean) =>
+              navigation.navigate('Main', {
+                screen: isSubscribed ? 'Subscription' : 'Paywall',
+              })
+            }
+            onNavigateToTerms={() =>
+              navigation.navigate('Main', {
+                screen: 'Terms',
+              })
+            }
+            onNavigateToAbout={() =>
+              navigation.navigate('Main', {
+                screen: 'About',
+              })
+            }
+            onNavigateToInsightRequests={() =>
+              navigation.navigate('Main', {
+                screen: 'InsightRequests',
+              })
+            }
+            onLogout={() => {
+              // Logout is handled by ProfileScreen via authLogout()
+            }}
+          />
+        )}
+      </MainStack.Screen>
+
+      {/* Modal/Detail Screens */}
+      <MainStack.Screen name="ChatRoom">
+        {({ route, navigation: chatNav }) => (
+          <ConversationScreen
+            conversationId={route.params.conversationId}
+            onNavigateBack={() => chatNav.goBack()}
+          />
+        )}
+      </MainStack.Screen>
+
+      <MainStack.Screen name="InsightDetail" component={InsightDetailsScreen} />
+      <MainStack.Screen name="PdfViewer" component={PdfViewerScreen} />
+      <MainStack.Screen name="DisclosureDetails" component={DisclosureDetailsScreen} />
+      <MainStack.Screen name="InsightRequests" component={UserRequestHistoryScreen} />
+      <MainStack.Screen name="Notifications" component={NotificationsScreen} />
+
+      {/* Settings Screen */}
+      <MainStack.Screen name="Settings">
+        {({ navigation: settingsNav }) => (
+          <SettingsScreen
+            onNavigateBack={() => settingsNav.goBack()}
+            onNavigateToSecurity={() => settingsNav.navigate('Security')}
+            onNavigateToSubscription={(isSubscribed: boolean) =>
+              settingsNav.navigate(isSubscribed ? 'Subscription' : 'Paywall')
+            }
+            onNavigateToTerms={() =>
+              navigation.navigate('Main', {
+                screen: 'Terms',
+              })
+            }
+            onNavigateToAbout={() =>
+              settingsNav.navigate('About')
+            }
+            onLogout={() => {
+              // Logout is handled by ProfileScreen via authLogout()
+            }}
+          />
+        )}
+      </MainStack.Screen>
+
+      <MainStack.Screen name="Security">
+        {({ navigation: securityNav }) => (
+          <SecuritySettingsScreen
+            onNavigateBack={() => securityNav.goBack()}
+            onNavigateToSettings={() =>
+              navigation.navigate('Main', {
+                screen: 'Settings',
+              })
+            }
+          />
+        )}
+      </MainStack.Screen>
+
+      {/* User Subscription Screens */}
+      <MainStack.Screen name="Subscription" component={SubscriptionScreen} />
+      <MainStack.Screen name="Paywall" component={PaywallScreen} />
+      <MainStack.Screen name="SubscriptionPlans" component={SubscriptionPlansScreen} />
+      <MainStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
+      <MainStack.Screen name="Terms">
+        {({ navigation: termsNav }) => (
+          <TermsScreen onNavigateBack={() => termsNav.goBack()} />
+        )}
+      </MainStack.Screen>
+
+      {/* About Screen */}
+      <MainStack.Screen name="About" component={AboutScreen} />
+
+      {/* Admin Screens - Protected by AdminGuard */}
+      <MainStack.Screen name="AdminDashboard">
+        {() => (
+          <AdminGuard>
+            <AdminDashboardScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminUsers">
+        {() => (
+          <AdminGuard>
+            <AdminUsersScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminInsights">
+        {() => (
+          <AdminGuard>
+            <AdminInsightsScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminSubscriptions">
+        {() => (
+          <AdminGuard>
+            <AdminSubscriptionsScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminBroadcast">
+        {() => (
+          <AdminGuard>
+            <AdminBroadcastScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminAuditLogs">
+        {() => (
+          <SuperadminGuard>
+            <AdminAuditLogsScreen />
+          </SuperadminGuard>
+        )}
+      </MainStack.Screen>
+
+      {/* New Admin Enhancement Screens */}
+      <MainStack.Screen name="AdminAnalytics">
+        {() => (
+          <AdminGuard>
+            <AdminAnalyticsScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminModeration">
+        {() => (
+          <AdminGuard>
+            <AdminModerationScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminSubscriptionPlans">
+        {() => (
+          <AdminGuard>
+            <AdminSubscriptionPlansScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminDiscountCodes">
+        {() => (
+          <AdminGuard>
+            <AdminDiscountCodesScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminBanners">
+        {() => (
+          <AdminGuard>
+            <AdminBannersScreen />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminGroupChat">
+        {({ navigation: adminNav }) => (
+          <AdminGuard>
+            <AdminGroupChatScreen onNavigateBack={() => adminNav.goBack()} />
+          </AdminGuard>
+        )}
+      </MainStack.Screen>
+    </MainStack.Navigator>
+  );
+};
+
+/**
+ * Auth Stack Screens
+ */
+const AuthStackScreens: React.FC<any> = ({ navigation, onRegisterSuccess }) => {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+      }}
+      initialRouteName="Login"
+    >
+      <AuthStack.Screen name="Login">
+        {() => (
+          <LoginScreen
+            onLoginSuccess={() => { }} // Navigator updates based on authState
+            onNavigateToRegister={() => navigation.navigate('Auth', {
+              screen: 'Register',
+            })}
+            onNavigateToForgotPassword={() => navigation.navigate('Auth', {
+              screen: 'ForgotPassword',
+            })}
+          />
+        )}
+      </AuthStack.Screen>
+      <AuthStack.Screen name="Register">
+        {({ navigation: regNav }) => (
+          <RegisterScreen
+            onRegisterSuccess={(userId: string, email: string) => onRegisterSuccess(userId, email, regNav)}
+            onNavigateToLogin={() => regNav.navigate('Login')}
+          />
+        )}
+      </AuthStack.Screen>
+      <AuthStack.Screen name="Verification">
+        {({ route }) => (
+          <VerificationScreen
+            userId={route.params.userId}
+            email={route.params.email}
+            onVerificationSuccess={() => navigation.navigate('Auth', {
+              screen: 'Login'
+            })}
+            onBackToLogin={() => navigation.navigate('Auth', {
+              screen: 'Login'
+            })}
+          />
+        )}
+      </AuthStack.Screen>
+      <AuthStack.Screen name="ForgotPassword">
+        {() => (
+          <ForgotPasswordScreen
+            onBackToLogin={() => navigation.navigate('Auth', {
+              screen: 'Login',
+            })}
+            onResetEmailSent={(email: string) => navigation.navigate('Auth', {
+              screen: 'ResetPassword',
+              params: { email },
+            })}
+          />
+        )}
+      </AuthStack.Screen>
+      <AuthStack.Screen name="ResetPassword">
+        {({ route }) => (
+          <ResetPasswordScreen
+            email={route.params?.email}
+            onBackToLogin={() => navigation.navigate('Auth', {
+              screen: 'Login',
+            })}
+            onResetSuccess={() => navigation.navigate('Auth', {
+              screen: 'Login',
+            })}
+          />
+        )}
+      </AuthStack.Screen>
+    </AuthStack.Navigator>
   );
 };

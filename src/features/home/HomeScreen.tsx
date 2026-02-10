@@ -24,7 +24,7 @@ import { PremiumInsightsListScreen } from '../insights/PremiumInsightsListScreen
 import { DisclosureListScreen } from '../disclosure';
 import { InsightRequestModal } from '../insights/requests/InsightRequestModal';
 import { useTheme } from '../../app/providers/ThemeProvider';
-import { ResponsiveContainer } from '../../shared/components';
+import { ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useSubscriptionAccess } from '../subscription/useSubscriptionAccess';
 import { useIsAdmin } from '../../app/auth/auth.hooks';
@@ -63,10 +63,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   }, [activeTab, tabWidth]);
 
   const handleTabChange = (tab: TabType) => {
-    if (tab === 'premium' && !hasPremiumAccess) {
-      navigation.navigate('Paywall');
-      return;
-    }
+    // Allow guest users to switch to premium tab (the gate will handle it)
     setActiveTab(tab);
   };
 
@@ -215,11 +212,17 @@ export const HomeScreen: React.FC = React.memo(() => {
           ListHeaderComponent={renderBannerHeader()}
         />
       ) : (
-        <PremiumInsightsListScreen
-          hideHeader
-          hideAccessFilter
-          ListHeaderComponent={renderBannerHeader()}
-        />
+        <AuthRequiredGate
+          title={t('insights.premiumLoginRequired') || 'Premium Insights'}
+          message={t('insights.premiumLoginMessage') || 'Log in or subscribe to access our exclusive market analysis and premium insights.'}
+          icon="star-outline"
+        >
+          <PremiumInsightsListScreen
+            hideHeader
+            hideAccessFilter
+            ListHeaderComponent={renderBannerHeader()}
+          />
+        </AuthRequiredGate>
       )}
     </View>
   );
