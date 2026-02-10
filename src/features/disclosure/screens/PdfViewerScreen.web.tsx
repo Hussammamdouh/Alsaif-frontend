@@ -35,19 +35,28 @@ export const PdfViewerScreen: React.FC = () => {
 
     const { url, title } = route.params;
 
+    // Detect if the URL is on the same origin as the app
+    const isSameOrigin = typeof url === 'string' && (
+        url.startsWith('/') ||
+        url.includes(window.location.host)
+    );
+
     // Detect if the URL is a local address (localhost, 127.0.0.1, or local network IPs)
     // Google Docs Viewer cannot fetch these, so we must use a direct iframe.
     const isLocalAddress = typeof url === 'string' && (
         url.includes('localhost') ||
         url.includes('127.0.0.1') ||
         url.includes('192.168.') ||
-        url.includes('10.0.')
+        url.includes('10.0.') ||
+        url.includes('0.0.0.0')
     );
 
-    // Initial viewer mode: use Google for remote PDFs (standard), direct for local/same-origin
+    // Initial viewer mode: 
+    // - Use 'direct' for local addresses or same-origin (safe and bypasses Google issues)
+    // - Use 'google' for truly remote URLs (helps bypass X-Frame-Options on other sites)
     const initialIsRemote = typeof url === 'string' &&
         url.startsWith('http') &&
-        !url.includes(window.location.host) &&
+        !isSameOrigin &&
         !isLocalAddress;
 
     const [viewerMode, setViewerMode] = useState<'google' | 'direct'>(initialIsRemote ? 'google' : 'direct');
