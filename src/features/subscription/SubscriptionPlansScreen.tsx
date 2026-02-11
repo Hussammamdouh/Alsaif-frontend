@@ -69,23 +69,33 @@ export const SubscriptionPlansScreen: React.FC = () => {
   }, [billingCycle]);
 
   const handleSelectPlan = (planId: string) => {
+    if (!planId) return;
     setPendingPlanId(planId);
     setShowTermsModal(true);
   };
 
   const handleTermsAccepted = async () => {
-    setShowTermsModal(false);
     if (pendingPlanId) {
-      await initiateCheckout(pendingPlanId, billingCycle, appliedPromo?.code);
-      setPendingPlanId(null);
+      const success = await initiateCheckout(pendingPlanId, billingCycle, appliedPromo?.code);
+      if (success) {
+        setShowTermsModal(false);
+        setPendingPlanId(null);
+      }
+    } else {
+      setShowTermsModal(false);
     }
   };
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
     setValidatingPromo(true);
+
+    // Try to validate against the most likely targeted plan
+    // If we have a professional plan, use its tier, otherwise use 'premium'
+    const targetTier = professionalPlan?.tier || 'premium';
+
     try {
-      const result = await validatePromoCode(promoCode.trim(), 'premium', billingCycle);
+      const result = await validatePromoCode(promoCode.trim(), targetTier, billingCycle);
       if (result) {
         setAppliedPromo(result);
         Alert.alert('Success', MESSAGES.PROMO_APPLIED);
@@ -99,6 +109,30 @@ export const SubscriptionPlansScreen: React.FC = () => {
     } finally {
       setValidatingPromo(false);
     }
+  };
+
+  const getPriceData = (plan: any) => {
+    const basePrice = Number(plan.price) || 0;
+    let displayPrice = basePrice;
+    let hasDiscount = false;
+
+    if (appliedPromo) {
+      if (appliedPromo.type === 'percentage') {
+        displayPrice = basePrice * (1 - (Number(appliedPromo.value) || 0) / 100);
+        hasDiscount = true;
+      } else if (appliedPromo.type === 'fixed_amount') {
+        displayPrice = Math.max(0, basePrice - (Number(appliedPromo.value) || 0));
+        hasDiscount = true;
+      }
+    }
+
+    const formattedPrice = isNaN(displayPrice) ? basePrice.toString() : (displayPrice % 1 === 0 ? displayPrice.toString() : displayPrice.toFixed(2));
+
+    return {
+      displayPrice: formattedPrice,
+      originalPrice: basePrice.toString(),
+      hasDiscount
+    };
   };
 
   const styles = useMemo(() => getStyles(theme, isDesktop, width), [theme, isDesktop, width]);
@@ -218,9 +252,20 @@ export const SubscriptionPlansScreen: React.FC = () => {
                   <Text style={styles.tierName}>{investorPlan.name}</Text>
                   <View style={styles.priceWrap}>
                     <Text style={styles.currency}>{investorPlan.currency === 'USD' ? '$' : investorPlan.currency}</Text>
-                    <Text style={styles.amount}>{investorPlan.price}</Text>
+                    {(() => {
+                      const { displayPrice, originalPrice, hasDiscount } = getPriceData(investorPlan);
+                      return (
+                        <>
+                          <Text style={styles.amount}>{displayPrice}</Text>
+                          {hasDiscount && (
+                            <Text style={styles.originalPriceStrikethrough}>{originalPrice}</Text>
+                          )}
+                        </>
+                      );
+                    })()}
                     <Text style={styles.period}>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</Text>
                   </View>
+
                   <Text style={styles.tierDesc}>Perfect for individual investors starting their journey.</Text>
 
                   <View style={styles.divider} />
@@ -235,12 +280,20 @@ export const SubscriptionPlansScreen: React.FC = () => {
                   </View>
 
                   <TouchableOpacity
-                    style={[styles.actionBtn, !settings?.isNewSubscriptionsEnabled && styles.btnDisabled]}
+                    style={[
+                      styles.actionBtn,
+                      (settings?.isNewSubscriptionsEnabled === false || checkoutLoading) && styles.btnDisabled
+                    ]}
                     onPress={() => handleSelectPlan(investorPlan._id)}
-                    disabled={!settings?.isNewSubscriptionsEnabled}
+                    disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
                   >
-                    <Text style={[styles.actionBtnText, { color: theme.primary.main }]}>{t('plans.selectPlan')}</Text>
+                    {checkoutLoading && pendingPlanId === investorPlan._id ? (
+                      <ActivityIndicator color={theme.primary.main} />
+                    ) : (
+                      <Text style={[styles.actionBtnText, { color: theme.primary.main }]}>{t('plans.selectPlan')}</Text>
+                    )}
                   </TouchableOpacity>
+
                 </View>
               )}
 
@@ -257,9 +310,20 @@ export const SubscriptionPlansScreen: React.FC = () => {
                   <Text style={[styles.tierName, { color: theme.primary.main }]}>{professionalPlan.name}</Text>
                   <View style={styles.priceWrap}>
                     <Text style={styles.currency}>{professionalPlan.currency === 'USD' ? '$' : professionalPlan.currency}</Text>
-                    <Text style={styles.amount}>{professionalPlan.price}</Text>
+                    {(() => {
+                      const { displayPrice, originalPrice, hasDiscount } = getPriceData(professionalPlan);
+                      return (
+                        <>
+                          <Text style={styles.amount}>{displayPrice}</Text>
+                          {hasDiscount && (
+                            <Text style={styles.originalPriceStrikethrough}>{originalPrice}</Text>
+                          )}
+                        </>
+                      );
+                    })()}
                     <Text style={styles.period}>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</Text>
                   </View>
+
                   <Text style={styles.tierDesc}>Professional tools for serious analysts and traders.</Text>
 
                   <View style={[styles.divider, { backgroundColor: theme.primary.main + '20' }]} />
@@ -274,20 +338,24 @@ export const SubscriptionPlansScreen: React.FC = () => {
                   </View>
 
                   <TouchableOpacity
-                    style={styles.actionBtnFeatured}
+                    style={[
+                      styles.actionBtnFeatured,
+                      (checkoutLoading || settings?.isNewSubscriptionsEnabled === false) && styles.btnDisabled
+                    ]}
                     onPress={() => handleSelectPlan(professionalPlan._id)}
-                    disabled={checkoutLoading || !settings?.isNewSubscriptionsEnabled}
+                    disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
                   >
                     <LinearGradient
                       colors={[theme.primary.main, theme.primary.dark]}
                       style={StyleSheet.absoluteFill}
                     />
-                    {checkoutLoading ? (
+                    {checkoutLoading && pendingPlanId === professionalPlan._id ? (
                       <ActivityIndicator color="#FFF" />
                     ) : (
                       <Text style={styles.actionBtnTextFeatured}>{t('plans.goProfessional') || 'Go Pro Now'}</Text>
                     )}
                   </TouchableOpacity>
+
                 </View>
               )}
             </Animated.View>
@@ -341,9 +409,11 @@ export const SubscriptionPlansScreen: React.FC = () => {
 
       <SubscriptionTermsModal
         visible={showTermsModal}
-        onClose={() => setShowTermsModal(false)}
+        onClose={() => !checkoutLoading && setShowTermsModal(false)}
         onAccept={handleTermsAccepted}
+        loading={checkoutLoading}
       />
+
     </View>
   );
 };
@@ -549,6 +619,14 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
     color: theme.text.hint,
     marginLeft: 4,
   },
+  originalPriceStrikethrough: {
+    fontSize: 20,
+    color: theme.text.hint,
+    textDecorationLine: 'line-through',
+    marginLeft: 8,
+    alignSelf: 'center',
+  },
+
   tierDesc: {
     fontSize: 15,
     color: theme.text.secondary,

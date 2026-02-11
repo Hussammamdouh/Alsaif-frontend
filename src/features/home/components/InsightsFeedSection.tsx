@@ -5,7 +5,9 @@ import { useMarketData } from '../../../core/hooks/useMarketData';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSubscriptionAccess } from '../../subscription';
 import { spacing } from '../../../core/theme/spacing';
+
 
 interface InsightsFeedSectionProps {
     marketData?: any[];
@@ -30,6 +32,8 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
     const activeMarketLoading = propMarketData ? !!propLoading : marketLoading;
     const loading = insightsLoading || activeMarketLoading;
     const navigation = useNavigation<any>();
+    const { canAccessInsight } = useSubscriptionAccess();
+
 
     // Filter insights based on active market data
     const filteredInsights = React.useMemo(() => {
@@ -78,8 +82,16 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
                     <TouchableOpacity
                         key={item._id}
                         style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}
-                        onPress={() => navigation.navigate('InsightDetail', { insightId: item._id, title: item.title })}
+                        onPress={() => {
+                            if (isPremium && !canAccessInsight('premium')) {
+                                navigation.navigate('Paywall');
+                            } else {
+                                navigation.navigate('InsightDetail', { insightId: item._id, title: item.title });
+                            }
+                        }}
                     >
+
+
                         <View style={styles.cardHeader}>
                             <View style={[styles.tagBadge, { backgroundColor: isPremium ? `${theme.primary.main}15` : `${theme.text.tertiary}15` }]}>
                                 <Text style={[styles.tagText, { color: isPremium ? theme.primary.main : theme.text.tertiary }]}>

@@ -26,6 +26,7 @@ interface SubscriptionTermsModalProps {
     visible: boolean;
     onClose: () => void;
     onAccept: () => void;
+    loading?: boolean;
 }
 
 const DESKTOP_BREAKPOINT = 768;
@@ -34,6 +35,7 @@ export const SubscriptionTermsModal: React.FC<SubscriptionTermsModalProps> = ({
     visible,
     onClose,
     onAccept,
+    loading = false,
 }) => {
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
@@ -229,8 +231,10 @@ export const SubscriptionTermsModal: React.FC<SubscriptionTermsModalProps> = ({
                             title={t('subscription.terms.continue')}
                             onPress={onAccept}
                             disabled={!accepted}
+                            loading={loading}
                             style={styles.acceptButton}
                         />
+
                     </View>
                 </SafeAreaView>
             </View>

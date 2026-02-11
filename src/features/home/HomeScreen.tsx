@@ -63,7 +63,10 @@ export const HomeScreen: React.FC = React.memo(() => {
   }, [activeTab, tabWidth]);
 
   const handleTabChange = (tab: TabType) => {
-    // Allow guest users to switch to premium tab (the gate will handle it)
+    if (tab === 'premium' && !hasPremiumAccess) {
+      navigation.navigate('Paywall');
+      return;
+    }
     setActiveTab(tab);
   };
 
