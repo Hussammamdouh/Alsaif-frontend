@@ -261,9 +261,10 @@ const styles = StyleSheet.create({
     },
     desktopModalContent: {
         flex: 0,
-        width: '100%',
-        maxWidth: 600,
-        maxHeight: '90%',
+        width: '95%',
+        maxWidth: 700,
+        height: '85%',
+        minHeight: 500,
         marginTop: 0,
         borderRadius: 24,
     },
