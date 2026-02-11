@@ -65,6 +65,11 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   const [formApplicableTiers, setFormApplicableTiers] = useState<string[]>([]);
   const [formIsActive, setFormIsActive] = useState(true);
   const [selectedCode, setSelectedCode] = useState<any | null>(null);
+  const [showUsageModal, setShowUsageModal] = useState(false);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [usageStats, setUsageStats] = useState<any>(null);
+  const [analyticsStats, setAnalyticsStats] = useState<any>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   const EXPIRATION_PRESETS = [
     { label: t('admin.oneMonth'), months: 1 },
@@ -102,6 +107,8 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     createCode,
     updateCode,
     refresh,
+    getCodeUsage,
+    getCodeAnalytics,
   } = useDiscountCodes();
 
   const resetForm = useCallback(() => {
@@ -135,6 +142,49 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     setFormIsActive(code.isActive !== false);
     setShowFormModal(true);
   }, []);
+
+  const handleDuplicate = useCallback((code: any) => {
+    resetForm();
+    setFormCode(`${code.code}-COPY`);
+    setFormDescription(code.description || '');
+    setFormType(code.type || 'percentage');
+    setFormValue(String(code.value || ''));
+    setFormTrialDays(String(code.trialDays || ''));
+    setFormMaxUses(String(code.maxUses || ''));
+    setFormValidUntil(code.validUntil ? new Date(code.validUntil).toISOString().split('T')[0] : '');
+    setFormApplicableTiers(code.applicableTiers || []);
+    setFormIsActive(code.isActive !== false);
+    setShowActionSheet(false);
+    setShowFormModal(true);
+  }, [resetForm]);
+
+  const handleViewUsage = useCallback(async (code: any) => {
+    setShowActionSheet(false);
+    setIsLoadingDetails(true);
+    setShowUsageModal(true);
+    try {
+      const stats = await getCodeUsage(code._id);
+      setUsageStats(stats);
+    } catch (error) {
+      console.error('Failed to fetch usage:', error);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  }, [getCodeUsage]);
+
+  const handleViewAnalytics = useCallback(async (code: any) => {
+    setShowActionSheet(false);
+    setIsLoadingDetails(true);
+    setShowAnalyticsModal(true);
+    try {
+      const stats = await getCodeAnalytics(code._id);
+      setAnalyticsStats(stats);
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  }, [getCodeAnalytics]);
 
   const TIERS = ['basic', 'starter', 'premium', 'pro', 'enterprise'];
 
@@ -255,7 +305,7 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     if (code.type === 'percentage') {
       return `${code.value}% OFF`;
     } else if (code.type === 'fixed_amount') {
-      return `$${code.value} OFF`;
+      return `${code.value} AED OFF`;
     } else {
       return `${code.trialDays} Days Free`;
     }
@@ -492,17 +542,17 @@ export const AdminDiscountCodesScreen: React.FC = () => {
             {
               label: t('admin.viewAnalytics'),
               icon: 'analytics-outline',
-              onPress: () => setShowActionSheet(false),
+              onPress: () => selectedCode && handleViewAnalytics(selectedCode),
             },
             {
               label: t('admin.viewUsage'),
               icon: 'list-outline',
-              onPress: () => setShowActionSheet(false),
+              onPress: () => selectedCode && handleViewUsage(selectedCode),
             },
             {
               label: t('common.duplicate'),
               icon: 'copy-outline',
-              onPress: () => setShowActionSheet(false),
+              onPress: () => selectedCode && handleDuplicate(selectedCode),
             },
             {
               label: t('common.delete'),
@@ -527,6 +577,73 @@ export const AdminDiscountCodesScreen: React.FC = () => {
           icon="trash"
         />
 
+        {/* Usage Modal */}
+        <Modal
+          visible={showUsageModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowUsageModal(false)}
+        >
+          <View style={[localStyles.modalOverlay, isDesktop && { justifyContent: 'center' }]}>
+            <View style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}>
+              <View style={localStyles.modalHeader}>
+                <Text style={localStyles.modalTitle}>{t('admin.usageStats')}</Text>
+                <TouchableOpacity onPress={() => setShowUsageModal(false)}>
+                  <Ionicons name="close" size={24} color={theme.text.primary} />
+                </TouchableOpacity>
+              </View>
+              {isLoadingDetails ? (
+                <ActivityIndicator size="large" color={theme.primary.main} />
+              ) : (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View style={localStyles.statItem}>
+                    <Text style={localStyles.statLabel}>{t('admin.timesUsed')}</Text>
+                    <Text style={localStyles.statValue}>{usageStats?.usageCount || 0}</Text>
+                  </View>
+                  <View style={localStyles.statItem}>
+                    <Text style={localStyles.statLabel}>{t('admin.revenueGenerated')}</Text>
+                    <Text style={localStyles.statValue}>{usageStats?.totalRevenue || 0} AED</Text>
+                  </View>
+                  {/* ... other stats if available */}
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        </Modal>
+
+        {/* Analytics Modal */}
+        <Modal
+          visible={showAnalyticsModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowAnalyticsModal(false)}
+        >
+          <View style={[localStyles.modalOverlay, isDesktop && { justifyContent: 'center' }]}>
+            <View style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}>
+              <View style={localStyles.modalHeader}>
+                <Text style={localStyles.modalTitle}>{t('admin.viewAnalytics')}</Text>
+                <TouchableOpacity onPress={() => setShowAnalyticsModal(false)}>
+                  <Ionicons name="close" size={24} color={theme.text.primary} />
+                </TouchableOpacity>
+              </View>
+              {isLoadingDetails ? (
+                <ActivityIndicator size="large" color={theme.primary.main} />
+              ) : (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View style={localStyles.statItem}>
+                    <Text style={localStyles.statLabel}>{t('admin.revenueGenerated')}</Text>
+                    <Text style={localStyles.statValue}>{analyticsStats?.totalRevenue || 0} AED</Text>
+                  </View>
+                  <View style={localStyles.statItem}>
+                    <Text style={localStyles.statLabel}>{t('admin.conversionFunnel')}</Text>
+                    <Text style={localStyles.statValue}>{analyticsStats?.conversionRate || '0'}%</Text>
+                  </View>
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        </Modal>
+
         {/* Create/Edit Code Modal */}
         <Modal
           visible={showFormModal}
@@ -534,7 +651,7 @@ export const AdminDiscountCodesScreen: React.FC = () => {
           transparent={true}
           onRequestClose={() => setShowFormModal(false)}
         >
-          <View style={localStyles.modalOverlay}>
+          <View style={[localStyles.modalOverlay, isDesktop && { justifyContent: 'center' }]}>
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}
@@ -729,14 +846,6 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
   },
-  desktopModalContent: {
-    width: 600,
-    alignSelf: 'center',
-    marginVertical: 40,
-    borderRadius: 24,
-    minHeight: 'auto',
-    maxHeight: '90%',
-  },
   filtersRow: {
     marginBottom: 4,
   },
@@ -848,14 +957,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: theme.background.primary,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    minHeight: '80%',
+    maxHeight: '90%',
     padding: 24,
   },
   modalHeader: {
@@ -980,5 +1089,30 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   expiredText: {
     fontSize: 10,
     fontWeight: '800',
+  },
+  statItem: {
+    backgroundColor: theme.background.secondary,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 16,
+    color: theme.text.secondary,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.primary.main,
+  },
+  desktopModalContent: {
+    width: 600,
+    alignSelf: 'center',
+    marginVertical: 'auto',
+    borderRadius: 24,
+    maxHeight: '90%',
   },
 });

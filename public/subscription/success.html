@@ -159,7 +159,32 @@
         const urlParams = new URLSearchParams(window.location.search);
         const returnUrl = urlParams.get('return_url') || 'alsaif-analysis://payment-success';
 
-        document.getElementById('returnBtn').href = returnUrl;
+        function performRedirect() {
+            // Use multiple redirect methods for maximum device/browser compatibility
+            try {
+                window.location.assign(returnUrl);
+            } catch (e) {
+                // Method 2: Fallback to programmatic anchor click
+                const link = document.createElement('a');
+                link.href = returnUrl;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Method 3: Final fallback with setTimeout
+            setTimeout(() => {
+                window.location.href = returnUrl;
+            }, 100);
+        }
+
+        const returnBtn = document.getElementById('returnBtn');
+        returnBtn.href = returnUrl;
+        returnBtn.onclick = (e) => {
+            e.preventDefault();
+            performRedirect();
+        };
 
         let seconds = 5;
         const countdownEl = document.getElementById('countdown');
@@ -168,7 +193,7 @@
             seconds--;
             if (seconds <= 0) {
                 clearInterval(interval);
-                window.location.href = returnUrl;
+                performRedirect();
             } else {
                 countdownEl.textContent = `Redirecting in ${seconds} seconds...`;
             }

@@ -10,7 +10,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   // Container
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: theme.background.primary,
   },
   desktopContentWrapper: {
     flex: 1,
@@ -19,6 +19,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    backgroundColor: theme.background.primary,
   },
 
   // Header
@@ -162,7 +163,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
 
   // Card

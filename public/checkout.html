@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #0a1a0a 0%, #1a2e1a 50%, #0a1a0a 100%);
@@ -20,11 +22,13 @@
             color: #fff;
             padding: 20px;
         }
+
         .container {
             max-width: 400px;
             width: 100%;
             text-align: center;
         }
+
         .logo {
             width: 80px;
             height: 80px;
@@ -36,27 +40,34 @@
             justify-content: center;
             font-size: 32px;
         }
+
         h1 {
             font-size: 28px;
             margin-bottom: 12px;
         }
+
         p {
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
             margin-bottom: 32px;
             line-height: 1.6;
         }
+
         .spinner {
             width: 48px;
             height: 48px;
-            border: 4px solid rgba(255,255,255,0.1);
+            border: 4px solid rgba(255, 255, 255, 0.1);
             border-left-color: #438730;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 24px auto;
         }
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
+
         .error {
             background: rgba(196, 43, 28, 0.1);
             border: 1px solid rgba(196, 43, 28, 0.3);
@@ -65,6 +76,7 @@
             border-radius: 12px;
             margin-top: 24px;
         }
+
         .btn {
             display: inline-block;
             background: linear-gradient(135deg, #438730, #2d5a20);
@@ -76,12 +88,14 @@
             margin-top: 24px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(67, 135, 48, 0.4);
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo">📊</div>
@@ -92,38 +106,40 @@
     </div>
 
     <script>
-        const API_BASE = 'https://elsaif-backend-persistent.onrender.com';
-        
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000'
+            : 'https://elsaif-backend-persistent.onrender.com';
+
         async function initCheckout() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
-            
+
             if (!token) {
                 showError('Invalid checkout link. Please try again from the app.');
                 return;
             }
-            
+
             try {
                 document.getElementById('status').textContent = 'Verifying your session...';
-                
+
                 // Verify magic link token
                 const verifyResponse = await fetch(`${API_BASE}/api/magic-link/verify/${token}`);
                 const verifyData = await verifyResponse.json();
-                
+
                 if (!verifyData.success) {
                     showError(verifyData.message || 'Session expired. Please try again from the app.');
                     return;
                 }
-                
+
                 const { accessToken, metadata } = verifyData.data;
-                
+
                 if (!metadata.planId || !metadata.billingCycle) {
                     showError('Invalid checkout parameters. Please try again from the app.');
                     return;
                 }
-                
+
                 document.getElementById('status').textContent = 'Redirecting to payment...';
-                
+
                 // Create checkout session
                 const checkoutResponse = await fetch(`${API_BASE}/api/subscriptions/checkout`, {
                     method: 'POST',
@@ -138,12 +154,33 @@
                         cancelUrl: `${window.location.origin}/subscription/cancel?return_url=${encodeURIComponent(metadata.returnUrl || 'alsaif-analysis://payment-cancel')}`
                     })
                 });
-                
+
                 const checkoutData = await checkoutResponse.json();
-                
+
                 if (checkoutData.success && checkoutData.data.checkoutUrl) {
-                    // Redirect to Stripe Checkout
-                    window.location.href = checkoutData.data.checkoutUrl;
+                    const checkoutUrl = checkoutData.data.checkoutUrl;
+
+                    // Use multiple redirect methods for maximum Safari compatibility
+                    // Method 1: Try location.assign (works in most cases)
+                    try {
+                        window.location.assign(checkoutUrl);
+                    } catch (e) {
+                        // Method 2: Fallback to programmatic anchor click
+                        // This simulates a user clicking a link, which Safari respects
+                        const link = document.createElement('a');
+                        link.href = checkoutUrl;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+
+                    // Method 3: Final fallback with setTimeout
+                    setTimeout(() => {
+                        if (window.location.href.indexOf('stripe.com') === -1) {
+                            window.location.href = checkoutUrl;
+                        }
+                    }, 100);
                 } else {
                     showError(checkoutData.message || 'Failed to create checkout session. Please try again.');
                 }
@@ -152,7 +189,7 @@
                 showError('An error occurred. Please try again from the app.');
             }
         }
-        
+
         function showError(message) {
             document.getElementById('spinner').style.display = 'none';
             document.getElementById('status').textContent = 'Error';
@@ -164,9 +201,10 @@
             `;
             errorDiv.style.display = 'block';
         }
-        
+
         // Initialize on page load
         initCheckout();
     </script>
 </body>
+
 </html>

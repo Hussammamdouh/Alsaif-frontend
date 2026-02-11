@@ -101,8 +101,36 @@
         const urlParams = new URLSearchParams(window.location.search);
         const returnUrl = urlParams.get('return_url') || 'alsaif-analysis://payment-cancel';
 
-        document.getElementById('returnBtn').href = returnUrl;
-        document.getElementById('tryAgainBtn').href = returnUrl.replace('cancel', 'retry');
+        function performRedirect(url) {
+            try {
+                window.location.assign(url);
+            } catch (e) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            setTimeout(() => {
+                window.location.href = url;
+            }, 100);
+        }
+
+        const returnBtn = document.getElementById('returnBtn');
+        returnBtn.href = returnUrl;
+        returnBtn.onclick = (e) => {
+            e.preventDefault();
+            performRedirect(returnUrl);
+        };
+
+        const tryAgainBtn = document.getElementById('tryAgainBtn');
+        const tryAgainUrl = returnUrl.replace('cancel', 'retry');
+        tryAgainBtn.href = tryAgainUrl;
+        tryAgainBtn.onclick = (e) => {
+            e.preventDefault();
+            performRedirect(tryAgainUrl);
+        };
     </script>
 </body>
 

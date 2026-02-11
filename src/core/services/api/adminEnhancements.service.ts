@@ -495,7 +495,15 @@ export const discountCodesService = {
    * Alias for getAnalytics
    */
   getCodeAnalytics: (codeId: string) =>
-    apiClient.get<any>(`/api/admin/discount-codes/${codeId}/analytics`).then(res => res.data || res),
+    apiClient.get<any>(`/api/admin/discount-codes/${codeId}/analytics`).then(res => {
+      const data = res.data || res;
+      // Map backend fields to frontend expectations if necessary
+      return {
+        ...data,
+        totalRevenue: data.totalRevenue || 0,
+        conversionRate: data.conversionRate || '0'
+      };
+    }),
 
   /**
    * Get specific code
@@ -549,7 +557,15 @@ export const discountCodesService = {
    * Alias for getStats
    */
   getCodeUsage: (codeId: string) =>
-    apiClient.get<any>(`/api/admin/discount-codes/${codeId}/stats`).then(res => res.data || res),
+    apiClient.get<any>(`/api/admin/discount-codes/${codeId}/stats`).then(res => {
+      const data = res.data || res;
+      // Map backend fields (totalUses, totalDiscountGiven) to frontend expectations (usageCount, totalRevenue)
+      return {
+        ...data,
+        usageCount: data.totalUses || 0,
+        totalRevenue: data.totalDiscountGiven || 0
+      };
+    }),
 
   /**
    * Validate code
