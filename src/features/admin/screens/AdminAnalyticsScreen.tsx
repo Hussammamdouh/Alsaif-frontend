@@ -46,9 +46,9 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 export const AdminAnalyticsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t } = useLocalization();
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
-  const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { t, isRTL } = useLocalization();
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+  const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
 
@@ -122,14 +122,14 @@ export const AdminAnalyticsScreen: React.FC = () => {
   }
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{isDesktop ? t('admin.analyticsOverview') : t('admin.analytics')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.analyticsOverview') : t('admin.analytics')}</Text>
       </View>
       <TouchableOpacity onPress={refresh} style={localStyles.iconBtn}>
         <Ionicons name="refresh" size={22} color={theme.primary.main} />
@@ -195,27 +195,27 @@ export const AdminAnalyticsScreen: React.FC = () => {
       end={{ x: 1, y: 1 }}
       style={localStyles.heroCard}
     >
-      <View style={localStyles.heroContent}>
-        <View>
-          <Text style={localStyles.heroLabel}>{t('admin.mrr')}</Text>
-          <Text style={localStyles.heroValue}>{formatCurrency(revenueOverview?.mrr)}</Text>
+      <View style={[localStyles.heroContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+          <Text style={[localStyles.heroLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.mrr')}</Text>
+          <Text style={[localStyles.heroValue, { textAlign: isRTL ? 'right' : 'left' }]}>{formatCurrency(revenueOverview?.mrr)}</Text>
         </View>
-        <View style={localStyles.heroTrendBadge}>
+        <View style={[localStyles.heroTrendBadge, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <Ionicons name="trending-up" size={16} color="#fff" />
           <Text style={localStyles.heroTrendText}>
             {calculateDelta(revenueOverview?.mrr, comparison?.metrics?.mrr) || '+0%'}
           </Text>
         </View>
       </View>
-      <View style={localStyles.heroFooter}>
-        <View style={localStyles.heroStatMini}>
-          <Text style={localStyles.heroStatMiniLabel}>{t('admin.totalUsers')}</Text>
-          <Text style={localStyles.heroStatMiniValue}>{formatNumber(engagementMetrics?.totalUsers)}</Text>
+      <View style={[localStyles.heroFooter, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[localStyles.heroStatMini, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <Text style={[localStyles.heroStatMiniLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.totalUsers')}</Text>
+          <Text style={[localStyles.heroStatMiniValue, { textAlign: isRTL ? 'right' : 'left' }]}>{formatNumber(engagementMetrics?.totalUsers)}</Text>
         </View>
         <View style={localStyles.heroDivider} />
-        <View style={localStyles.heroStatMini}>
-          <Text style={localStyles.heroStatMiniLabel}>{t('admin.activeUsers')}</Text>
-          <Text style={localStyles.heroStatMiniValue}>{formatNumber(engagementMetrics?.activeUsers)}</Text>
+        <View style={[localStyles.heroStatMini, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <Text style={[localStyles.heroStatMiniLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.activeUsers')}</Text>
+          <Text style={[localStyles.heroStatMiniValue, { textAlign: isRTL ? 'right' : 'left' }]}>{formatNumber(engagementMetrics?.activeUsers)}</Text>
         </View>
       </View>
     </LinearGradient>
@@ -319,9 +319,9 @@ export const AdminAnalyticsScreen: React.FC = () => {
               const percentage = ((item.users || item.value || 0) / (totalUsers || 1) * 100);
               return (
                 <View key={index} style={localStyles.geoListItem}>
-                  <View style={localStyles.geoInfoRow}>
-                    <Text style={localStyles.geoName}>{item.country || item.name}</Text>
-                    <Text style={localStyles.geoValue}>{formatNumber(item.users || item.value)}</Text>
+                  <View style={[localStyles.geoInfoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Text style={[localStyles.geoName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.country || item.name}</Text>
+                    <Text style={[localStyles.geoValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatNumber(item.users || item.value)}</Text>
                   </View>
                   <View style={localStyles.progressBg}>
                     <View style={[localStyles.progressFill, { width: `${percentage}%`, backgroundColor: generateChartColors(10)[index] }]} />
@@ -377,9 +377,9 @@ export const AdminAnalyticsScreen: React.FC = () => {
               const percentage = ((item.users || item.value || 0) / (totalUsers || 1) * 100);
               return (
                 <View key={index} style={localStyles.geoListItem}>
-                  <View style={localStyles.geoInfoRow}>
-                    <Text style={localStyles.geoName}>{item.country || item.name}</Text>
-                    <Text style={localStyles.geoValue}>{formatNumber(item.users || item.value)}</Text>
+                  <View style={[localStyles.geoInfoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Text style={[localStyles.geoName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.country || item.name}</Text>
+                    <Text style={[localStyles.geoValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatNumber(item.users || item.value)}</Text>
                   </View>
                   <View style={localStyles.progressBg}>
                     <View style={[localStyles.progressFill, { width: `${percentage}%`, backgroundColor: generateChartColors(10)[index] }]} />
@@ -401,11 +401,11 @@ export const AdminAnalyticsScreen: React.FC = () => {
               <View style={[localStyles.rankBadge, index === 0 && localStyles.rankGold]}>
                 <Text style={[localStyles.rankText, index === 0 && { color: '#fff' }]}>{index + 1}</Text>
               </View>
-              <View style={localStyles.contentInfo}>
-                <Text style={localStyles.contentTitle} numberOfLines={1}>{content.title}</Text>
-                <Text style={localStyles.contentMeta}>{formatNumber(content.views)} {t('admin.views')} • {formatNumber(content.likes)} {t('admin.likes')}</Text>
+              <View style={[localStyles.contentInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[localStyles.contentTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{content.title}</Text>
+                <Text style={[localStyles.contentMeta, { textAlign: isRTL ? 'right' : 'left' }]}>{formatNumber(content.views)} {t('admin.views')} • {formatNumber(content.likes)} {t('admin.likes')}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={14} color={theme.text.tertiary} />
+              <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={14} color={theme.text.tertiary} />
             </TouchableOpacity>
           ))}
         </View>
@@ -515,14 +515,14 @@ export const AdminAnalyticsScreen: React.FC = () => {
             </View>
           </View>
           {failedPayments.map((payment: any, index: number) => (
-            <View key={index} style={localStyles.failedPaymentItem}>
-              <View style={localStyles.failedPaymentInfo}>
-                <Text style={localStyles.paymentUser}>{payment.user?.name || 'Unknown User'}</Text>
-                <Text style={localStyles.paymentDetails}>
+            <View key={index} style={[localStyles.failedPaymentItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[localStyles.failedPaymentInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[localStyles.paymentUser, { textAlign: isRTL ? 'right' : 'left' }]}>{payment.user?.name || 'Unknown User'}</Text>
+                <Text style={[localStyles.paymentDetails, { textAlign: isRTL ? 'right' : 'left' }]}>
                   {formatCurrency(payment.amount)} • {payment.paymentMethod}
                 </Text>
               </View>
-              <Text style={localStyles.paymentDate}>
+              <Text style={[localStyles.paymentDate, { textAlign: isRTL ? 'left' : 'right' }]}>
                 {new Date(payment.createdAt).toLocaleDateString()}
               </Text>
             </View>
@@ -562,7 +562,7 @@ export const AdminAnalyticsScreen: React.FC = () => {
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   iconBtn: {
     padding: 8,
     borderRadius: 12,
@@ -575,13 +575,15 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderBottomColor: theme.border.main,
   },
   tabStrip: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     paddingHorizontal: 16,
     paddingBottom: 16,
     gap: 8,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   tabButton: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -598,7 +600,8 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.primary.main,
-    marginLeft: 8,
+    marginLeft: isRTL ? 0 : 8,
+    marginRight: isRTL ? 8 : 0,
   },
   heroCard: {
     padding: 24,
@@ -610,7 +613,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 8,
   },
   heroContent: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 24,
@@ -630,7 +633,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     letterSpacing: -1,
   },
   heroTrendBadge: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 10,
@@ -641,10 +644,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '800',
-    marginLeft: 4,
+    [isRTL ? 'marginRight' : 'marginLeft']: 4,
   },
   heroFooter: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingTop: 20,
     borderTopWidth: 1,
@@ -678,7 +681,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     padding: 2,
   },
   cardHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
@@ -691,7 +694,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     letterSpacing: -0.5,
   },
   twoColumnGrid: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 16,
   },
   geoList: {
@@ -702,7 +705,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     marginBottom: 16,
   },
   geoInfoRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     marginBottom: 6,
   },
@@ -727,7 +730,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderRadius: 3,
   },
   contentItem: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
@@ -740,7 +743,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.background.tertiary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    [isRTL ? 'marginLeft' : 'marginRight']: 16,
   },
   rankGold: {
     backgroundColor: theme.primary.main,
@@ -752,7 +755,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   },
   contentInfo: {
     flex: 1,
-    marginRight: 12,
+    [isRTL ? 'marginLeft' : 'marginRight']: 12,
   },
   contentTitle: {
     fontSize: 14,
@@ -766,14 +769,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     marginTop: 2,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 12,
   },
   badge: {
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    marginLeft: 8,
+    [isRTL ? 'marginRight' : 'marginLeft']: 8,
   },
   badgeText: {
     fontSize: 12,
@@ -781,7 +784,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: '#fff',
   },
   failedPaymentItem: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,

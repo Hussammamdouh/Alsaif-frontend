@@ -6,7 +6,7 @@
 import React, { PropsWithChildren } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider } from '../auth';
+import { AuthProvider } from '../auth/AuthProvider';
 import { OfflineBanner } from '../../shared/components/OfflineBanner';
 import { ThemeProvider } from './ThemeProvider';
 import { LocalizationProvider } from './LocalizationProvider';

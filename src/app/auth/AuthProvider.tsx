@@ -15,7 +15,7 @@ import { AppState, AppStateStatus, PanResponder } from 'react-native';
 import { AuthContextValue, BootstrapState, User } from './auth.types';
 import { authReducer, initialAuthState } from './auth.reducer';
 import * as AuthActions from './auth.actions';
-import { LoadingScreen } from '../../shared/components';
+import { LoadingScreen } from '../../shared/components/LoadingScreen';
 import { setOnUnauthorizedCallback } from '../../core/services/api/apiClient';
 
 /**

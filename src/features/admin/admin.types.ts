@@ -154,7 +154,7 @@ export interface SubscriptionFilters {
 
 // Notification Broadcast Types
 export type BroadcastTarget = 'all' | 'premium' | 'basic' | 'admins' | 'active';
-export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
 
 export interface BroadcastNotificationData {
   title: string;

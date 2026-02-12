@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export const createStyles = (theme: any) => StyleSheet.create({
+export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.background.primary,
@@ -8,7 +8,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
 
   // Header
   header: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -20,7 +20,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
   },
   dashboardHeader: {
     height: 110,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 45,
@@ -30,7 +30,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
     borderBottomColor: theme.ui.border,
   },
   headerTitleContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
   },
   headerTitle: {
@@ -38,13 +38,15 @@ export const createStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
     color: theme.text.primary,
     letterSpacing: 0.5,
+    textAlign: isRTL ? 'right' : 'left',
   },
   unreadBadge: {
     backgroundColor: theme.accent.error,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    marginLeft: 8,
+    marginLeft: isRTL ? 0 : 8,
+    marginRight: isRTL ? 8 : 0,
     minWidth: 24,
     alignItems: 'center',
     justifyContent: 'center',
@@ -79,13 +81,15 @@ export const createStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     gap: 8,
+    flexDirection: isRTL ? 'row-reverse' : 'row',
   },
   categoryFilterButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: theme.background.tertiary,
-    marginRight: 8,
+    marginLeft: isRTL ? 8 : 0,
+    marginRight: isRTL ? 0 : 8,
   },
   categoryFilterButtonActive: {
     backgroundColor: theme.primary.main,
@@ -105,6 +109,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: theme.background.tertiary,
+    alignItems: isRTL ? 'flex-end' : 'flex-start',
   },
   sectionHeaderText: {
     fontSize: 12,
@@ -112,6 +117,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
     color: theme.text.disabled,
     textTransform: 'uppercase',
     letterSpacing: 1,
+    textAlign: isRTL ? 'right' : 'left',
   },
 
   // Notification Item
@@ -121,7 +127,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: theme.ui.border,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'flex-start',
   },
   notificationItemUnread: {
@@ -129,16 +135,17 @@ export const createStyles = (theme: any) => StyleSheet.create({
   },
   notificationContent: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'flex-start',
   },
   notificationIcon: {
     width: 52,
     height: 52,
-    borderRadius: 16, // Smoother rounded corners
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginLeft: isRTL ? 16 : 0,
+    marginRight: isRTL ? 0 : 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -147,33 +154,39 @@ export const createStyles = (theme: any) => StyleSheet.create({
   },
   notificationTextContainer: {
     flex: 1,
+    alignItems: isRTL ? 'flex-end' : 'flex-start',
   },
   notificationHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 6,
+    width: '100%',
   },
   notificationTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: theme.text.primary,
     flex: 1,
-    marginRight: 8,
+    marginLeft: isRTL ? 8 : 0,
+    marginRight: isRTL ? 0 : 8,
     lineHeight: 22,
+    textAlign: isRTL ? 'right' : 'left',
   },
   notificationTitleUnread: {
-    color: theme.isDark ? '#d4af37' : '#2d6a4f', // Use brand colors for unread titles
+    color: theme.isDark ? '#d4af37' : '#2d6a4f',
   },
   notificationTime: {
     fontSize: 11,
     color: theme.text.disabled,
     fontWeight: '500',
+    textAlign: isRTL ? 'left' : 'right',
   },
   notificationBody: {
     fontSize: 14,
     color: theme.text.secondary,
     lineHeight: 22,
+    textAlign: isRTL ? 'right' : 'left',
   },
   notificationBodyUnread: {
     color: theme.text.primary,
@@ -191,14 +204,15 @@ export const createStyles = (theme: any) => StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#d4af37', // Gold indicator
-    marginLeft: 8,
+    backgroundColor: '#d4af37',
+    marginRight: isRTL ? 8 : 0,
+    marginLeft: isRTL ? 0 : 8,
     marginTop: 8,
   },
 
   // CTA Buttons
   ctaButtonsContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     marginTop: 18,
     gap: 12,
   },
@@ -214,7 +228,7 @@ export const createStyles = (theme: any) => StyleSheet.create({
     borderColor: theme.ui.border,
   },
   ctaButtonPrimary: {
-    backgroundColor: '#2d6a4f', // Brand Green
+    backgroundColor: '#2d6a4f',
     borderColor: '#2d6a4f',
   },
   ctaButtonDanger: {
@@ -257,10 +271,26 @@ export const createStyles = (theme: any) => StyleSheet.create({
     textTransform: 'uppercase',
   },
 
+  // Broadcast Badge
+  broadcastBadge: {
+    position: 'absolute',
+    top: -6,
+    left: isRTL ? -6 : undefined,
+    right: isRTL ? undefined : -6,
+    backgroundColor: theme.primary.main,
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1.5,
+    borderColor: theme.background.secondary,
+    zIndex: 1,
+  },
+
   // Dismiss Button
   dismissButton: {
     padding: 6,
-    marginLeft: 8,
+    marginRight: isRTL ? 8 : 0,
+    marginLeft: isRTL ? 0 : 8,
     borderRadius: 14,
     backgroundColor: 'rgba(255,255,255,0.05)',
   },

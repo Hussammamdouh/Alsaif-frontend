@@ -408,8 +408,29 @@ export const getBroadcastHistory = async (
     throw new Error(response.message || 'Failed to fetch broadcast history');
   }
 
+  // Transform the response to match frontend expectations
+  const transformedData = response.data.notifications.map((n: any) => ({
+    id: n._id || n.id,
+    title: n.title,
+    body: n.body,
+    priority: n.priority || 'medium',
+    target: n.richContent?.metadata?.target || 'all',
+    recipientCount: n.recipientCount || n.richContent?.metadata?.recipientCount || 1,
+    status: n.overallStatus === 'pending' ? 'pending' : (n.overallStatus === 'failed' ? 'failed' : 'sent'),
+    adminEmail: n.richContent?.metadata?.adminEmail || '',
+    sender: {
+      name: n.richContent?.metadata?.adminEmail?.split('@')[0] || 'Admin',
+      email: n.richContent?.metadata?.adminEmail || ''
+    },
+    sentAt: n.createdAt,
+    createdAt: n.createdAt,
+    scheduledFor: n.scheduledFor || n.richContent?.metadata?.scheduledFor,
+    actionUrl: n.richContent?.actionUrl,
+    imageUrl: n.richContent?.imageUrl,
+  }));
+
   return {
-    data: response.data.notifications,
+    data: transformedData,
     pagination: response.data.pagination,
   };
 };

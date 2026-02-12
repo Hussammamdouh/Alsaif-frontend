@@ -42,9 +42,9 @@ import { ResponsiveContainer } from '../../../shared/components';
 export const AdminDiscountCodesScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t } = useLocalization();
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
-  const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { t, isRTL } = useLocalization();
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+  const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
 
@@ -323,17 +323,17 @@ export const AdminDiscountCodesScreen: React.FC = () => {
         onPress={() => handleCodePress(item)}
         activeOpacity={0.7}
       >
-        <View style={localStyles.codeHeader}>
-          <View style={localStyles.codeInfo}>
-            <Text style={localStyles.codeName}>{item.code}</Text>
+        <View style={[localStyles.codeHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[localStyles.codeInfo, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[localStyles.codeName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.code}</Text>
             <View
               style={[
                 localStyles.typeBadge,
-                { backgroundColor: `${getTypeColor(item.type)}15` },
+                { backgroundColor: `${getTypeColor(item.type)}15`, flexDirection: isRTL ? 'row-reverse' : 'row' },
               ]}
             >
               <Ionicons name={getTypeIcon(item.type) as any} size={12} color={getTypeColor(item.type)} />
-              <Text style={[localStyles.typeText, { color: getTypeColor(item.type) }]}>
+              <Text style={[localStyles.typeText, { color: getTypeColor(item.type), [isRTL ? 'marginRight' : 'marginLeft']: 4 }]}>
                 {item.type === 'fixed_amount' ? t('admin.fixedAmount') : item.type === 'percentage' ? t('admin.percentage') : t('admin.freeTrial')}
               </Text>
             </View>
@@ -354,18 +354,18 @@ export const AdminDiscountCodesScreen: React.FC = () => {
           </View>
         )}
 
-        <Text style={localStyles.discountValue}>{formatDiscount(item)}</Text>
+        <Text style={[localStyles.discountValue, { textAlign: isRTL ? 'right' : 'left' }]}>{formatDiscount(item)}</Text>
 
         {item.description && (
-          <Text style={localStyles.codeDescription} numberOfLines={2}>
+          <Text style={[localStyles.codeDescription, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={2}>
             {item.description}
           </Text>
         )}
 
-        <View style={localStyles.codeDetails}>
-          <View style={localStyles.codeDetail}>
+        <View style={[localStyles.codeDetails, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[localStyles.codeDetail, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <Ionicons name="time-outline" size={16} color={theme.text.tertiary} />
-            <Text style={localStyles.codeDetailText}>
+            <Text style={[localStyles.codeDetailText, { [isRTL ? 'marginRight' : 'marginLeft']: 6 }]}>
               {item.validUntil
                 ? `${t('admin.validUntil')} ${new Date(item.validUntil).toLocaleDateString()}`
                 : t('admin.noExpiry')}
@@ -373,9 +373,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
           </View>
 
           {item.maxUses && (
-            <View style={localStyles.codeDetail}>
+            <View style={[localStyles.codeDetail, { flexDirection: isRTL ? 'row-reverse' : 'row', [isRTL ? 'marginRight' : 'marginLeft']: 16 }]}>
               <Ionicons name="people-outline" size={16} color={theme.text.tertiary} />
-              <Text style={localStyles.codeDetailText}>
+              <Text style={[localStyles.codeDetailText, { [isRTL ? 'marginRight' : 'marginLeft']: 6 }]}>
                 {item.usageCount || 0}/{item.maxUses} {t('admin.usage')}
               </Text>
             </View>
@@ -397,9 +397,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
         )}
 
         {item.applicableTiers && item.applicableTiers.length > 0 && (
-          <View style={localStyles.tierTags}>
+          <View style={[localStyles.tierTags, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {item.applicableTiers.map((tier: string, index: number) => (
-              <View key={index} style={localStyles.tierTag}>
+              <View key={index} style={[localStyles.tierTag, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
                 <Text style={localStyles.tierTagText}>{t(`admin.${tier}`)}</Text>
               </View>
             ))}
@@ -414,14 +414,14 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   }
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{isDesktop ? t('admin.discountCodesOverview') : t('admin.discountCodes')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.discountCodesOverview') : t('admin.discountCodes')}</Text>
       </View>
       <TouchableOpacity
         style={localStyles.addButtonHeader}
@@ -586,8 +586,8 @@ export const AdminDiscountCodesScreen: React.FC = () => {
         >
           <View style={[localStyles.modalOverlay, isDesktop && { justifyContent: 'center' }]}>
             <View style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}>
-              <View style={localStyles.modalHeader}>
-                <Text style={localStyles.modalTitle}>{t('admin.usageStats')}</Text>
+              <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.usageStats')}</Text>
                 <TouchableOpacity onPress={() => setShowUsageModal(false)}>
                   <Ionicons name="close" size={24} color={theme.text.primary} />
                 </TouchableOpacity>
@@ -596,13 +596,13 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                 <ActivityIndicator size="large" color={theme.primary.main} />
               ) : (
                 <ScrollView showsVerticalScrollIndicator={false}>
-                  <View style={localStyles.statItem}>
-                    <Text style={localStyles.statLabel}>{t('admin.timesUsed')}</Text>
-                    <Text style={localStyles.statValue}>{usageStats?.usageCount || 0}</Text>
+                  <View style={[localStyles.statItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Text style={[localStyles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.timesUsed')}</Text>
+                    <Text style={[localStyles.statValue, { textAlign: isRTL ? 'left' : 'right' }]}>{usageStats?.usageCount || 0}</Text>
                   </View>
-                  <View style={localStyles.statItem}>
-                    <Text style={localStyles.statLabel}>{t('admin.revenueGenerated')}</Text>
-                    <Text style={localStyles.statValue}>{usageStats?.totalRevenue || 0} AED</Text>
+                  <View style={[localStyles.statItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Text style={[localStyles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.revenueGenerated')}</Text>
+                    <Text style={[localStyles.statValue, { textAlign: isRTL ? 'left' : 'right' }]}>{usageStats?.totalRevenue || 0} AED</Text>
                   </View>
                   {/* ... other stats if available */}
                 </ScrollView>
@@ -620,8 +620,8 @@ export const AdminDiscountCodesScreen: React.FC = () => {
         >
           <View style={[localStyles.modalOverlay, isDesktop && { justifyContent: 'center' }]}>
             <View style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}>
-              <View style={localStyles.modalHeader}>
-                <Text style={localStyles.modalTitle}>{t('admin.viewAnalytics')}</Text>
+              <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.viewAnalytics')}</Text>
                 <TouchableOpacity onPress={() => setShowAnalyticsModal(false)}>
                   <Ionicons name="close" size={24} color={theme.text.primary} />
                 </TouchableOpacity>
@@ -630,13 +630,13 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                 <ActivityIndicator size="large" color={theme.primary.main} />
               ) : (
                 <ScrollView showsVerticalScrollIndicator={false}>
-                  <View style={localStyles.statItem}>
-                    <Text style={localStyles.statLabel}>{t('admin.revenueGenerated')}</Text>
-                    <Text style={localStyles.statValue}>{analyticsStats?.totalRevenue || 0} AED</Text>
+                  <View style={[localStyles.statItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Text style={[localStyles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.revenueGenerated')}</Text>
+                    <Text style={[localStyles.statValue, { textAlign: isRTL ? 'left' : 'right' }]}>{analyticsStats?.totalRevenue || 0} AED</Text>
                   </View>
-                  <View style={localStyles.statItem}>
-                    <Text style={localStyles.statLabel}>{t('admin.conversionFunnel')}</Text>
-                    <Text style={localStyles.statValue}>{analyticsStats?.conversionRate || '0'}%</Text>
+                  <View style={[localStyles.statItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Text style={[localStyles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.conversionFunnel')}</Text>
+                    <Text style={[localStyles.statValue, { textAlign: isRTL ? 'left' : 'right' }]}>{analyticsStats?.conversionRate || '0'}%</Text>
                   </View>
                 </ScrollView>
               )}
@@ -656,8 +656,8 @@ export const AdminDiscountCodesScreen: React.FC = () => {
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}
             >
-              <View style={localStyles.modalHeader}>
-                <Text style={localStyles.modalTitle}>
+              <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                   {selectedCode ? t('admin.editCode') : t('admin.createCode')}
                 </Text>
                 <TouchableOpacity onPress={() => setShowFormModal(false)}>
@@ -667,9 +667,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
 
               <ScrollView style={localStyles.formScroll} showsVerticalScrollIndicator={false}>
                 <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.codeLabel')} *</Text>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.codeLabel')} *</Text>
                   <TextInput
-                    style={localStyles.input}
+                    style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                     value={formCode}
                     onChangeText={setFormCode}
                     placeholder="PROMO2024"
@@ -679,9 +679,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                 </View>
 
                 <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.description')}</Text>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.description')}</Text>
                   <TextInput
-                    style={[localStyles.input, localStyles.textArea]}
+                    style={[localStyles.input, localStyles.textArea, { textAlign: isRTL ? 'right' : 'left' }]}
                     value={formDescription}
                     onChangeText={setFormDescription}
                     placeholder={t('admin.noDiscountCodesMessage')}
@@ -692,8 +692,8 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                 </View>
 
                 <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.codeType')} *</Text>
-                  <View style={localStyles.typeContainer}>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.codeType')} *</Text>
+                  <View style={[localStyles.typeContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     {(['percentage', 'fixed_amount', 'free_trial'] as const).map((tType) => (
                       <TouchableOpacity
                         key={tType}
@@ -716,12 +716,12 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                   </View>
                 </View>
 
-                <View style={localStyles.row}>
+                <View style={[localStyles.row, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   {formType !== 'free_trial' ? (
-                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
-                      <Text style={localStyles.label}>{t('admin.codeValue')} *</Text>
+                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
+                      <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.codeValue')} *</Text>
                       <TextInput
-                        style={localStyles.input}
+                        style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                         value={formValue}
                         onChangeText={setFormValue}
                         placeholder={formType === 'percentage' ? '20' : '50.00'}
@@ -730,10 +730,10 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                       />
                     </View>
                   ) : (
-                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
-                      <Text style={localStyles.label}>{t('admin.trialDays')} *</Text>
+                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
+                      <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.trialDays')} *</Text>
                       <TextInput
-                        style={localStyles.input}
+                        style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                         value={formTrialDays}
                         onChangeText={setFormTrialDays}
                         placeholder="7"
@@ -742,10 +742,10 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                       />
                     </View>
                   )}
-                  <View style={[localStyles.formGroup, { flex: 1, marginLeft: 8 }]}>
-                    <Text style={localStyles.label}>{t('admin.maxUses')}</Text>
+                  <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginRight' : 'marginLeft']: 8 }]}>
+                    <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.maxUses')}</Text>
                     <TextInput
-                      style={localStyles.input}
+                      style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                       value={formMaxUses}
                       onChangeText={setFormMaxUses}
                       placeholder="100"
@@ -756,12 +756,12 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                 </View>
 
                 <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.validUntil')} (YYYY-MM-DD)</Text>
-                  <View style={[localStyles.typeContainer, { marginBottom: 12 }]}>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.validUntil')} (YYYY-MM-DD)</Text>
+                  <View style={[localStyles.typeContainer, { marginBottom: 12, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     {EXPIRATION_PRESETS.map((preset) => (
                       <TouchableOpacity
                         key={preset.months}
-                        style={localStyles.typeChip}
+                        style={[localStyles.typeChip, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}
                         onPress={() => handlePresetSelect(preset.months)}
                       >
                         <Text style={localStyles.typeChipText}>{preset.label}</Text>
@@ -769,7 +769,7 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                     ))}
                   </View>
                   <TextInput
-                    style={localStyles.input}
+                    style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                     value={formValidUntil}
                     onChangeText={setFormValidUntil}
                     placeholder="2024-12-31"
@@ -832,7 +832,7 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   addButtonHeader: {
     width: 40,
     height: 40,
@@ -865,13 +865,13 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 3,
   },
   codeHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
   codeInfo: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 8,
   },
@@ -880,9 +880,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
     color: theme.text.primary,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    textAlign: isRTL ? 'right' : 'left',
   },
   typeBadge: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 8,
@@ -904,26 +905,29 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
     color: theme.primary.main,
     marginBottom: 8,
+    textAlign: isRTL ? 'right' : 'left',
   },
   codeDescription: {
     fontSize: 14,
     color: theme.text.secondary,
     marginBottom: 12,
+    textAlign: isRTL ? 'right' : 'left',
   },
   codeDetails: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 16,
     marginBottom: 8,
   },
   codeDetail: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 6,
   },
   codeDetailText: {
     fontSize: 13,
     color: theme.text.tertiary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   progressBarContainer: {
     height: 4,
@@ -938,7 +942,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderRadius: 2,
   },
   tierTags: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 6,
     marginTop: 8,
@@ -968,7 +972,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     padding: 24,
   },
   modalHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
@@ -977,6 +981,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   formScroll: {
     flex: 1,
@@ -989,6 +994,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
     color: theme.text.secondary,
     marginBottom: 8,
+    textAlign: isRTL ? 'right' : 'left',
   },
   input: {
     backgroundColor: theme.background.secondary,
@@ -998,16 +1004,17 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: theme.border.main,
+    textAlign: isRTL ? 'right' : 'left',
   },
   textArea: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
   },
   typeContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
@@ -1032,7 +1039,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
   },
   tierContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
@@ -1057,7 +1064,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
   },
   switchRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
@@ -1080,7 +1087,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: theme.primary.contrast,
   },
   expiredBadge: {
-    alignSelf: 'flex-start',
+    alignSelf: isRTL ? 'flex-end' : 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
@@ -1095,7 +1102,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },

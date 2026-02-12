@@ -54,11 +54,11 @@ import { ResponsiveContainer } from '../../../shared/components';
 export const AdminUsersScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t } = useLocalization();
+  const { t, isRTL } = useLocalization();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
-  const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+  const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
 
   const {
     users,
@@ -428,20 +428,20 @@ export const AdminUsersScreen: React.FC = () => {
   };
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{t('admin.users')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.users')}</Text>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={openCreateModal} style={{ marginRight: 16 }}>
+      <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+        <TouchableOpacity onPress={openCreateModal} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 16 }}>
           <Ionicons name="person-add" size={24} color={theme.primary.main} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={refresh} style={{ marginRight: 16 }}>
+        <TouchableOpacity onPress={refresh} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 16 }}>
           <Ionicons name="refresh" size={24} color={theme.primary.main} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleExportUsers}>
@@ -729,7 +729,7 @@ export const AdminUsersScreen: React.FC = () => {
                 {/* Role Selection */}
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.formLabel}>{t('admin.role')} *</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                  <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', flexWrap: 'wrap', marginTop: 8 }}>
                     {renderRoleOption('user', t('role.user'))}
                     {renderRoleOption('admin', t('role.admin'))}
                   </View>
@@ -853,13 +853,13 @@ export const AdminUsersScreen: React.FC = () => {
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   searchBar: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
@@ -870,20 +870,24 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   filterContainer: {
     maxHeight: 70, // Increased to prevent crushing
   },
   filterContent: {
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     paddingHorizontal: 16,
     paddingVertical: 14, // Increased padding
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: theme.background.secondary,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     borderWidth: 1,
     borderColor: theme.border.main,
     minWidth: 80, // Added minWidth
@@ -918,7 +922,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 3,
   },
   userHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
@@ -929,38 +933,42 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.background.tertiary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    [isRTL ? 'marginLeft' : 'marginRight']: 12,
   },
   userInfo: {
     flex: 1,
+    alignItems: isRTL ? 'flex-end' : 'flex-start',
   },
   userName: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.text.primary,
     marginBottom: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
   userEmail: {
     fontSize: 14,
     color: theme.text.tertiary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   userBadges: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
+    justifyContent: isRTL ? 'flex-start' : 'flex-start', // Keep buttons on the start side of current direction
   },
   badge: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     marginBottom: 4,
   },
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
-    marginLeft: 4,
+    [isRTL ? 'marginRight' : 'marginLeft']: 4,
   },
   loadMoreButton: {
     backgroundColor: theme.background.secondary,
@@ -979,7 +987,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: theme.background.secondary,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: theme.border.main,
@@ -997,7 +1005,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: theme.primary.contrast,
   },
   errorBanner: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.error.main + '15',
     padding: 12,
@@ -1006,10 +1014,11 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   },
   errorBannerText: {
     flex: 1,
-    marginLeft: 8,
+    [isRTL ? 'marginRight' : 'marginLeft']: 8,
     fontSize: 14,
     color: theme.error.main,
     fontWeight: '500',
+    textAlign: isRTL ? 'right' : 'left',
   },
   // Modal Styles - Improved for both light and dark mode
   modalOverlay: {
@@ -1035,7 +1044,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 8,
   },
   modalHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
@@ -1047,6 +1056,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   modalCloseButton: {
     padding: 4,
@@ -1059,6 +1069,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
     color: theme.text.primary,
     marginBottom: 8,
+    textAlign: isRTL ? 'right' : 'left',
   },
   formInput: {
     backgroundColor: theme.background.secondary,
@@ -1069,6 +1080,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   submitButton: {
     backgroundColor: theme.primary.main,

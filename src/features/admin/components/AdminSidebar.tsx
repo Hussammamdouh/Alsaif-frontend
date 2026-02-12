@@ -10,8 +10,8 @@ export const AdminSidebar: React.FC = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const { theme } = useTheme();
-    const { t } = useLocalization();
-    const styles = createAdminStyles(theme);
+    const { t, isRTL } = useLocalization();
+    const styles = createAdminStyles(theme, isRTL);
 
     return (
         <View style={styles.desktopSidebar}>

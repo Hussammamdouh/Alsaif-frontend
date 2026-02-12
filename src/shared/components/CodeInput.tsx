@@ -13,7 +13,7 @@ import {
     Platform,
     Text,
 } from 'react-native';
-import { useTheme } from '../../app/providers';
+import { useTheme } from '../../app/providers/ThemeProvider';
 
 interface CodeInputProps {
     value: string;

@@ -55,8 +55,8 @@ export const AdminInsightsScreen: React.FC = () => {
   const { t, isRTL } = useLocalization();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
-  const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+  const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
 
   const {
     insights,
@@ -359,7 +359,7 @@ export const AdminInsightsScreen: React.FC = () => {
                 {item.title}
               </Text>
               {item.featured && (
-                <Ionicons name="star" size={20} color="#ff9500" style={{ marginLeft: 8 }} />
+                <Ionicons name="star" size={20} color="#ff9500" style={{ [isRTL ? 'marginRight' : 'marginLeft']: 8 }} />
               )}
             </View>
             {item.excerpt && (
@@ -663,8 +663,8 @@ export const AdminInsightsScreen: React.FC = () => {
               {formInsightFormat === 'signal' && (
                 <View style={localStyles.formSection}>
                   <View style={localStyles.divider} />
-                  <View style={[localStyles.titleRow, { marginBottom: 16 }]}>
-                    <Ionicons name="trending-up" size={20} color={theme.text.secondary} style={{ marginRight: 8 }} />
+                  <View style={[localStyles.titleRow, { marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Ionicons name="trending-up" size={20} color={theme.text.secondary} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 8 }} />
                     <Text style={localStyles.sectionLabel}>{t('admin.tradeDetails')}</Text>
                   </View>
 
@@ -679,8 +679,8 @@ export const AdminInsightsScreen: React.FC = () => {
                     />
                   </View>
 
-                  <View style={localStyles.formRow}>
-                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                  <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
                       <Text style={localStyles.label}>{t('admin.stockNameEn')}</Text>
                       <TextInput
                         style={localStyles.formInput}
@@ -702,8 +702,8 @@ export const AdminInsightsScreen: React.FC = () => {
                     </View>
                   </View>
 
-                  <View style={localStyles.formRow}>
-                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                  <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
                       <Text style={localStyles.label}>{t('admin.buyPrice')}</Text>
                       <TextInput
                         style={localStyles.formInput}
@@ -727,8 +727,8 @@ export const AdminInsightsScreen: React.FC = () => {
                     </View>
                   </View>
 
-                  <View style={localStyles.formRow}>
-                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
+                  <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
                       <Text style={localStyles.label}>{t('admin.firstGoal')}</Text>
                       <TextInput
                         style={localStyles.formInput}
@@ -759,12 +759,12 @@ export const AdminInsightsScreen: React.FC = () => {
 
               {/* Scheduling Section */}
               <View style={localStyles.formSection}>
-                <View style={[localStyles.titleRow, { marginBottom: 16 }]}>
-                  <Ionicons name="calendar-outline" size={20} color={theme.text.secondary} style={{ marginRight: 8 }} />
+                <View style={[localStyles.titleRow, { marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <Ionicons name="calendar-outline" size={20} color={theme.text.secondary} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 8 }} />
                   <Text style={localStyles.sectionLabel}>{t('admin.scheduling')}</Text>
                 </View>
 
-                <View style={[localStyles.formGroup, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                <View style={[localStyles.formGroup, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
                   <Text style={localStyles.label}>{t('admin.scheduleInsight')}</Text>
                   <TouchableOpacity
                     onPress={() => setIsScheduled(!isScheduled)}
@@ -782,14 +782,14 @@ export const AdminInsightsScreen: React.FC = () => {
 
                 {isScheduled && (
                   <TouchableOpacity
-                    style={localStyles.datePickerButton}
+                    style={[localStyles.datePickerButton, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                     onPress={() => setShowDatePicker(true)}
                   >
                     <Ionicons name="time-outline" size={20} color={theme.primary.main} />
-                    <Text style={localStyles.datePickerButtonText}>
+                    <Text style={[localStyles.datePickerButtonText, { textAlign: isRTL ? 'right' : 'left' }]}>
                       {scheduledDate.toLocaleString()}
                     </Text>
-                    <Ionicons name="chevron-forward" size={16} color={theme.text.tertiary} />
+                    <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={16} color={theme.text.tertiary} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -834,14 +834,14 @@ export const AdminInsightsScreen: React.FC = () => {
   }
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{t('admin.insights')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.insights')}</Text>
       </View>
       <TouchableOpacity style={styles.addButton} onPress={openCreateModal}>
         <Ionicons name="add" size={24} color={theme.primary.contrast} />
@@ -1119,11 +1119,11 @@ export const AdminInsightsScreen: React.FC = () => {
 
               {selectedRequest && (
                 <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-                  <Text style={[localStyles.label, { marginBottom: 4 }]}>{t('admin.insightTitle')}</Text>
-                  <Text style={[localStyles.modalSubtitle, { marginBottom: 16 }]}>{selectedRequest.title}</Text>
+                  <Text style={[localStyles.label, { marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.insightTitle')}</Text>
+                  <Text style={[localStyles.modalSubtitle, { marginBottom: 16, textAlign: isRTL ? 'right' : 'left' }]}>{selectedRequest.title}</Text>
 
-                  <Text style={[localStyles.label, { marginBottom: 4 }]}>{t('admin.insightContent')}</Text>
-                  <Text style={[localStyles.modalSubtitle, { marginBottom: 16 }]}>{selectedRequest.details}</Text>
+                  <Text style={[localStyles.label, { marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.insightContent')}</Text>
+                  <Text style={[localStyles.modalSubtitle, { marginBottom: 16, textAlign: isRTL ? 'right' : 'left' }]}>{selectedRequest.details}</Text>
 
                   <Text style={localStyles.label}>{t('admin.status')}</Text>
                   <View style={localStyles.typeButtonsRow}>
@@ -1228,13 +1228,13 @@ export const AdminInsightsScreen: React.FC = () => {
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   mainTabs: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
@@ -1265,7 +1265,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     lineHeight: 22,
   },
   searchBar: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
@@ -1276,20 +1276,25 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   filterContainer: {
     maxHeight: 60,
   },
   filterContent: {
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: theme.background.secondary,
-    marginRight: 8,
+    marginRight: isRTL ? 0 : 8,
+    marginLeft: isRTL ? 8 : 0,
     borderWidth: 1,
     borderColor: theme.border.main,
   },
@@ -1326,7 +1331,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     paddingBottom: 8,
   },
   titleRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     marginBottom: 8,
   },
@@ -1335,48 +1340,50 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
     color: theme.text.primary,
     flex: 1,
+    textAlign: isRTL ? 'right' : 'left',
   },
   insightExcerpt: {
     fontSize: 14,
     color: theme.text.secondary,
     lineHeight: 20,
+    textAlign: isRTL ? 'right' : 'left',
   },
   insightBadges: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
     marginBottom: 12,
   },
   badge: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 10,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     marginBottom: 6,
   },
   badgeText: {
     fontSize: 10,
     fontWeight: '800',
-    marginLeft: 4,
+    [isRTL ? 'marginRight' : 'marginLeft']: 4,
     letterSpacing: 0.3,
   },
   insightStats: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
   statItem: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
-    marginRight: 16,
+    [isRTL ? 'marginLeft' : 'marginRight']: 16,
   },
   statText: {
     fontSize: 13,
     color: theme.text.tertiary,
-    marginLeft: 4,
+    [isRTL ? 'marginRight' : 'marginLeft']: 4,
   },
   loadMoreButton: {
     backgroundColor: theme.background.secondary,
@@ -1391,7 +1398,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: theme.primary.main,
   },
   typeButtonsRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     marginTop: 8,
   },
   typeButton: {
@@ -1401,7 +1408,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderRadius: 12,
     backgroundColor: theme.background.tertiary,
     alignItems: 'center',
-    marginRight: 12,
+    [isRTL ? 'marginLeft' : 'marginRight']: 12,
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -1422,7 +1429,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 16,
     backgroundColor: theme.background.tertiary,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     borderWidth: 1,
     borderColor: theme.border.main,
   },
@@ -1439,7 +1446,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: theme.primary.contrast,
   },
   errorBanner: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.error.main + '15',
     borderRadius: 12,
@@ -1519,6 +1526,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   textArea: {
     minHeight: 100,
@@ -1534,7 +1542,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     marginTop: 8,
   },
   formRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
   },
   submitButtonText: {
@@ -1546,6 +1554,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   statusToggle: {
     width: 44,
@@ -1564,10 +1573,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.background.primary,
   },
   statusToggleCircleActive: {
-    transform: [{ translateX: 20 }],
+    transform: [{ translateX: isRTL ? -20 : 20 }],
   },
   datePickerButton: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     borderWidth: 1,
@@ -1581,7 +1590,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: theme.text.primary,
-    marginLeft: 10,
+    [isRTL ? 'marginRight' : 'marginLeft']: 10,
   },
   formattingToolbar: {
     flexDirection: 'row',

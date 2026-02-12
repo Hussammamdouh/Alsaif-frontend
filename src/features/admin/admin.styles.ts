@@ -3,10 +3,10 @@
  * Shared styles for admin screens with theme support
  */
 
-import { StyleSheet } from 'react-native';
+import { StyleSheet, I18nManager } from 'react-native';
 import { ColorPalette } from '../../core/theme/colors';
 
-export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
+export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nManager.isRTL) => StyleSheet.create({
   // Container
   container: {
     flex: 1,
@@ -14,7 +14,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   },
   desktopContentWrapper: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     backgroundColor: theme.background.primary,
   },
   safeArea: {
@@ -25,7 +25,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   // Header
   header: {
     height: 110,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 45,
@@ -37,12 +37,12 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
   desktopSidebar: {
     width: 280,
     backgroundColor: theme.background.secondary,
-    borderRightWidth: 1,
-    borderRightColor: theme.ui.border,
+    borderEndWidth: 1,
+    borderEndColor: theme.ui.border,
     paddingTop: 45,
   },
   sidebarItem: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 20,
@@ -57,7 +57,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: theme.text.secondary,
-    marginLeft: 12,
+    marginStart: 12,
   },
   sidebarItemLabelActive: {
     color: theme.primary.main,
@@ -67,20 +67,21 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     backgroundColor: theme.background.primary,
   },
   headerLeft: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
   },
   backButton: {
-    marginRight: 12,
+    marginStart: 12,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '800',
     color: theme.text.primary,
     letterSpacing: -0.5,
+    textAlign: isRTL ? 'right' : 'left',
   },
   headerRight: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 12,
   },
@@ -107,7 +108,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     borderBottomColor: theme.border.main,
   },
   searchBar: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.tertiary,
     borderRadius: 10,
@@ -115,15 +116,16 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     height: 40,
   },
   searchIcon: {
-    marginRight: 8,
+    marginEnd: 8,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   filterButton: {
-    marginLeft: 12,
+    marginStart: 12,
     padding: 8,
   },
 
@@ -136,14 +138,17 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     borderBottomColor: theme.border.main,
   },
   filterTabsContent: {
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 8,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   filterTab: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: theme.background.tertiary,
-    marginRight: 8,
+    marginEnd: 8,
   },
   filterTabActive: {
     backgroundColor: theme.primary.main,
@@ -185,7 +190,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     padding: 16,
   },
   cardHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
@@ -194,16 +199,18 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   cardSubtitle: {
     fontSize: 14,
     color: theme.text.secondary,
     marginTop: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
 
   // List Items
   listItem: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     padding: 16,
@@ -218,13 +225,15 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontWeight: '600',
     color: theme.text.primary,
     marginBottom: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
   listItemSubtitle: {
     fontSize: 14,
     color: theme.text.secondary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   listItemRight: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 12,
   },
@@ -234,21 +243,24 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     color: theme.text.tertiary,
     textTransform: 'uppercase',
     letterSpacing: 1,
+    textAlign: isRTL ? 'right' : 'left',
   },
 
   // Dashboard Specific
   dashboardGrid: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 16,
     marginBottom: 24,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   desktopStatCard: {
     width: '48%', // 2 per row on smaller desktops
     maxWidth: 350,
   },
   dashboardStatCard: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderRadius: 16,
@@ -266,16 +278,19 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontWeight: '700',
     color: theme.text.primary,
     marginBottom: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
   dashboardStatLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: theme.text.secondary,
     marginBottom: 2,
+    textAlign: isRTL ? 'right' : 'left',
   },
   dashboardStatSubtext: {
     fontSize: 12,
     color: theme.text.tertiary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   dashboardStatIcon: {
     width: 48,
@@ -287,7 +302,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
 
   // Quick Actions
   quickActionsGrid: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 12,
     marginBottom: 24,
@@ -321,19 +336,19 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     textAlign: 'center',
   },
   settingRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   settingLeft: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     flex: 1,
   },
 
   // Section
   sectionHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
@@ -342,11 +357,13 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   sectionAction: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.primary.main,
+    textAlign: isRTL ? 'left' : 'right',
   },
 
   // Buttons
@@ -476,7 +493,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
 
   // Stats
   statRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -501,6 +518,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontWeight: '600',
     color: theme.text.primary,
     marginBottom: 8,
+    textAlign: isRTL ? 'right' : 'left',
   },
   formInput: {
     backgroundColor: theme.background.tertiary,
@@ -510,6 +528,7 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     color: theme.text.primary,
     borderWidth: 1,
     borderColor: theme.border.main,
+    textAlign: isRTL ? 'right' : 'left',
   },
   formTextArea: {
     minHeight: 100,
@@ -536,9 +555,10 @@ export const createAdminStyles = (theme: ColorPalette) => StyleSheet.create({
     fontWeight: '700',
     color: theme.text.primary,
     marginBottom: 16,
+    textAlign: isRTL ? 'right' : 'left',
   },
   modalButtons: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 12,
     marginTop: 24,
   },

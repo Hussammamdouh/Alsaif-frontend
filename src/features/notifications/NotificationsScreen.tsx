@@ -80,8 +80,8 @@ const NotificationsScreen: React.FC = () => {
   } = useNotifications();
 
   const { theme, isDark } = useTheme();
-  const { t, language } = useLocalization();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { t, language, isRTL } = useLocalization();
+  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const route = useRoute<RouteProp<MainStackParamList, 'Notifications'>>();
   const initialCategory = route.params?.category || 'all';
@@ -210,8 +210,14 @@ const NotificationsScreen: React.FC = () => {
           activeOpacity={0.7}
         >
           <View style={[styles.notificationContent, isDesktop && { alignItems: 'center' }]}>
-            {/* Icon */}
             <View style={[styles.notificationIcon, { backgroundColor: color }]}>
+              {/* Broadcast Badge */}
+              {notification.richContent?.metadata?.broadcast && (
+                <View style={styles.broadcastBadge}>
+                  <Icon name="megaphone" size={10} color="#fff" />
+                </View>
+              )}
+
               <Icon name={icon} size={24} color="#fff" />
 
               {/* Priority Badge */}
@@ -486,9 +492,9 @@ const NotificationsScreen: React.FC = () => {
           <View style={styles.dashboardHeader}>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+              style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}
             >
-              <Icon name="chevron-back" size={24} color={theme.text.primary} />
+              <Icon name={isRTL ? "chevron-forward" : "chevron-back"} size={24} color={theme.text.primary} />
               <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('notifications.title')}</Text>
             </TouchableOpacity>
 
@@ -515,9 +521,9 @@ const NotificationsScreen: React.FC = () => {
             <View style={styles.headerTitleContainer}>
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
-                style={{ marginRight: 12 }}
+                style={{ marginLeft: isRTL ? 12 : 0, marginRight: isRTL ? 0 : 12 }}
               >
-                <Icon name="arrow-back" size={24} color={theme.text.primary} />
+                <Icon name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
               </TouchableOpacity>
               <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
               {unreadCount > 0 ? (

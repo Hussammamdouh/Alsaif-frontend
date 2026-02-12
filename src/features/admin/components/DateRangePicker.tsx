@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useTheme } from '../../../app/providers';
+import { useTheme, useLocalization } from '../../../app/providers';
 
 interface DateRangePickerProps {
   startDate: Date;
@@ -27,7 +27,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const [tempStartDate, setTempStartDate] = useState(startDate);
   const [tempEndDate, setTempEndDate] = useState(endDate);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { isRTL } = useLocalization();
+  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
   const formatDate = (date: Date): string => {
     const month = date.getMonth() + 1;
@@ -216,7 +217,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   );
 };
 
-const createStyles = (theme: any) => StyleSheet.create({
+const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   container: {
     marginVertical: 4,
   },
@@ -227,9 +228,10 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    textAlign: isRTL ? 'right' : 'left',
   },
   pickerButton: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.tertiary,
     borderRadius: 12,
@@ -239,10 +241,11 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   pickerButtonText: {
     flex: 1,
-    marginLeft: 12,
+    [isRTL ? 'marginRight' : 'marginLeft']: 12,
     fontSize: 16,
     fontWeight: '600',
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   modalOverlay: {
     flex: 1,
@@ -259,7 +262,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderColor: theme.border.main,
   },
   modalHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
@@ -271,6 +274,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: theme.text.primary,
+    textAlign: 'center',
   },
   modalCancelButton: {
     fontSize: 16,
@@ -291,9 +295,10 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.text.secondary,
     marginBottom: 16,
     textTransform: 'uppercase',
+    textAlign: isRTL ? 'right' : 'left',
   },
   presetsGrid: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
@@ -322,11 +327,13 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.border.main,
     gap: 16,
+    alignItems: isRTL ? 'flex-end' : 'flex-start',
   },
   dateInputContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 12,
+    width: '100%',
   },
   dateInputLabel: {
     fontSize: 14,
@@ -336,7 +343,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   dateInput: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: theme.background.tertiary,

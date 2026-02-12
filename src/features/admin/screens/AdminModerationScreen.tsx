@@ -46,9 +46,9 @@ const STATUS_COLORS: Record<string, string> = {
 export const AdminModerationScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t } = useLocalization();
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
-  const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { t, isRTL } = useLocalization();
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+  const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
 
@@ -201,9 +201,9 @@ export const AdminModerationScreen: React.FC = () => {
             <Ionicons name="folder-outline" size={14} color={theme.text.tertiary} />
             <Text style={localStyles.footerText}>{item.category || item.contentType}</Text>
           </View>
-          <TouchableOpacity style={localStyles.actionBtn}>
-            <Text style={localStyles.actionBtnText}>{t('admin.review')}</Text>
-            <Ionicons name="chevron-forward" size={14} color={theme.primary.main} />
+          <TouchableOpacity style={[localStyles.actionBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[localStyles.actionBtnText, { [isRTL ? 'marginLeft' : 'marginRight']: 4 }]}>{t('admin.review')}</Text>
+            <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={14} color={theme.primary.main} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -258,9 +258,9 @@ export const AdminModerationScreen: React.FC = () => {
               {t('admin.reportedBy')} {item.reportedBy?.name || 'Anonymous'}
             </Text>
           </View>
-          <TouchableOpacity style={localStyles.actionBtn}>
-            <Text style={[localStyles.actionBtnText, { color: theme.error.main }]}>{t('admin.takeAction')}</Text>
-            <Ionicons name="chevron-forward" size={14} color={theme.error.main} />
+          <TouchableOpacity style={[localStyles.actionBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[localStyles.actionBtnText, { color: theme.error.main, [isRTL ? 'marginLeft' : 'marginRight']: 4 }]}>{t('admin.takeAction')}</Text>
+            <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={14} color={theme.error.main} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -272,16 +272,16 @@ export const AdminModerationScreen: React.FC = () => {
   }
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{isDesktop ? t('admin.moderationOverview') : t('admin.moderation')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.moderationOverview') : t('admin.moderation')}</Text>
       </View>
-      <TouchableOpacity onPress={refresh} style={{ marginRight: isDesktop ? 20 : 0 }}>
+      <TouchableOpacity onPress={refresh} style={{ [isRTL ? 'marginLeft' : 'marginRight']: isDesktop ? 20 : 0 }}>
         <Ionicons name="refresh" size={24} color={theme.primary.main} />
       </TouchableOpacity>
     </View>
@@ -350,11 +350,11 @@ export const AdminModerationScreen: React.FC = () => {
       </View>
 
       <View style={[localStyles.filtersContainer, isDesktop && { paddingHorizontal: 24 }]}>
-        <View style={localStyles.searchHeader}>
-          <View style={localStyles.searchWrapper}>
+        <View style={[localStyles.searchHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[localStyles.searchWrapper, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <Ionicons name="search" size={20} color={theme.text.tertiary} />
             <TextInput
-              style={localStyles.searchInput}
+              style={[localStyles.searchInput, { textAlign: isRTL ? 'right' : 'left' }]}
               placeholder={activeTab === 'queue' ? t('admin.searchQueue') : t('admin.searchFlags')}
               placeholderTextColor={theme.text.tertiary}
               value={searchQuery}
@@ -476,7 +476,7 @@ export const AdminModerationScreen: React.FC = () => {
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   statsScroll: {
     maxHeight: 130,
     marginTop: 16,
@@ -484,9 +484,12 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   statsContainer: {
     paddingHorizontal: 16,
     gap: 12,
+    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   tabsContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     paddingHorizontal: 16,
     marginTop: 20,
     backgroundColor: theme.background.primary,
@@ -494,10 +497,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderBottomColor: theme.border.main,
   },
   tab: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    marginRight: 24,
+    [isRTL ? 'marginLeft' : 'marginRight']: 24,
     gap: 8,
     position: 'relative',
   },
@@ -508,6 +511,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: theme.text.tertiary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   activeTabLabel: {
     color: theme.primary.main,
@@ -527,13 +531,13 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.background.primary,
   },
   searchHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 12,
     marginBottom: 16,
   },
   searchWrapper: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
@@ -545,6 +549,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   filterBtn: {
     width: 48,
@@ -567,14 +572,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 4,
   },
   cardHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
   },
   typeInfo: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 12,
   },
@@ -584,16 +589,19 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    [isRTL ? 'marginLeft' : 'marginRight']: 12,
   },
   itemTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: theme.text.primary,
     marginBottom: 2,
+    textAlign: isRTL ? 'right' : 'left',
   },
   itemMeta: {
     fontSize: 12,
     color: theme.text.tertiary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -618,6 +626,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     lineHeight: 20,
     color: theme.text.secondary,
     marginBottom: 16,
+    textAlign: isRTL ? 'right' : 'left',
   },
   reportReason: {
     backgroundColor: theme.background.tertiary,
@@ -630,20 +639,23 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
     color: theme.text.secondary,
     marginBottom: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
   reasonText: {
     fontSize: 13,
     color: theme.text.primary,
     lineHeight: 18,
+    textAlign: isRTL ? 'right' : 'left',
   },
   reportDesc: {
     fontSize: 14,
     fontStyle: 'italic',
     color: theme.text.secondary,
     marginBottom: 16,
+    textAlign: isRTL ? 'right' : 'left',
   },
   cardFooter: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 12,
@@ -651,7 +663,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderTopColor: theme.border?.main || '#eee',
   },
   footerDetail: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 6,
   },
@@ -668,5 +680,6 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: theme.primary.main,
+    textAlign: isRTL ? 'right' : 'left',
   },
 });

@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../../app/providers/ThemeProvider';
+import { useTheme, useLocalization } from '../../../app/providers';
 
 interface SearchBarProps {
   value: string;
@@ -29,9 +29,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   autoFocus = false,
 }) => {
   const { theme } = useTheme();
+  const { isRTL } = useLocalization();
   const [localValue, setLocalValue] = useState(value);
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
   useEffect(() => {
     setLocalValue(value);
@@ -45,7 +46,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [localValue, debounceMs]);
+  }, [localValue, debounceMs, value, onChangeText]);
 
   const handleClear = () => {
     setLocalValue('');
@@ -101,16 +102,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   );
 };
 
-const createStyles = (theme: any) => StyleSheet.create({
+const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   outerContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     marginHorizontal: 16,
     marginVertical: 12,
   },
   container: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
@@ -120,23 +121,24 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderColor: theme.border.main,
   },
   searchIcon: {
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
   },
   input: {
     flex: 1,
     fontSize: 16,
     color: theme.text.primary,
     paddingVertical: 0, // Important for Android to prevent text cutting
+    textAlign: isRTL ? 'right' : 'left',
   },
   loadingIndicator: {
-    marginLeft: 8,
+    [isRTL ? 'marginRight' : 'marginLeft']: 8,
   },
   clearButton: {
-    marginLeft: 8,
+    [isRTL ? 'marginRight' : 'marginLeft']: 8,
     padding: 2,
   },
   filterButton: {
-    marginLeft: 12,
+    [isRTL ? 'marginRight' : 'marginLeft']: 12,
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
     width: 46,

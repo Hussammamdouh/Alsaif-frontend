@@ -101,7 +101,7 @@ export const NOTIFICATION_PRIORITIES: Record<string, NotificationPriority> = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
-  URGENT: 'urgent',
+  CRITICAL: 'critical',
 };
 
 // Status Badge Colors
@@ -134,7 +134,7 @@ export const PRIORITY_COLORS = {
   low: '#8e8e93',
   medium: '#007aff',
   high: '#ff9500',
-  urgent: '#ff3b30',
+  critical: '#ff3b30',
 } as const;
 
 // Icons

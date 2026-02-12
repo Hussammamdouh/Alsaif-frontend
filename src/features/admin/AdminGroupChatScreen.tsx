@@ -34,6 +34,7 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
 }) => {
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
+    const styles = React.useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
 
     const [groupName, setGroupName] = useState('');
     const [selectedTiers, setSelectedTiers] = useState<string[]>([]);
@@ -120,7 +121,7 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
                 style={styles.header}
             >
                 <TouchableOpacity onPress={onNavigateBack} style={styles.backButton}>
-                    <Icon name="chevron-back" size={28} color={theme.text.primary} />
+                    <Icon name={isRTL ? "chevron-forward" : "chevron-back"} size={28} color={theme.text.primary} />
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: theme.text.primary }]}>
                     Advanced Group Manager
@@ -143,7 +144,7 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
                     />
 
                     <View style={styles.settingRow}>
-                        <View>
+                        <View style={styles.settingTextContainer}>
                             <Text style={{ color: theme.text.primary, fontWeight: '600' }}>System Group</Text>
                             <Text style={{ color: theme.text.tertiary, fontSize: 12 }}>Auto-enroll for tiers applies</Text>
                         </View>
@@ -155,7 +156,7 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
                     </View>
 
                     <View style={styles.settingRow}>
-                        <View>
+                        <View style={styles.settingTextContainer}>
                             <Text style={{ color: theme.text.primary, fontWeight: '600' }}>Broadcast Mode</Text>
                             <Text style={{ color: theme.text.tertiary, fontSize: 12 }}>Only admins can send messages</Text>
                         </View>
@@ -172,7 +173,7 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
                     <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>
                         Bulk Add by Tiers
                     </Text>
-                    <Text style={{ color: theme.text.tertiary, fontSize: 13, marginBottom: 12 }}>
+                    <Text style={styles.sectionSubtitle}>
                         Select tiers to include all current users with these subscription levels.
                     </Text>
                     <View style={styles.tierContainer}>
@@ -215,7 +216,7 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
                     <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>
                         Specific Participants
                     </Text>
-                    <Text style={{ color: theme.text.tertiary, fontSize: 13, marginBottom: 12 }}>
+                    <Text style={styles.sectionSubtitle}>
                         Add users by Email, Phone Number, or Name (one per line or comma separated).
                     </Text>
                     <TextInput
@@ -224,7 +225,6 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
                             {
                                 color: theme.text.primary,
                                 borderColor: theme.border.main,
-                                textAlign: isRTL ? 'right' : 'left',
                             },
                         ]}
                         placeholder="user@example.com&#10;+1234567890&#10;John Smith"
@@ -238,7 +238,7 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
 
                 {/* Action Button */}
                 <TouchableOpacity
-                    style={[styles.createButton, { backgroundColor: theme.primary.main }]}
+                    style={styles.createButton}
                     onPress={handleCreateGroup}
                     disabled={isCreating}
                 >
@@ -258,12 +258,12 @@ export const AdminGroupChatScreen: React.FC<{ onNavigateBack: () => void }> = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     container: {
         flex: 1,
     },
     header: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: spacing.lg,
@@ -295,6 +295,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         marginBottom: 16,
+        textAlign: isRTL ? 'right' : 'left',
+    },
+    sectionSubtitle: {
+        color: theme.text.tertiary,
+        fontSize: 13,
+        marginBottom: 12,
+        textAlign: isRTL ? 'right' : 'left',
     },
     input: {
         height: 50,
@@ -303,18 +310,22 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         fontSize: 15,
         marginBottom: 16,
+        textAlign: isRTL ? 'right' : 'left',
     },
     settingRow: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingVertical: 12,
+    },
+    settingTextContainer: {
+        alignItems: isRTL ? 'flex-end' : 'flex-start',
     },
     tierContainer: {
         gap: 12,
     },
     tierButton: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         alignItems: 'center',
         padding: 14,
         borderWidth: 1.5,
@@ -325,6 +336,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 15,
         fontWeight: '600',
+        textAlign: isRTL ? 'right' : 'left',
     },
     textArea: {
         minHeight: 120,
@@ -333,15 +345,17 @@ const styles = StyleSheet.create({
         padding: 12,
         fontSize: 15,
         textAlignVertical: 'top',
+        textAlign: isRTL ? 'right' : 'left',
     },
     createButton: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         alignItems: 'center',
         justifyContent: 'center',
         height: 56,
         borderRadius: 16,
         gap: 12,
         marginTop: 8,
+        backgroundColor: theme.primary.main,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.2,

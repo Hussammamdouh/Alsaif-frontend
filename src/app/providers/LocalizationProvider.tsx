@@ -575,7 +575,6 @@ const translations = {
     'admin.analytics': 'Analytics',
     'admin.revenue': 'Revenue',
     'admin.description': 'Description',
-    'admin.descripation': 'Description',
     'admin.scheduler': 'Scheduler',
     'admin.moderation': 'Moderation',
     'admin.subscriptionPlans': 'Subscription Plans',
@@ -599,6 +598,10 @@ const translations = {
     'admin.displayOrder': 'Display Order',
     'admin.tabVisibility': 'Tab Visibility',
     'admin.displayDuration': 'Display Duration',
+    'admin.subscriptionPlansOverview': 'Subscription Plans Overview',
+    'admin.subscribers': 'subscribers',
+    'admin.mrrValue': 'MRR',
+    'admin.moreFeatures': '+{count} more features',
 
     // Admin Stats
     'admin.totalUsers': 'Total Users',
@@ -899,6 +902,7 @@ const translations = {
     'admin.broadcastFormTitleMaxLength': 'Title must not exceed 100 characters',
     'admin.broadcastFormMessageRequired': 'Message body is required',
     'admin.broadcastFormMessageMaxLength': 'Body must not exceed 500 characters',
+    'admin.scheduleTime': 'Schedule Time',
 
     // Broadcast Targets
     'target.all': 'All Users',
@@ -911,7 +915,7 @@ const translations = {
     'priority.low': 'Low',
     'priority.medium': 'Medium',
     'priority.high': 'High',
-    'priority.urgent': 'Urgent',
+    'priority.critical': 'Critical',
 
     // User Roles
     'role.user': 'User',
@@ -1757,7 +1761,6 @@ const translations = {
     'admin.retention': 'معدل الاحتفاظ',
     'admin.revenue': 'الإيرادات',
     'admin.description': 'الوصف',
-    'admin.descripation': 'الوصف',
     'admin.scheduler': 'الجدولة',
     'admin.moderation': 'الإشراف',
     'admin.moderationHistory': 'سجل الإشراف',
@@ -1836,6 +1839,10 @@ const translations = {
     'admin.timesUsed': 'عدد مرات الاستخدام',
     'common.duplicate': 'تكرار',
     'admin.subscriptionPlans': 'خطط الاشتراك',
+    'admin.subscriptionPlansOverview': 'نظرة عامة على خطط الاشتراك',
+    'admin.subscribers': 'مشتركين',
+    'admin.mrrValue': 'عائد شهري',
+    'admin.moreFeatures': '+{count} ميزات إضافية',
     'admin.discountCodes': 'أكواد الخصم',
     'admin.bannerManagement': 'إدارة البانرات',
     'admin.manageHomeBanners': 'إدارة بانرات الشاشة الرئيسية',
@@ -2073,6 +2080,7 @@ const translations = {
     'admin.broadcastFormTitleMaxLength': 'يجب ألا يتجاوز العنوان 100 حرف',
     'admin.broadcastFormMessageRequired': 'نص الرسالة مطلوب',
     'admin.broadcastFormMessageMaxLength': 'يجب ألا يتجاوز النص 500 حرف',
+    'admin.scheduleTime': 'وقت الجدولة',
 
     // Broadcast Targets
     'target.all': 'جميع المستخدمين',
@@ -2085,7 +2093,7 @@ const translations = {
     'priority.low': 'منخفضة',
     'priority.medium': 'متوسطة',
     'priority.high': 'عالية',
-    'priority.urgent': 'عاجلة',
+    'priority.critical': 'حرجة',
 
     // User Roles
     'role.user': 'مستخدم',

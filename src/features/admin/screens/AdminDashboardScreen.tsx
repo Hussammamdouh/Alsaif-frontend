@@ -33,12 +33,12 @@ export const AdminDashboardScreen: React.FC = () => {
   const navigation = useNavigation();
   const { stats, isLoading, error, refresh } = useAdminDashboard();
   const { theme, isDark } = useTheme();
-  const { t } = useLocalization();
+  const { t, isRTL } = useLocalization();
   const { settings, toggleSubscriptionPause, toggleNewSubscriptions } = useSystemSettings();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
 
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
 
 
   const formatNumber = (num: number): string => {
@@ -69,8 +69,8 @@ export const AdminDashboardScreen: React.FC = () => {
         isDesktop && styles.desktopStatCard
       ]}
     >
-      <View style={{ padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <View style={styles.dashboardStatLeft}>
+      <View style={{ padding: 16, flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <View style={[styles.dashboardStatLeft, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
           <Text style={styles.dashboardStatValue}>{value}</Text>
           <Text style={styles.dashboardStatLabel}>{title}</Text>
           {subtitle && (
@@ -114,22 +114,22 @@ export const AdminDashboardScreen: React.FC = () => {
         onPress={() => navigation.navigate(section.route as never)}
         activeOpacity={0.7}
       >
-        <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <View style={[styles.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 8 }}>
               <View
                 style={[
                   styles.dashboardStatIcon,
-                  { backgroundColor: section.color + '20', marginRight: 12 },
+                  { backgroundColor: section.color + '20', [isRTL ? 'marginLeft' : 'marginRight']: 12 },
                 ]}
               >
                 <Ionicons name={section.icon as any} size={20} color={section.color} />
               </View>
               <Text style={styles.cardTitle}>{t(translations.titleKey)}</Text>
             </View>
-            <Text style={styles.cardSubtitle}>{t(translations.descriptionKey)}</Text>
+            <Text style={[styles.cardSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t(translations.descriptionKey)}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />
+          <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={20} color={theme.text.tertiary} />
         </View>
       </TouchableOpacity>
     );
@@ -225,16 +225,16 @@ export const AdminDashboardScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>{t('admin.systemSettings')}</Text>
           </View>
           <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border, maxWidth: isDesktop ? 800 : undefined }]}>
-            <View style={styles.settingRow}>
-              <View style={styles.settingLeft}>
+            <View style={[styles.settingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.settingLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Ionicons
                   name={settings?.isSubscriptionsPaused ? "pause-circle" : "play-circle"}
                   size={24}
                   color={settings?.isSubscriptionsPaused ? theme.warning.main : theme.success.main}
                 />
-                <View style={{ marginLeft: 12 }}>
+                <View style={{ [isRTL ? 'marginRight' : 'marginLeft']: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                   <Text style={[styles.cardTitle, { marginBottom: 2 }]}>{t('admin.pauseSubscriptions')}</Text>
-                  <Text style={styles.cardSubtitle}>
+                  <Text style={[styles.cardSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {settings?.isSubscriptionsPaused ? t('admin.subscriptionsPausedDesc') : t('admin.subscriptionsActiveDesc')}
                   </Text>
                 </View>
@@ -246,16 +246,16 @@ export const AdminDashboardScreen: React.FC = () => {
               />
             </View>
 
-            <View style={[styles.settingRow, { marginTop: 16, borderTopWidth: 1, borderTopColor: theme.border.main, paddingTop: 16 }]}>
-              <View style={styles.settingLeft}>
+            <View style={[styles.settingRow, { marginTop: 16, borderTopWidth: 1, borderTopColor: theme.border.main, paddingTop: 16, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.settingLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Ionicons
                   name={settings?.isNewSubscriptionsEnabled ? "add-circle" : "remove-circle"}
                   size={24}
                   color={settings?.isNewSubscriptionsEnabled ? theme.success.main : theme.error.main}
                 />
-                <View style={{ marginLeft: 12 }}>
+                <View style={{ [isRTL ? 'marginRight' : 'marginLeft']: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                   <Text style={[styles.cardTitle, { marginBottom: 2 }]}>{t('admin.enableNewSubscriptions')}</Text>
-                  <Text style={styles.cardSubtitle}>
+                  <Text style={[styles.cardSubtitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                     {settings?.isNewSubscriptionsEnabled ? t('admin.newSubsEnabledDesc') : t('admin.newSubsDisabledDesc')}
                   </Text>
                 </View>
@@ -325,8 +325,8 @@ export const AdminDashboardScreen: React.FC = () => {
         <View style={styles.desktopContentWrapper}>
           <AdminSidebar />
           <View style={styles.desktopMainContent}>
-            <View style={[styles.header, { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-              <Text style={styles.headerTitle}>{t('admin.dashboardOverview')}</Text>
+            <View style={[styles.header, { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.dashboardOverview')}</Text>
               <View style={styles.headerRight}>
                 <TouchableOpacity style={styles.addButton} activeOpacity={0.8} onPress={() => navigation.navigate('AdminInsights' as never)}>
                   <Ionicons name="add" size={26} color="#FFFFFF" />
@@ -338,11 +338,11 @@ export const AdminDashboardScreen: React.FC = () => {
         </View>
       ) : (
         <>
-          <View style={[styles.header, { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border }]}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.headerTitle}>{t('admin.dashboard')}</Text>
+          <View style={[styles.header, { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.dashboard')}</Text>
             </View>
-            <View style={styles.headerRight}>
+            <View style={[styles.headerRight, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <TouchableOpacity
                 style={styles.filterButton}
                 onPress={refresh}

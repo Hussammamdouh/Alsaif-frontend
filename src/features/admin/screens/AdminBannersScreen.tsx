@@ -33,10 +33,12 @@ import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminBannersScreen: React.FC = () => {
     const navigation = useNavigation();
-    const { theme } = useTheme();
-    const { t } = useLocalization();
-    const styles = useMemo(() => createAdminStyles(theme), [theme]);
-    const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+    const { theme, isDark } = useTheme();
+    const { t, isRTL } = useLocalization();
+    const [isAdminMode, setIsAdminMode] = useState(true);
+
+    const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+    const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
     const { width } = useWindowDimensions();
     const isDesktop = width >= 1024;
 
@@ -207,14 +209,14 @@ export const AdminBannersScreen: React.FC = () => {
     }
 
     const renderHeader = () => (
-        <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-            <View style={styles.headerLeft}>
+        <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 {!isDesktop && (
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+                        <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
                     </TouchableOpacity>
                 )}
-                <Text style={styles.headerTitle}>{isDesktop ? t('admin.bannersOverview') : t('admin.bannerManagement')}</Text>
+                <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.bannersOverview') : t('admin.bannerManagement')}</Text>
             </View>
             <TouchableOpacity
                 style={localStyles.addButtonHeader}
@@ -339,11 +341,11 @@ export const AdminBannersScreen: React.FC = () => {
                             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                             style={[localStyles.modalContent, isDesktop && localStyles.desktopModalContent]}
                         >
-                            <View style={localStyles.modalHeader}>
-                                <Text style={localStyles.modalTitle}>
+                            <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
                                     {selectedBanner ? t('admin.editBanner') : t('admin.createBanner')}
                                 </Text>
-                                <View style={localStyles.modalHeaderActions}>
+                                <View style={[localStyles.modalHeaderActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                                     <TouchableOpacity onPress={() => setShowFormModal(false)}>
                                         <Ionicons name="close" size={24} color={theme.text.primary} />
                                     </TouchableOpacity>
@@ -397,9 +399,9 @@ export const AdminBannersScreen: React.FC = () => {
                                     />
                                 </View>
 
-                                <View style={localStyles.row}>
-                                    <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
-                                        <Text style={localStyles.label}>{t('admin.displayOrder')}</Text>
+                                <View style={[localStyles.row, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
+                                        <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.displayOrder')}</Text>
                                         <TextInput
                                             style={localStyles.input}
                                             value={formOrder}
@@ -409,9 +411,9 @@ export const AdminBannersScreen: React.FC = () => {
                                             keyboardType="numeric"
                                         />
                                     </View>
-                                    <View style={[localStyles.formGroup, { flex: 1, marginLeft: 8 }]}>
-                                        <Text style={localStyles.label}>{t('admin.tabVisibility')}</Text>
-                                        <View style={localStyles.typeContainer}>
+                                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginRight' : 'marginLeft']: 8 }]}>
+                                        <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.tabVisibility')}</Text>
+                                        <View style={[localStyles.typeContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                                             {(['free', 'premium', 'both'] as const).map((tabType) => (
                                                 <TouchableOpacity
                                                     key={tabType}
@@ -447,7 +449,7 @@ export const AdminBannersScreen: React.FC = () => {
                                     />
                                 </View>
 
-                                <View style={localStyles.switchRow}>
+                                <View style={[localStyles.switchRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                                     <Text style={localStyles.label}>{t('admin.active')}</Text>
                                     <Switch
                                         value={formIsActive}
@@ -458,29 +460,29 @@ export const AdminBannersScreen: React.FC = () => {
                                 </View>
                             </ScrollView>
 
-                        <TouchableOpacity
-                            style={[
-                                localStyles.saveButton,
-                                (!formTitle || !formImageUrl) && localStyles.saveButtonDisabled,
-                            ]}
-                            onPress={handleSave}
-                            disabled={isSaving || !formTitle || !formImageUrl}
-                        >
-                            {isSaving ? (
-                                <ActivityIndicator color={theme.primary.contrast} />
-                            ) : (
-                                <Text style={localStyles.saveButtonText}>{t('common.save')}</Text>
-                            )}
-                        </TouchableOpacity>
-                    </KeyboardAvoidingView>
-            </View>
-        </Modal>
+                            <TouchableOpacity
+                                style={[
+                                    localStyles.saveButton,
+                                    (!formTitle || !formImageUrl) && localStyles.saveButtonDisabled,
+                                ]}
+                                onPress={handleSave}
+                                disabled={isSaving || !formTitle || !formImageUrl}
+                            >
+                                {isSaving ? (
+                                    <ActivityIndicator color={theme.primary.contrast} />
+                                ) : (
+                                    <Text style={localStyles.saveButtonText}>{t('common.save')}</Text>
+                                )}
+                            </TouchableOpacity>
+                        </KeyboardAvoidingView>
+                    </View>
+                </Modal>
             </View >
         </SafeAreaView >
     );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     addButtonHeader: {
         width: 40,
         height: 40,
@@ -520,7 +522,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         padding: 12,
     },
     bannerHeader: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 4,
@@ -530,7 +532,8 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         fontWeight: '700',
         color: theme.text.primary,
         flex: 1,
-        marginRight: 8,
+        [isRTL ? 'marginLeft' : 'marginRight']: 8,
+        textAlign: isRTL ? 'right' : 'left',
     },
     statusIndicator: {
         width: 10,
@@ -538,7 +541,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         borderRadius: 5,
     },
     partnerRow: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         alignItems: 'center',
         gap: 4,
         marginBottom: 8,
@@ -547,9 +550,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         fontSize: 13,
         color: theme.text.secondary,
         fontWeight: '500',
+        textAlign: isRTL ? 'right' : 'left',
     },
     bannerMeta: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
@@ -581,7 +585,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         padding: 24,
     },
     modalHeader: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 24,
@@ -590,9 +594,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         fontSize: 22,
         fontWeight: '800',
         color: theme.text.primary,
+        textAlign: isRTL ? 'right' : 'left',
     },
     modalHeaderActions: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         alignItems: 'center',
     },
     formScroll: {
@@ -606,6 +611,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         fontWeight: '600',
         color: theme.text.secondary,
         marginBottom: 8,
+        textAlign: isRTL ? 'right' : 'left',
     },
     input: {
         backgroundColor: theme.background.tertiary,
@@ -615,13 +621,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         color: theme.text.primary,
         borderWidth: 1,
         borderColor: theme.border.main,
+        textAlign: isRTL ? 'right' : 'left',
     },
     row: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         marginBottom: 10,
     },
     typeContainer: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         gap: 8,
         flexWrap: 'wrap',
     },
@@ -646,7 +653,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
         color: theme.primary.contrast,
     },
     switchRow: {
-        flexDirection: 'row',
+        flexDirection: isRTL ? 'row-reverse' : 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingVertical: 8,

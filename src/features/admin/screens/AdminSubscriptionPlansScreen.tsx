@@ -38,10 +38,13 @@ import { ResponsiveContainer } from '../../../shared/components';
 
 export const AdminSubscriptionPlansScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { theme } = useTheme();
-  const { t } = useLocalization();
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
-  const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { theme, isDark } = useTheme();
+  const { t, isRTL } = useLocalization();
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [selectedPlanId, setSelectedPlanId] = React.useState<string | null>(null);
+
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+  const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
 
@@ -210,13 +213,13 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
         <View style={localStyles.planStat}>
           <Ionicons name="people-outline" size={16} color={theme.text.tertiary} />
           <Text style={localStyles.planStatText}>
-            {item.subscriberCount || 0} subscribers
+            {item.subscriberCount || 0} {t('admin.subscribers')}
           </Text>
         </View>
         <View style={localStyles.planStat}>
           <Ionicons name="cash-outline" size={16} color={theme.text.tertiary} />
           <Text style={localStyles.planStatText}>
-            ${item.revenue || 0} MRR
+            ${item.revenue || 0} {t('admin.mrrValue')}
           </Text>
         </View>
       </View>
@@ -233,7 +236,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
           ))}
           {item.features.length > 3 && (
             <Text style={localStyles.moreFeatures}>
-              +{item.features.length - 3} more features
+              {t('admin.moreFeatures', { count: item.features.length - 3 })}
             </Text>
           )}
         </View>
@@ -246,17 +249,17 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   }
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{isDesktop ? t('admin.subscriptionPlansOverview') : t('admin.subscriptionPlans')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.subscriptionPlansOverview') : t('admin.subscriptionPlans')}</Text>
       </View>
       <TouchableOpacity
-        style={localStyles.addButton}
+        style={[localStyles.addButton, { [isRTL ? 'marginLeft' : 'marginRight']: isDesktop ? 20 : 0 }]}
         onPress={openCreateModal}
         activeOpacity={0.7}
       >
@@ -291,6 +294,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
           renderItem={renderPlanItem}
           keyExtractor={(item) => item._id}
           contentContainerStyle={[styles.scrollContent, isDesktop && { paddingHorizontal: 24 }]}
+          columnWrapperStyle={isDesktop ? { flexDirection: isRTL ? 'row-reverse' : 'row' } : undefined}
           refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
           numColumns={isDesktop ? 2 : 1}
           key={isDesktop ? 'desktop' : 'mobile'}
@@ -418,11 +422,11 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                   />
                 </View>
 
-                <View style={localStyles.row}>
-                  <View style={[localStyles.formGroup, { flex: 1, marginRight: 8 }]}>
-                    <Text style={localStyles.label}>{t('admin.planPrice')} *</Text>
+                <View style={[localStyles.row, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
+                    <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.planPrice')} *</Text>
                     <TextInput
-                      style={localStyles.input}
+                      style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                       value={formPrice}
                       onChangeText={setFormPrice}
                       placeholder="0.00"
@@ -430,9 +434,9 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                       keyboardType="numeric"
                     />
                   </View>
-                  <View style={[localStyles.formGroup, { flex: 1, marginLeft: 8 }]}>
-                    <Text style={localStyles.label}>{t('admin.billingCycle')} *</Text>
-                    <View style={localStyles.cycleContainer}>
+                  <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginRight' : 'marginLeft']: 8 }]}>
+                    <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.billingCycle')} *</Text>
+                    <View style={[localStyles.cycleContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                       {(['monthly', 'quarterly', 'yearly'] as const).map((cycle) => (
                         <TouchableOpacity
                           key={cycle}
@@ -481,11 +485,11 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                   </ScrollView>
                 </View>
 
-                <View style={localStyles.row}>
+                <View style={[localStyles.row, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   <View style={[localStyles.formGroup, { flex: 1 }]}>
-                    <Text style={localStyles.label}>{t('admin.currency')} *</Text>
+                    <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.currency')} *</Text>
                     <TextInput
-                      style={localStyles.input}
+                      style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                       value={formCurrency}
                       onChangeText={setFormCurrency}
                       placeholder="AED or USD"
@@ -496,18 +500,18 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                 </View>
 
                 {selectedPlan && (selectedPlan.stripeProductId || selectedPlan.stripePriceId) && (
-                  <View style={localStyles.stripeIdsContainer}>
-                    <Ionicons name="sync-outline" size={16} color={theme.primary.main} style={{ marginRight: 8 }} />
-                    <View style={{ flex: 1 }}>
+                  <View style={[localStyles.stripeIdsContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Ionicons name="sync-outline" size={16} color={theme.primary.main} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 8 }} />
+                    <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                       <Text style={localStyles.stripeSyncTitle}>Stripe Synchronization</Text>
                       {selectedPlan.stripeProductId && (
-                        <View style={localStyles.stripeIdRow}>
+                        <View style={[localStyles.stripeIdRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                           <Text style={localStyles.stripeIdLabel}>{t('admin.stripeProductId')}:</Text>
                           <Text style={localStyles.stripeIdValue} numberOfLines={1}>{selectedPlan.stripeProductId}</Text>
                         </View>
                       )}
                       {selectedPlan.stripePriceId && (
-                        <View style={localStyles.stripeIdRow}>
+                        <View style={[localStyles.stripeIdRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                           <Text style={localStyles.stripeIdLabel}>{t('admin.stripePriceId')}:</Text>
                           <Text style={localStyles.stripeIdValue} numberOfLines={1}>{selectedPlan.stripePriceId}</Text>
                         </View>
@@ -517,10 +521,10 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                 )}
 
                 <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.features')}</Text>
-                  <View style={localStyles.featureInputRow}>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.features')}</Text>
+                  <View style={[localStyles.featureInputRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <TextInput
-                      style={[localStyles.input, { flex: 1, marginBottom: 0 }]}
+                      style={[localStyles.input, { flex: 1, marginBottom: 0, textAlign: isRTL ? 'right' : 'left' }]}
                       value={newFeature}
                       onChangeText={setNewFeature}
                       placeholder={t('admin.addFeature')}
@@ -532,9 +536,9 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                   </View>
                   <View style={localStyles.formFeaturesList}>
                     {formFeatures.map((feature, index) => (
-                      <View key={index} style={localStyles.formFeatureItem}>
+                      <View key={index} style={[localStyles.formFeatureItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                         <Ionicons name="checkmark-circle" size={16} color={theme.success.main} />
-                        <Text style={localStyles.formFeatureText}>{feature.name}</Text>
+                        <Text style={[localStyles.formFeatureText, { textAlign: isRTL ? 'right' : 'left', flex: 1, [isRTL ? 'marginRight' : 'marginLeft']: 8 }]}>{feature.name}</Text>
                         <TouchableOpacity onPress={() => removeFeature(index)}>
                           <Ionicons name="trash-outline" size={16} color={theme.error.main} />
                         </TouchableOpacity>
@@ -543,8 +547,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                   </View>
                 </View>
 
-                <View style={localStyles.switchRow}>
-                  <Text style={localStyles.label}>{t('admin.isFeatured')}</Text>
+                <View style={[localStyles.switchRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.isFeatured')}</Text>
                   <Switch
                     value={formIsFeatured}
                     onValueChange={setFormIsFeatured}
@@ -553,8 +557,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                   />
                 </View>
 
-                <View style={localStyles.switchRow}>
-                  <Text style={localStyles.label}>{t('admin.active')}</Text>
+                <View style={[localStyles.switchRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.active')}</Text>
                   <Switch
                     value={formIsActive}
                     onValueChange={setFormIsActive}
@@ -583,7 +587,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   planCard: {
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
@@ -597,7 +601,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 3,
   },
   planHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
@@ -607,11 +611,13 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
     color: theme.text.primary,
     marginBottom: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
   planPrice: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.primary.main,
+    textAlign: isRTL ? 'right' : 'left',
   },
   statusIndicator: {
     width: 12,
@@ -622,9 +628,10 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     color: theme.text.secondary,
     marginBottom: 12,
+    textAlign: isRTL ? 'right' : 'left',
   },
   planStats: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 16,
     marginBottom: 12,
     paddingBottom: 12,
@@ -632,7 +639,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderBottomColor: theme.border.main,
   },
   planStat: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 6,
   },
@@ -644,7 +651,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     marginTop: 8,
   },
   featureItem: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 6,
@@ -652,12 +659,14 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   featureText: {
     fontSize: 13,
     color: theme.text.secondary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   moreFeatures: {
     fontSize: 12,
     color: theme.text.tertiary,
     fontStyle: 'italic',
     marginTop: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
   addButton: {
     width: 40,
@@ -695,7 +704,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     flexShrink: 1,
   },
   modalHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
@@ -704,6 +713,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   formScroll: {
     flex: 1,
@@ -716,6 +726,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
     color: theme.text.secondary,
     marginBottom: 8,
+    textAlign: isRTL ? 'right' : 'left',
   },
   input: {
     backgroundColor: theme.background.secondary,
@@ -725,6 +736,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: theme.border.main,
+    textAlign: isRTL ? 'right' : 'left',
   },
   textArea: {
     minHeight: 80,
@@ -734,7 +746,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
   },
   cycleContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
@@ -759,7 +771,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
   },
   tierScroll: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
   },
   tierChip: {
     paddingHorizontal: 16,
@@ -768,7 +780,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.background.secondary,
     borderWidth: 1,
     borderColor: theme.border.main,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
   },
   tierChipActive: {
     backgroundColor: theme.primary.main,
@@ -783,7 +795,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
   },
   featureInputRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 8,
     alignItems: 'center',
   },

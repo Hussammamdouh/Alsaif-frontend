@@ -43,9 +43,12 @@ import { ResponsiveContainer } from '../../../shared/components';
 export const AdminSubscriptionsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t } = useLocalization();
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
-  const localStyles = useMemo(() => createLocalStyles(theme), [theme]);
+  const { t, isRTL } = useLocalization();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
+  const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
 
@@ -63,7 +66,6 @@ export const AdminSubscriptionsScreen: React.FC = () => {
     revokeSubscription,
   } = useAdminSubscriptions();
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('');
   const [grantModalVisible, setGrantModalVisible] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
@@ -288,16 +290,16 @@ export const AdminSubscriptionsScreen: React.FC = () => {
   }
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{isDesktop ? t('admin.subscriptionsOverview') : t('admin.subscriptions')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.subscriptionsOverview') : t('admin.subscriptions')}</Text>
       </View>
-      <TouchableOpacity style={[styles.addButton, { marginRight: isDesktop ? 20 : 0 }]} onPress={openGrantModal}>
+      <TouchableOpacity style={[styles.addButton, { [isRTL ? 'marginLeft' : 'marginRight']: isDesktop ? 20 : 0 }]} onPress={openGrantModal}>
         <Ionicons name="add" size={24} color={theme.primary.contrast} />
       </TouchableOpacity>
     </View>
@@ -306,22 +308,22 @@ export const AdminSubscriptionsScreen: React.FC = () => {
   const renderMainContent = () => (
     <>
       <View style={[localStyles.searchContainer, isDesktop && { paddingHorizontal: 24 }]}>
-        <View style={localStyles.searchBar}>
+        <View style={[localStyles.searchBar, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <Ionicons
             name="search"
             size={20}
             color={theme.text.tertiary}
-            style={{ marginRight: 8 }}
+            style={[localStyles.searchIcon, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}
           />
           <TextInput
-            style={localStyles.searchInput}
+            style={[localStyles.searchInput, { textAlign: isRTL ? 'right' : 'left' }]}
             placeholder={t('admin.searchSubscriptions')}
             placeholderTextColor={theme.text.tertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} style={{ marginLeft: 8 }}>
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={{ [isRTL ? 'marginRight' : 'marginLeft']: 8 }}>
               <Ionicons name="close-circle" size={20} color={theme.text.tertiary} />
             </TouchableOpacity>
           )}
@@ -378,6 +380,7 @@ export const AdminSubscriptionsScreen: React.FC = () => {
           renderItem={renderSubscriptionCard}
           keyExtractor={(item) => item.id}
           contentContainerStyle={[localStyles.listContent, isDesktop && { paddingHorizontal: 24 }]}
+          columnWrapperStyle={isDesktop ? { flexDirection: isRTL ? 'row-reverse' : 'row' } : undefined}
           refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
           numColumns={isDesktop ? 2 : 1}
           key={isDesktop ? 'desktop' : 'mobile'}
@@ -566,23 +569,27 @@ export const AdminSubscriptionsScreen: React.FC = () => {
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   searchBar: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
+  searchIcon: {
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
+  },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: theme.text.primary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   filterContainer: {
     maxHeight: 60,
@@ -590,13 +597,16 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   filterContent: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: theme.background.secondary,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     borderWidth: 1,
     borderColor: theme.border.main,
   },
@@ -628,7 +638,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 3,
   },
   userHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
@@ -639,7 +649,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.primary.main,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    [isRTL ? 'marginLeft' : 'marginRight']: 12,
   },
   avatarText: {
     fontSize: 16,
@@ -648,41 +658,44 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    alignItems: isRTL ? 'flex-end' : 'flex-start',
   },
   userName: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.text.primary,
     marginBottom: 4,
+    textAlign: isRTL ? 'right' : 'left',
   },
   userEmail: {
     fontSize: 14,
     color: theme.text.tertiary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   subscriptionBadges: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     marginBottom: 12,
   },
   badge: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     marginBottom: 4,
   },
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
-    marginLeft: 4,
+    [isRTL ? 'marginRight' : 'marginLeft']: 4,
   },
   progressSection: {
     marginTop: 4,
   },
   progressHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
   },
@@ -701,19 +714,20 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderRadius: 3,
   },
   autoRenewBadge: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     marginTop: 8,
   },
   autoRenewText: {
     fontSize: 13,
     color: theme.success.main,
-    marginLeft: 4,
+    [isRTL ? 'marginRight' : 'marginLeft']: 4,
   },
   revenueText: {
     fontSize: 14,
     color: theme.text.secondary,
     marginTop: 8,
+    textAlign: isRTL ? 'right' : 'left',
   },
   loadMoreButton: {
     backgroundColor: theme.background.secondary,
@@ -728,7 +742,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: theme.primary.main,
   },
   tierButtonsRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     marginTop: 8,
   },
@@ -738,7 +752,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     borderRadius: 12,
     backgroundColor: theme.background.tertiary,
     alignItems: 'center',
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
     marginBottom: 8,
     borderWidth: 2,
     borderColor: 'transparent',
@@ -757,7 +771,7 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     color: theme.primary.contrast,
   },
   errorBanner: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.error.main + '15',
     borderRadius: 12,
@@ -770,7 +784,8 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: theme.error.main,
-    marginLeft: 8,
+    [isRTL ? 'marginRight' : 'marginLeft']: 8,
+    textAlign: isRTL ? 'right' : 'left',
   },
   errorText: {
     fontSize: 13,

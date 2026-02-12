@@ -28,8 +28,8 @@ import { AdminSidebar } from '../components';
 export const AdminAuditLogsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t } = useLocalization();
-  const styles = useMemo(() => createAdminStyles(theme), [theme]);
+  const { t, isRTL } = useLocalization();
+  const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
 
@@ -97,7 +97,7 @@ export const AdminAuditLogsScreen: React.FC = () => {
 
     return (
       <View key={log.id} style={styles.card}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 }}>
+        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'flex-start', padding: 16 }}>
           <View
             style={[
               {
@@ -107,7 +107,7 @@ export const AdminAuditLogsScreen: React.FC = () => {
                 backgroundColor: severityColor + '20',
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginRight: 12,
+                [isRTL ? 'marginLeft' : 'marginRight']: 12,
               },
             ]}
           >
@@ -118,12 +118,12 @@ export const AdminAuditLogsScreen: React.FC = () => {
             />
           </View>
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 4 }}>
               <Ionicons
                 name={getActionIcon(log.action) as any}
                 size={16}
                 color={theme.text.primary}
-                style={{ marginRight: 6 }}
+                style={{ [isRTL ? 'marginLeft' : 'marginRight']: 6 }}
               />
               <Text style={styles.cardTitle}>{log.action.replace(/_/g, ' ')}</Text>
             </View>
@@ -136,113 +136,115 @@ export const AdminAuditLogsScreen: React.FC = () => {
           </View>
         </View>
 
-        {log.actor && (
-          <View
-            style={{
-              backgroundColor: theme.background.tertiary,
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
-          >
-            <Text style={[styles.label, { marginBottom: 4 }]}>Actor</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.listItemTitle}>{log.actor.email}</Text>
-              <View
-                style={[
-                  styles.badge,
-                  { backgroundColor: roleColor + '20', marginLeft: 8 },
-                ]}
-              >
-                <Text style={[styles.badgeText, { color: roleColor }]}>
-                  {log.actor.role.toUpperCase()}
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {log.target && (
-          <View
-            style={{
-              backgroundColor: theme.background.tertiary,
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
-          >
-            <Text style={[styles.label, { marginBottom: 4 }]}>Target</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
-              <View style={[styles.badge, { backgroundColor: theme.primary.main + '20', marginRight: 6 }]}>
-                <Text style={[styles.badgeText, { color: theme.primary.main }]}>
-                  {log.target.resourceType}
-                </Text>
-              </View>
-              {log.target.resourceName && (
-                <Text style={styles.listItemSubtitle}>{log.target.resourceName}</Text>
-              )}
-            </View>
-            <Text style={[styles.cardSubtitle, { marginTop: 4 }]}>
-              ID: {log.target.resourceId}
-            </Text>
-          </View>
-        )}
-
-        {log.changes && (
-          <View
-            style={{
-              backgroundColor: theme.background.tertiary,
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
-          >
-            <Text style={[styles.label, { marginBottom: 8 }]}>Changes</Text>
-            {Object.keys(log.changes.before || {}).map((key) => (
-              <View key={key} style={{ marginBottom: 6 }}>
-                <Text style={[styles.cardSubtitle, { fontWeight: '600' }]}>{key}:</Text>
-                <View style={{ flexDirection: 'row', gap: 8, marginTop: 2 }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.cardSubtitle, { color: theme.error.main }]}>
-                      - {JSON.stringify(log.changes?.before?.[key])}
-                    </Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.cardSubtitle, { color: theme.success.main }]}>
-                      + {JSON.stringify(log.changes?.after?.[key])}
-                    </Text>
-                  </View>
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          {log.actor && (
+            <View
+              style={{
+                backgroundColor: theme.background.tertiary,
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Text style={[styles.label, { marginBottom: 4 }]}>Actor</Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                <Text style={styles.listItemTitle}>{log.actor.email}</Text>
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: roleColor + '20', [isRTL ? 'marginRight' : 'marginLeft']: 8 },
+                  ]}
+                >
+                  <Text style={[styles.badgeText, { color: roleColor }]}>
+                    {log.actor.role.toUpperCase()}
+                  </Text>
                 </View>
               </View>
-            ))}
-          </View>
-        )}
+            </View>
+          )}
 
-        {log.metadata && Object.keys(log.metadata).length > 0 && (
-          <View
-            style={{
-              backgroundColor: theme.background.tertiary,
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
-          >
-            <Text style={[styles.label, { marginBottom: 4 }]}>Metadata</Text>
-            {Object.entries(log.metadata).map(([key, value]) => (
-              <Text key={key} style={styles.cardSubtitle}>
-                {key}: {JSON.stringify(value)}
+          {log.target && (
+            <View
+              style={{
+                backgroundColor: theme.background.tertiary,
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Text style={[styles.label, { marginBottom: 4 }]}>Target</Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                <View style={[styles.badge, { backgroundColor: theme.primary.main + '20', [isRTL ? 'marginLeft' : 'marginRight']: 6 }]}>
+                  <Text style={[styles.badgeText, { color: theme.primary.main }]}>
+                    {log.target.resourceType}
+                  </Text>
+                </View>
+                {log.target.resourceName && (
+                  <Text style={styles.listItemSubtitle}>{log.target.resourceName}</Text>
+                )}
+              </View>
+              <Text style={[styles.cardSubtitle, { marginTop: 4 }]}>
+                ID: {log.target.resourceId}
               </Text>
-            ))}
-          </View>
-        )}
+            </View>
+          )}
 
-        <View style={{ borderTopWidth: 1, borderTopColor: theme.border.main, paddingTop: 12 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-            <Text style={styles.cardSubtitle}>IP: {log.ipAddress}</Text>
+          {log.changes && (
+            <View
+              style={{
+                backgroundColor: theme.background.tertiary,
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Text style={[styles.label, { marginBottom: 8 }]}>Changes</Text>
+              {Object.keys(log.changes.before || {}).map((key) => (
+                <View key={key} style={{ marginBottom: 6 }}>
+                  <Text style={[styles.cardSubtitle, { fontWeight: '600' }]}>{key}:</Text>
+                  <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8, marginTop: 2 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.cardSubtitle, { color: theme.error.main }]}>
+                        - {JSON.stringify(log.changes?.before?.[key])}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.cardSubtitle, { color: theme.success.main }]}>
+                        + {JSON.stringify(log.changes?.after?.[key])}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {log.metadata && Object.keys(log.metadata).length > 0 && (
+            <View
+              style={{
+                backgroundColor: theme.background.tertiary,
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Text style={[styles.label, { marginBottom: 4 }]}>Metadata</Text>
+              {Object.entries(log.metadata).map(([key, value]) => (
+                <Text key={key} style={styles.cardSubtitle}>
+                  {key}: {JSON.stringify(value)}
+                </Text>
+              ))}
+            </View>
+          )}
+
+          <View style={{ borderTopWidth: 1, borderTopColor: theme.border.main, paddingTop: 12 }}>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+              <Text style={styles.cardSubtitle}>IP: {log.ipAddress}</Text>
+            </View>
+            <Text style={styles.cardSubtitle} numberOfLines={1}>
+              User Agent: {log.userAgent}
+            </Text>
           </View>
-          <Text style={styles.cardSubtitle} numberOfLines={1}>
-            User Agent: {log.userAgent}
-          </Text>
         </View>
       </View>
     );
@@ -269,14 +271,14 @@ export const AdminAuditLogsScreen: React.FC = () => {
   );
 
   const renderHeader = () => (
-    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0 }]}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         {!isDesktop && (
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>{isDesktop ? t('admin.auditLogsOverview') : t('admin.auditLogs')}</Text>
+        <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.auditLogsOverview') : t('admin.auditLogs')}</Text>
       </View>
       <TouchableOpacity onPress={refresh} activeOpacity={0.7}>
         <Ionicons name="refresh" size={24} color={theme.primary.main} />
@@ -287,10 +289,10 @@ export const AdminAuditLogsScreen: React.FC = () => {
   const renderMainContent = () => (
     <>
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={theme.text.secondary} style={styles.searchIcon} />
+        <View style={[styles.searchBar, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <Ionicons name="search" size={20} color={theme.text.secondary} style={[styles.searchIcon, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { textAlign: isRTL ? 'right' : 'left' }]}
             placeholder="Search by actor ID..."
             placeholderTextColor={theme.text.tertiary}
             value={searchQuery}

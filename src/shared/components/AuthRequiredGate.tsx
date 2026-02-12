@@ -15,8 +15,9 @@ import {
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from '../../app/auth';
-import { useTheme, useLocalization } from '../../app/providers';
+import { useAuth } from '../../app/auth/auth.hooks';
+import { useTheme } from '../../app/providers/ThemeProvider';
+import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { RootStackParamList } from '../../app/navigation/types';
 import { Button } from './Button';
 import { ResponsiveContainer } from './ResponsiveContainer';
@@ -36,7 +37,7 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
 }) => {
     const { state: authState } = useAuth();
     const { theme, isDark } = useTheme();
-    const { t } = useLocalization();
+    const { t, isRTL } = useLocalization();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { width, height } = useWindowDimensions();
     const isDesktop = width >= 768;
@@ -93,8 +94,11 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
                             },
                             styles.desktopCard
                         ]}>
-                            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                                <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+                            <TouchableOpacity
+                                onPress={handleBack}
+                                style={[styles.backButton, { left: isRTL ? undefined : 16, right: isRTL ? 16 : undefined }]}
+                            >
+                                <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
                             </TouchableOpacity>
 
                             <View style={[styles.iconWrapper, { backgroundColor: theme.primary.main + '15' }]}>
@@ -137,8 +141,11 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
                                 borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
                             }
                         ]}>
-                            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                                <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
+                            <TouchableOpacity
+                                onPress={handleBack}
+                                style={[styles.backButton, { left: isRTL ? undefined : 16, right: isRTL ? 16 : undefined }]}
+                            >
+                                <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
                             </TouchableOpacity>
 
                             <View style={[styles.mobileIconWrapper, { backgroundColor: theme.primary.main + '15' }]}>
@@ -317,7 +324,7 @@ const styles = StyleSheet.create({
     backButton: {
         position: 'absolute',
         top: 16,
-        left: 16,
+        // left: 16, // Removed fixed left
         zIndex: 10,
         padding: 8,
         borderRadius: 8,

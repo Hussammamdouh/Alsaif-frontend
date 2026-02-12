@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../../app/providers/ThemeProvider';
+import { useTheme, useLocalization } from '../../../app/providers';
 
 export interface FilterOption {
   label: string;
@@ -26,7 +26,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   showCounts = false,
 }) => {
   const { theme } = useTheme();
-  const styles = createLocalStyles(theme);
+  const { isRTL } = useLocalization();
+  const styles = createLocalStyles(theme, isRTL);
 
   const renderFilterChip = (option: FilterOption) => {
     const isSelected = option.value === selectedValue;
@@ -74,7 +75,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   );
 };
 
-const createLocalStyles = (theme: any) => StyleSheet.create({
+const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   container: {
     marginVertical: 12,
   },
@@ -83,16 +84,20 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     fontWeight: '700',
     color: theme.text.primary,
     marginBottom: 8,
-    marginLeft: 16,
+    [isRTL ? 'marginRight' : 'marginLeft']: 16,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    textAlign: isRTL ? 'right' : 'left',
   },
   scrollContent: {
     paddingHorizontal: 16,
     gap: 10,
+    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   chip: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -111,19 +116,20 @@ const createLocalStyles = (theme: any) => StyleSheet.create({
     elevation: 4,
   },
   chipIcon: {
-    marginRight: 8,
+    [isRTL ? 'marginLeft' : 'marginRight']: 8,
   },
   chipText: {
     fontSize: 14,
     fontWeight: '600',
     color: theme.text.secondary,
+    textAlign: isRTL ? 'right' : 'left',
   },
   chipTextActive: {
     color: theme.primary.contrast,
     fontWeight: '700',
   },
   countBadge: {
-    marginLeft: 8,
+    [isRTL ? 'marginRight' : 'marginLeft']: 8,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
