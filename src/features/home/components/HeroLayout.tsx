@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     overlay: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
-        paddingHorizontal: spacing['5xl'],
+        paddingHorizontal: 140, // Increased to avoid arrow overlap
     },
     textContent: {
         maxWidth: 800,
@@ -200,10 +200,10 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255,255,255,0.1)',
     },
     leftArrow: {
-        left: spacing.xl,
+        left: spacing.md,
     },
     rightArrow: {
-        right: spacing.xl,
+        right: spacing.md,
     },
     indicators: {
         position: 'absolute',

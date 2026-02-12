@@ -12,7 +12,7 @@ import {
 import { useNavigation, useRoute, useNavigationState } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../../app/providers';
-import { useUser, useIsAdmin } from '../../../app/auth/auth.hooks';
+import { useUser, useIsAdmin, useIsAuthenticated } from '../../../app/auth/auth.hooks';
 import { spacing } from '../../../core/theme/spacing';
 
 const NAV_ITEMS = [
@@ -123,6 +123,7 @@ export const DesktopTopNav: React.FC = () => {
     const navigation = useNavigation<any>();
     const isAdmin = useIsAdmin();
     const user = useUser();
+    const isAuthenticated = useIsAuthenticated();
 
     // Enhanced Active Route Detection
     const activeRouteName = useNavigationState(state => {
@@ -266,9 +267,15 @@ export const DesktopTopNav: React.FC = () => {
                 style={styles.profileAvatar}
                 onPress={() => navigation.navigate('MainTabs', { screen: 'ProfileTab' })}
             >
-                <View style={[styles.avatarCircle, { backgroundColor: theme.primary.main }]}>
-                    <Text style={styles.initialsText}>{getInitials()}</Text>
-                </View>
+                {isAuthenticated ? (
+                    <View style={[styles.avatarCircle, { backgroundColor: theme.primary.main }]}>
+                        <Text style={styles.initialsText}>{getInitials()}</Text>
+                    </View>
+                ) : (
+                    <View style={[styles.avatarCircle, { backgroundColor: theme.background.tertiary }]}>
+                        <Ionicons name="person-circle-outline" size={24} color={theme.text.tertiary} />
+                    </View>
+                )}
             </TouchableOpacity>
         </View>
     );

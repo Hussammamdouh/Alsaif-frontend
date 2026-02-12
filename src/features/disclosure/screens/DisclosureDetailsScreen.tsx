@@ -22,7 +22,7 @@ import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { ResponsiveContainer } from '../../../shared/components';
 import { Disclosure, updateDisclosureNote, DisclosureComment, fetchDisclosureComments, createDisclosureComment } from '../disclosure.api';
 import { useDisclosures } from '../disclosure.hooks';
-import { useIsAdmin } from '../../../app/auth/auth.hooks';
+import { useIsAdmin, useIsAuthenticated } from '../../../app/auth/auth.hooks';
 
 type DisclosureDetailRouteParams = {
     DisclosureDetails: {
@@ -38,6 +38,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
     const { theme, isDark } = useTheme();
     const { t, language, isRTL } = useLocalization();
     const isAdmin = useIsAdmin();
+    const isAuthenticated = useIsAuthenticated();
     const { width } = useWindowDimensions();
     const isDesktop = width >= 1024;
 
@@ -173,7 +174,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
             <ResponsiveContainer>
                 {/* Hero Header */}
                 <View style={[styles.heroHeader, { backgroundColor: theme.background.secondary }]}>
-                    <View style={[styles.headerToolbar, { paddingTop: Platform.OS === 'ios' ? 50 : 30 }]}>
+                    <View style={[styles.headerToolbar, { paddingTop: Platform.OS === 'ios' ? 50 : 30, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                         <TouchableOpacity
                             style={[styles.iconButton, { backgroundColor: theme.background.primary }]}
                             onPress={() => navigation.goBack()}
@@ -233,8 +234,149 @@ export const DisclosureDetailsScreen: React.FC = () => {
                             isDesktop && styles.desktopGrid,
                             isDesktop && isRTL && { flexDirection: 'row-reverse' }
                         ]}>
-                            {/* Main Column (Notes) */}
+                            {/* Main Column (Comments) */}
                             <View style={[isDesktop && styles.mainColumn]}>
+                                {/* User Comments Section Card */}
+                                <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}>
+                                    <View style={styles.cardHeader}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+                                            <View style={[styles.iconContainer, { backgroundColor: theme.primary.main + '15' }]}>
+                                                <Ionicons name="chatbubbles" size={24} color={theme.primary.main} />
+                                            </View>
+                                            <Text style={[styles.cardTitle, { color: theme.text.primary }]}>
+                                                {language === 'ar' ? 'التعليقات' : 'Comments'}
+                                            </Text>
+                                        </View>
+                                        <View style={[styles.commentCountBadge, { backgroundColor: theme.primary.main + '20' }]}>
+                                            <Text style={[styles.commentCountText, { color: theme.primary.main }]}>{comments.length}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Comment Input */}
+                                    {isAuthenticated ? (
+                                        <View style={[styles.commentInputContainer, { backgroundColor: theme.background.primary }]}>
+                                            <TextInput
+                                                ref={commentInputRef}
+                                                style={[styles.commentInput, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}
+                                                placeholder={language === 'ar' ? 'أضف تعليقًا...' : 'Add a comment...'}
+                                                placeholderTextColor={theme.text.tertiary}
+                                                value={commentText}
+                                                onChangeText={setCommentText}
+                                                multiline
+                                                maxLength={500}
+                                            />
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.sendButton,
+                                                    { backgroundColor: commentText.trim() ? theme.primary.main : theme.background.tertiary }
+                                                ]}
+                                                onPress={handleSubmitComment}
+                                                disabled={!commentText.trim() || submittingComment}
+                                            >
+                                                {submittingComment ? (
+                                                    <ActivityIndicator size="small" color="#FFF" />
+                                                ) : (
+                                                    <Ionicons
+                                                        name={isRTL ? "send" : "send"}
+                                                        size={18}
+                                                        color={commentText.trim() ? '#FFF' : theme.text.tertiary}
+                                                        style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                        </View>
+                                    ) : (
+                                        <TouchableOpacity
+                                            style={[styles.loginToComment, { backgroundColor: theme.background.primary, borderColor: theme.ui.border }]}
+                                            onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
+                                        >
+                                            <Ionicons name="lock-closed-outline" size={20} color={theme.text.tertiary} />
+                                            <Text style={[styles.loginToCommentText, { color: theme.text.secondary }]}>
+                                                {language === 'ar' ? 'سجل الدخول لإضافة تعليق' : 'Login to post a comment'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {/* Comments List */}
+                                    {commentsLoading ? (
+                                        <View style={styles.commentsLoadingContainer}>
+                                            <ActivityIndicator size="small" color={theme.primary.main} />
+                                        </View>
+                                    ) : comments.length > 0 ? (
+                                        <View style={styles.commentsList}>
+                                            {comments.map((comment) => (
+                                                <View key={comment._id} style={[styles.commentItem, { backgroundColor: theme.background.primary }]}>
+                                                    <View style={styles.commentHeader}>
+                                                        <View style={[styles.commentAvatar, { backgroundColor: theme.primary.main + '20' }]}>
+                                                            <Ionicons name="person" size={16} color={theme.primary.main} />
+                                                        </View>
+                                                        <View style={styles.commentMeta}>
+                                                            <Text style={[styles.commentAuthor, { color: theme.text.primary }]}>
+                                                                {comment.author?.name || (language === 'ar' ? 'مستخدم' : 'User')}
+                                                            </Text>
+                                                            <Text style={[styles.commentDate, { color: theme.text.tertiary }]}>
+                                                                {new Date(comment.createdAt).toLocaleDateString(language === 'ar' ? 'ar-AE' : 'en-US', {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                    <Text style={[styles.commentText, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
+                                                        {comment.content}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    ) : (
+                                        <View style={styles.noCommentsContainer}>
+                                            <Ionicons name="chatbubbles-outline" size={40} color={theme.text.tertiary} />
+                                            <Text style={[styles.noCommentsText, { color: theme.text.tertiary }]}>
+                                                {language === 'ar' ? 'لا توجد تعليقات بعد. كن أول من يعلق!' : 'No comments yet. Be the first to comment!'}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+
+                            {/* Sidebar Column (Notes & Docs) */}
+                            <View style={[isDesktop && styles.sidebarColumn]}>
+                                {/* PDF Section Card */}
+                                <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border, marginBottom: 24 }]}>
+                                    <View style={styles.cardHeader}>
+                                        <View style={[styles.iconContainer, { backgroundColor: theme.primary.main + '15' }]}>
+                                            <Ionicons name="file-tray-full" size={24} color={theme.primary.main} />
+                                        </View>
+                                        <Text style={[styles.cardTitle, { color: theme.text.primary }]}>
+                                            {language === 'ar' ? 'المستندات' : 'Documents'}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.pdfList}>
+                                        {pdfUrls.map((url, index) => {
+                                            const filename = decodeURIComponent(url.split('/').pop() || `Document ${index + 1}`);
+                                            const displayName = filename.replace(/\.pdf$/i, '').replace(/%20/g, ' ');
+
+                                            return (
+                                                <TouchableOpacity
+                                                    key={index}
+                                                    style={[styles.pdfItem, { backgroundColor: theme.background.primary }]}
+                                                    onPress={() => navigation.navigate('PdfViewer', { url, title: `${currentTitle} (${index + 1})` })}
+                                                >
+                                                    <View style={[styles.pdfIcon, { backgroundColor: theme.primary.main + '15' }]}>
+                                                        <Ionicons name="document" size={20} color={theme.primary.main} />
+                                                    </View>
+                                                    <Text style={[styles.pdfName, { color: theme.text.primary }]} numberOfLines={1}>
+                                                        {displayName}
+                                                    </Text>
+                                                    <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={theme.text.tertiary} />
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
+                                </View>
+
                                 {/* Note Section Card */}
                                 <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}>
                                     <View style={styles.cardHeader}>
@@ -285,135 +427,6 @@ export const DisclosureDetailsScreen: React.FC = () => {
                                                     {language === 'ar' ? 'لا توجد ملاحظات متاحة' : 'No notes available for this disclosure.'}
                                                 </Text>
                                             )}
-                                        </View>
-                                    )}
-                                </View>
-                            </View>
-
-                            {/* Sidebar Column (Docs & Comments) */}
-                            <View style={[isDesktop && styles.sidebarColumn]}>
-                                {/* PDF Section Card */}
-                                <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border, marginBottom: 24 }]}>
-                                    <View style={styles.cardHeader}>
-                                        <View style={[styles.iconContainer, { backgroundColor: theme.primary.main + '15' }]}>
-                                            <Ionicons name="file-tray-full" size={24} color={theme.primary.main} />
-                                        </View>
-                                        <Text style={[styles.cardTitle, { color: theme.text.primary }]}>
-                                            {language === 'ar' ? 'المستندات' : 'Documents'}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.pdfList}>
-                                        {pdfUrls.map((url, index) => {
-                                            const filename = decodeURIComponent(url.split('/').pop() || `Document ${index + 1}`);
-                                            const displayName = filename.replace(/\.pdf$/i, '').replace(/%20/g, ' ');
-
-                                            return (
-                                                <TouchableOpacity
-                                                    key={index}
-                                                    style={[styles.pdfItem, { backgroundColor: theme.background.primary }]}
-                                                    onPress={() => navigation.navigate('PdfViewer', { url, title: `${currentTitle} (${index + 1})` })}
-                                                >
-                                                    <View style={[styles.pdfIcon, { backgroundColor: theme.primary.main + '15' }]}>
-                                                        <Ionicons name="document" size={20} color={theme.primary.main} />
-                                                    </View>
-                                                    <Text style={[styles.pdfName, { color: theme.text.primary }]} numberOfLines={1}>
-                                                        {displayName}
-                                                    </Text>
-                                                    <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={theme.text.tertiary} />
-                                                </TouchableOpacity>
-                                            );
-                                        })}
-                                    </View>
-                                </View>
-
-                                {/* User Comments Section Card */}
-                                <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}>
-                                    <View style={styles.cardHeader}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                                            <View style={[styles.iconContainer, { backgroundColor: theme.primary.main + '15' }]}>
-                                                <Ionicons name="chatbubbles" size={24} color={theme.primary.main} />
-                                            </View>
-                                            <Text style={[styles.cardTitle, { color: theme.text.primary }]}>
-                                                {language === 'ar' ? 'التعليقات' : 'Comments'}
-                                            </Text>
-                                        </View>
-                                        <View style={[styles.commentCountBadge, { backgroundColor: theme.primary.main + '20' }]}>
-                                            <Text style={[styles.commentCountText, { color: theme.primary.main }]}>{comments.length}</Text>
-                                        </View>
-                                    </View>
-
-                                    {/* Comment Input */}
-                                    <View style={[styles.commentInputContainer, { backgroundColor: theme.background.primary }]}>
-                                        <TextInput
-                                            ref={commentInputRef}
-                                            style={[styles.commentInput, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}
-                                            placeholder={language === 'ar' ? 'أضف تعليقًا...' : 'Add a comment...'}
-                                            placeholderTextColor={theme.text.tertiary}
-                                            value={commentText}
-                                            onChangeText={setCommentText}
-                                            multiline
-                                            maxLength={500}
-                                        />
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.sendButton,
-                                                { backgroundColor: commentText.trim() ? theme.primary.main : theme.background.tertiary }
-                                            ]}
-                                            onPress={handleSubmitComment}
-                                            disabled={!commentText.trim() || submittingComment}
-                                        >
-                                            {submittingComment ? (
-                                                <ActivityIndicator size="small" color="#FFF" />
-                                            ) : (
-                                                <Ionicons
-                                                    name={isRTL ? "send" : "send"}
-                                                    size={18}
-                                                    color={commentText.trim() ? '#FFF' : theme.text.tertiary}
-                                                    style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-                                                />
-                                            )}
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {/* Comments List */}
-                                    {commentsLoading ? (
-                                        <View style={styles.commentsLoadingContainer}>
-                                            <ActivityIndicator size="small" color={theme.primary.main} />
-                                        </View>
-                                    ) : comments.length > 0 ? (
-                                        <View style={styles.commentsList}>
-                                            {comments.map((comment) => (
-                                                <View key={comment._id} style={[styles.commentItem, { backgroundColor: theme.background.primary }]}>
-                                                    <View style={styles.commentHeader}>
-                                                        <View style={[styles.commentAvatar, { backgroundColor: theme.primary.main + '20' }]}>
-                                                            <Ionicons name="person" size={16} color={theme.primary.main} />
-                                                        </View>
-                                                        <View style={styles.commentMeta}>
-                                                            <Text style={[styles.commentAuthor, { color: theme.text.primary }]}>
-                                                                {comment.author?.name || (language === 'ar' ? 'مستخدم' : 'User')}
-                                                            </Text>
-                                                            <Text style={[styles.commentDate, { color: theme.text.tertiary }]}>
-                                                                {new Date(comment.createdAt).toLocaleDateString(language === 'ar' ? 'ar-AE' : 'en-US', {
-                                                                    month: 'short',
-                                                                    day: 'numeric',
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit'
-                                                                })}
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                    <Text style={[styles.commentText, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]}>
-                                                        {comment.content}
-                                                    </Text>
-                                                </View>
-                                            ))}
-                                        </View>
-                                    ) : (
-                                        <View style={styles.noCommentsContainer}>
-                                            <Ionicons name="chatbubbles-outline" size={40} color={theme.text.tertiary} />
-                                            <Text style={[styles.noCommentsText, { color: theme.text.tertiary }]}>
-                                                {language === 'ar' ? 'لا توجد تعليقات بعد. كن أول من يعلق!' : 'No comments yet. Be the first to comment!'}
-                                            </Text>
                                         </View>
                                     )}
                                 </View>
@@ -536,6 +549,21 @@ const styles = StyleSheet.create({
     commentText: { fontSize: 15, lineHeight: 24 },
     noCommentsContainer: { alignItems: 'center', paddingVertical: 40, gap: 16 },
     noCommentsText: { fontSize: 15, fontWeight: '500', textAlign: 'center' },
+    loginToComment: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 20,
+        gap: 12,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        justifyContent: 'center',
+    },
+    loginToCommentText: {
+        fontSize: 15,
+        fontWeight: '600',
+    },
 });
 
 export default DisclosureDetailsScreen;

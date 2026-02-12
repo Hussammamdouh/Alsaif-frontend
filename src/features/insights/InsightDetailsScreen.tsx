@@ -31,6 +31,7 @@ import {
   useDeleteInsightComment,
   useLikeInsightComment
 } from './insights.hooks';
+import { useIsAuthenticated } from '../../app/auth/auth.hooks';
 import { InsightCommentThread } from './CommentThread';
 import { useSubscriptionAccess } from '../subscription';
 import { createInsightsStyles } from './insights.styles';
@@ -56,9 +57,10 @@ export const InsightDetailsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { insightId } = route.params;
   const { theme, isDark } = useTheme();
-  const { t, isRTL } = useLocalization();
+  const { t, isRTL, language } = useLocalization();
   const { width: contentWidth, width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 1024;
+  const isAuthenticated = useIsAuthenticated();
   const styles = useMemo(() => createInsightsStyles(theme), [theme]);
   const inputRef = useRef<TextInput>(null);
 
@@ -270,7 +272,7 @@ export const InsightDetailsScreen: React.FC = () => {
         )}
 
         {/* Static Actions (Back/Share) - Always Visible */}
-        <View style={[styles.detailHeader, { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'transparent', borderBottomWidth: 0, zIndex: 40, paddingTop: Platform.OS === 'ios' ? 50 : 30 }]}>
+        <View style={[styles.detailHeader, { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'transparent', borderBottomWidth: 0, zIndex: 40, paddingTop: Platform.OS === 'ios' ? 50 : 30, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.2)' }]}
             onPress={() => navigation.goBack()}
@@ -670,34 +672,50 @@ export const InsightDetailsScreen: React.FC = () => {
             </View>
           )}
 
-          <View style={styles.commentInputWrapper}>
-            <TextInput
-              ref={inputRef}
-              style={styles.commentInput}
-              placeholder={t('insights.addComment')}
-              placeholderTextColor={theme.text.tertiary}
-              value={commentText}
-              onChangeText={setCommentText}
-              multiline
-              maxLength={1000}
-            />
-
-            <TouchableOpacity
-              style={[styles.commentSendButton, !commentText.trim() && styles.sendButtonDisabled]}
-              onPress={handleSendComment}
-              disabled={!commentText.trim() || createCommentLoading}
-            >
-              <LinearGradient
-                colors={!commentText.trim() ? [theme.background.secondary, theme.background.secondary] : [theme.primary.main, theme.primary.dark]}
-                style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+          {isAuthenticated ? (
+            <View style={styles.commentInputWrapper}>
+              <TextInput
+                ref={inputRef}
+                style={styles.commentInput}
+                placeholder={t('insights.addComment')}
+                placeholderTextColor={theme.text.tertiary}
+                value={commentText}
+                onChangeText={setCommentText}
+                multiline
+                maxLength={1000}
               />
-              {createCommentLoading ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <Ionicons name={isRTL ? "send" : "send"} size={18} color="#FFF" style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }} />
-              )}
+
+              <TouchableOpacity
+                style={[styles.commentSendButton, !commentText.trim() && styles.sendButtonDisabled]}
+                onPress={handleSendComment}
+                disabled={!commentText.trim() || createCommentLoading}
+              >
+                <LinearGradient
+                  colors={!commentText.trim() ? [theme.background.secondary, theme.background.secondary] : [theme.primary.main, theme.primary.dark]}
+                  style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                />
+                {createCommentLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Ionicons name={isRTL ? "send" : "send"} size={18} color="#FFF" style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }} />
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={localStyles.loginToCommentSticky}
+              onPress={() => navigation.navigate('Auth' as any, { screen: 'Login' } as any)}
+            >
+              <Ionicons name="lock-closed-outline" size={20} color={theme.text.tertiary} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.replyAuthorName, { color: theme.text.primary }]}>{t('common.loginRequired' as any) || (language === 'ar' ? 'تسجيل الدخول مطلوب' : 'Login Required')}</Text>
+                <Text style={{ fontSize: 12, color: theme.text.tertiary }}>{language === 'ar' ? 'سجل الدخول للمشاركة في النقاش' : 'Login to participate in the discussion'}</Text>
+              </View>
+              <View style={{ backgroundColor: theme.primary.main, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
+                <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 13 }}>{t('common.login' as any) || (language === 'ar' ? 'دخول' : 'Login')}</Text>
+              </View>
             </TouchableOpacity>
-          </View>
+          )}
         </View>
       </ResponsiveContainer>
     </View>
@@ -732,4 +750,12 @@ const localStyles = StyleSheet.create({
     marginBottom: 24,
     overflow: 'hidden',
   },
+  loginToCommentSticky: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    gap: 12,
+  }
 });
