@@ -19,7 +19,8 @@ export interface CommissionBreakdown {
 export const calculateCommission = (
     shares: number,
     price: number,
-    exchange: 'DFM' | 'ADX'
+    exchange: 'DFM' | 'ADX',
+    type: 'buy' | 'sell' = 'buy'
 ): CommissionBreakdown => {
     const tradeValue = shares * price;
 
@@ -30,7 +31,6 @@ export const calculateCommission = (
         // Depository Fee: V * 0.0005
         // SCA Fee: V * 0.0005 (VAT-exempt)
         // Order Fee: 10.00 AED
-        // Commission is SUBTRACTED from trade value
 
         const brokerage = tradeValue * 0.00125;
         const marketFee = tradeValue * 0.0005;
@@ -52,13 +52,12 @@ export const calculateCommission = (
             taxableSubtotal,
             vat,
             totalCommission,
-            totalCost: tradeValue - totalCommission
+            totalCost: type === 'buy' ? tradeValue + totalCommission : tradeValue - totalCommission
         };
     } else {
         // ADX Formula:
         // Brokerage: V * 0.00125
         // Market Fee: V * 0.00025
-        // Commission is SUBTRACTED from trade value
 
         const brokerage = tradeValue * 0.00125;
         const marketFee = tradeValue * 0.00025;
@@ -74,7 +73,7 @@ export const calculateCommission = (
             taxableSubtotal,
             vat,
             totalCommission,
-            totalCost: tradeValue - totalCommission
+            totalCost: type === 'buy' ? tradeValue + totalCommission : tradeValue - totalCommission
         };
     }
 };

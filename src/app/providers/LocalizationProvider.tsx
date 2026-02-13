@@ -311,7 +311,11 @@ const translations = {
     'market.vat': 'VAT (5%)',
     'market.scaFee': 'SCA Fee',
     'market.totalCommission': 'Total Commission',
+    'market.totalCost': 'Total Cost',
+    'market.totalReceived': 'Total Received',
     'market.tradeCost': 'Total Trade Cost',
+    'market.buy': 'Buy',
+    'market.sell': 'Sell',
 
     // About Screen
     'about.title': 'About',
@@ -1474,7 +1478,11 @@ const translations = {
     'market.vat': 'ضريبة القيمة المضافة (5%)',
     'market.scaFee': 'رسوم الهيئة',
     'market.totalCommission': 'إجمالي العمولة',
+    'market.totalCost': 'إجمالي التكلفة',
+    'market.totalReceived': 'إجمالي المبلغ المستلم',
     'market.tradeCost': 'إجمالي تكلفة الصفقة',
+    'market.buy': 'شراء',
+    'market.sell': 'بيع',
 
     // About Screen
     'about.title': 'حول التطبيق',

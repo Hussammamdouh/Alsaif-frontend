@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { bannerService, Banner } from '../../../core/services/api/adminEnhancements.service';
@@ -34,6 +34,26 @@ export const NewHeroCarousel: React.FC = () => {
         setActiveIndex((prev) => (prev - 1 + banners.length) % banners.length);
     };
 
+    // Auto-scroll effect
+    useEffect(() => {
+        if (banners.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setActiveIndex((prev) => (prev + 1) % banners.length);
+        }, 10000); // 10 seconds
+
+        return () => clearInterval(interval);
+    }, [banners.length]);
+
+    const handleExplore = () => {
+        const currentBanner = banners[activeIndex];
+        if (currentBanner?.link) {
+            Linking.openURL(currentBanner.link).catch(err =>
+                console.error('Failed to open banner link:', err)
+            );
+        }
+    };
+
     if (banners.length === 0) return null;
 
     const currentBanner = banners[activeIndex];
@@ -63,14 +83,18 @@ export const NewHeroCarousel: React.FC = () => {
                         <Text style={[styles.heroDesc, { textAlign: isRTL ? 'right' : 'left' }]}>
                             {t('home.heroDescription')}
                         </Text>
-                        <TouchableOpacity style={[
-                            styles.ctaBtn,
-                            {
-                                backgroundColor: theme.primary.main,
-                                flexDirection: isRTL ? 'row-reverse' : 'row',
-                                alignSelf: isRTL ? 'flex-end' : 'flex-start'
-                            }
-                        ]}>
+                        <TouchableOpacity
+                            style={[
+                                styles.ctaBtn,
+                                {
+                                    backgroundColor: theme.primary.main,
+                                    flexDirection: isRTL ? 'row-reverse' : 'row',
+                                    alignSelf: isRTL ? 'flex-end' : 'flex-start'
+                                }
+                            ]}
+                            onPress={handleExplore}
+                            activeOpacity={0.8}
+                        >
                             <Text style={styles.ctaText}>{t('home.exploreNow')}</Text>
                             <Ionicons
                                 name={isRTL ? "chevron-back" : "chevron-forward"}
@@ -123,9 +147,9 @@ const styles = StyleSheet.create({
         marginVertical: spacing.xl,
     },
     carouselWrapper: {
-        height: 520,
+        height: 390, // Reduced from 520
         width: '100%',
-        borderRadius: 48,
+        borderRadius: 32, // Slightly reduced radius
         overflow: 'hidden',
         position: 'relative',
         backgroundColor: '#000',
@@ -138,64 +162,64 @@ const styles = StyleSheet.create({
     overlay: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
-        paddingHorizontal: 140, // Increased to avoid arrow overlap
+        paddingHorizontal: 120, // Reduced padding
     },
     textContent: {
-        maxWidth: 800,
+        maxWidth: 700,
     },
     heroSub: {
         color: '#FFF',
-        fontSize: 14,
+        fontSize: 12, // Reduced from 14
         fontWeight: '800',
-        marginBottom: spacing.md,
+        marginBottom: spacing.sm, // Reduced from md
         opacity: 0.8,
         textTransform: 'uppercase',
-        letterSpacing: 4,
+        letterSpacing: 3, // Reduced from 4
     },
     heroTitle: {
         color: '#FFF',
-        fontSize: 64,
+        fontSize: 48, // Reduced from 64
         fontWeight: '900',
-        marginBottom: spacing.lg,
-        lineHeight: 74,
+        marginBottom: spacing.md, // Reduced from lg
+        lineHeight: 56, // Reduced from 74
     },
     heroDesc: {
         color: '#FFF',
-        fontSize: 24,
+        fontSize: 18, // Reduced from 24
         fontWeight: '500',
-        marginBottom: spacing['3xl'],
+        marginBottom: spacing.xl, // Reduced from 3xl
         opacity: 0.9,
-        lineHeight: 36,
+        lineHeight: 28, // Reduced from 36
     },
     ctaBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 20,
-        paddingHorizontal: 48,
-        borderRadius: 20,
+        paddingVertical: 16, // Reduced from 20
+        paddingHorizontal: 36, // Reduced from 48
+        borderRadius: 16, // Reduced from 20
         alignSelf: 'flex-start',
-        gap: spacing.md,
+        gap: spacing.sm, // Reduced from md
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
+        shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 10,
+        shadowRadius: 16,
+        elevation: 8,
     },
     ctaText: {
         color: '#FFF',
-        fontSize: 18,
+        fontSize: 16, // Reduced from 18
         fontWeight: '800',
     },
     arrow: {
         position: 'absolute',
         top: '50%',
-        width: 64,
-        height: 64,
-        borderRadius: 32,
+        width: 48, // Reduced from 64
+        height: 48, // Reduced from 64
+        borderRadius: 24, // Reduced from 32
         backgroundColor: 'rgba(255,255,255,0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: -32,
+        marginTop: -24, // Reduced from -32
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
     },
@@ -207,13 +231,13 @@ const styles = StyleSheet.create({
     },
     indicators: {
         position: 'absolute',
-        bottom: spacing['3xl'],
-        left: spacing['5xl'],
+        bottom: spacing.xl, // Reduced from 3xl
+        left: spacing['4xl'], // Reduced from 5xl
         flexDirection: 'row',
-        gap: spacing.md,
+        gap: spacing.sm, // Reduced from md
     },
     dot: {
-        height: 8,
-        borderRadius: 4,
+        height: 6, // Reduced from 8
+        borderRadius: 3,
     },
 });

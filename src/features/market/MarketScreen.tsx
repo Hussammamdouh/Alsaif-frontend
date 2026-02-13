@@ -31,6 +31,7 @@ export const MarketScreen = () => {
     const [isSimulatorMode, setIsSimulatorMode] = useState(false);
     const [manualPrice, setManualPrice] = useState<string>('');
     const [favorites, setFavorites] = useState<string[]>([]);
+    const [transactionType, setTransactionType] = useState<'buy' | 'sell'>('buy');
 
     // Memoized chart configuration to prevent flickering/jumping on every re-render
     const curatedChartData = useMemo(() => {
@@ -376,6 +377,7 @@ export const MarketScreen = () => {
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={[isDesktop ? styles.dashboardRow : { padding: spacing.lg }]}>
+                        {/* Column 1: Company Info & Stats */}
                         <View style={[styles.detailCard, isDesktop ? { flex: 1, margin: 0, marginRight: 24 } : null]}>
                             <Text style={[styles.bigPrice, { color: theme.text.primary }]}>
                                 {(selectedSymbol.price || 0).toFixed(3)} <Text style={{ fontSize: 16 }}>AED</Text>
@@ -395,7 +397,45 @@ export const MarketScreen = () => {
                                     <Stat label={t('market.volume')} value={formatStatValue(selectedSymbol.volume, true)} theme={theme} styles={styles} t={t} />
                                 </View>
                             </View>
+                        </View>
 
+                        {/* Column 2: Chart (Middle) */}
+                        <View style={[styles.detailCard, isDesktop ? { flex: 1.5, margin: 0, marginRight: 24 } : null]}>
+                            <View style={[styles.chartContainer, { alignItems: 'center' }]}>
+                                <Text style={[styles.chartTitle, { color: theme.text.secondary, alignSelf: 'flex-start', marginBottom: 24 }]}>
+                                    {t('market.priceHistory')} (1 Day)
+                                </Text>
+                                {curatedChartData && (
+                                    <LineChart
+                                        data={curatedChartData.data}
+                                        width={isDesktop ? (width >= 1200 ? 450 : 350) : width - 64}
+                                        height={isDesktop ? 350 : 250}
+                                        chartConfig={{
+                                            backgroundColor: 'transparent',
+                                            backgroundGradientFrom: theme.background.secondary,
+                                            backgroundGradientTo: theme.background.secondary,
+                                            fillShadowGradientFrom: curatedChartData.color,
+                                            fillShadowGradientTo: theme.background.secondary,
+                                            fillShadowGradientFromOpacity: 0.5,
+                                            fillShadowGradientToOpacity: 0.05,
+                                            decimalPlaces: 3,
+                                            color: (opacity = 1) => curatedChartData.color,
+                                            labelColor: (opacity = 1) => theme.text.secondary,
+                                            style: { borderRadius: 16 },
+                                            propsForDots: { r: "3", strokeWidth: "1", stroke: curatedChartData.color },
+                                            propsForBackgroundLines: { strokeDasharray: "", strokeWidth: 0.5, stroke: isDark ? '#2A2A2A' : '#E5E7EB' },
+                                            paddingRight: 16,
+                                            propsForLabels: { fontSize: 10, fontWeight: '600' }
+                                        }}
+                                        bezier
+                                        style={{ marginVertical: 8, borderRadius: 16 }}
+                                    />
+                                )}
+                            </View>
+                        </View>
+
+                        {/* Column 3: Shares Calculator */}
+                        <View style={[styles.detailCard, isDesktop ? { flex: 1.2, margin: 0 } : null]}>
                             <View style={styles.calculatorSection}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                                     <Text style={[styles.sectionTitle, { color: theme.text.primary, marginBottom: 0 }]}>{t('market.sharesCalculator')}</Text>
@@ -403,30 +443,58 @@ export const MarketScreen = () => {
                                         <TouchableOpacity
                                             onPress={() => setIsSimulatorMode(false)}
                                             style={{
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 6,
-                                                borderRadius: 16,
+                                                paddingHorizontal: 8,
+                                                paddingVertical: 4,
+                                                borderRadius: 14,
                                                 backgroundColor: !isSimulatorMode ? theme.primary.main : 'transparent'
                                             }}
                                         >
-                                            <Text style={{ fontSize: 12, fontWeight: '700', color: !isSimulatorMode ? '#FFF' : theme.text.secondary }}>{t('market.liveMode')}</Text>
+                                            <Icon name="pulse" size={14} color={!isSimulatorMode ? '#FFF' : theme.text.tertiary} />
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             onPress={() => setIsSimulatorMode(true)}
                                             style={{
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 6,
-                                                borderRadius: 16,
+                                                paddingHorizontal: 8,
+                                                paddingVertical: 4,
+                                                borderRadius: 14,
                                                 backgroundColor: isSimulatorMode ? theme.primary.main : 'transparent'
                                             }}
                                         >
-                                            <Text style={{ fontSize: 12, fontWeight: '700', color: isSimulatorMode ? '#FFF' : theme.text.secondary }}>{t('market.simulatorMode')}</Text>
+                                            <Icon name="flask" size={14} color={isSimulatorMode ? '#FFF' : theme.text.tertiary} />
                                         </TouchableOpacity>
                                     </View>
                                 </View>
 
+                                {/* Buy/Sell Segmented Picker */}
+                                <View style={{ flexDirection: 'row', backgroundColor: theme.background.primary, borderRadius: 12, padding: 4, marginBottom: 24 }}>
+                                    <TouchableOpacity
+                                        onPress={() => setTransactionType('buy')}
+                                        style={{
+                                            flex: 1,
+                                            paddingVertical: 10,
+                                            borderRadius: 8,
+                                            backgroundColor: transactionType === 'buy' ? '#22c55e' : 'transparent',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Text style={{ fontSize: 13, fontWeight: '800', color: transactionType === 'buy' ? '#FFF' : theme.text.secondary }}>{t('market.buy')}</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => setTransactionType('sell')}
+                                        style={{
+                                            flex: 1,
+                                            paddingVertical: 10,
+                                            borderRadius: 8,
+                                            backgroundColor: transactionType === 'sell' ? '#ef4444' : 'transparent',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Text style={{ fontSize: 13, fontWeight: '800', color: transactionType === 'sell' ? '#FFF' : theme.text.secondary }}>{t('market.sell')}</Text>
+                                    </TouchableOpacity>
+                                </View>
+
                                 {isSimulatorMode && (
-                                    <View style={[styles.inputRow, { marginBottom: 12 }]}>
+                                    <View style={[styles.inputRow, { marginBottom: 16 }]}>
                                         <Text style={[styles.inputLabel, { color: theme.text.secondary }]}>{t('market.pricePerShare')} (AED)</Text>
                                         <TextInput
                                             style={[styles.sharesInput, { backgroundColor: theme.background.secondary, color: theme.text.primary, borderColor: theme.ui.border }]}
@@ -456,7 +524,7 @@ export const MarketScreen = () => {
                                         {(() => {
                                             const shares = parseFloat(sharesCount);
                                             const price = isSimulatorMode ? parseFloat(manualPrice || '0') : selectedSymbol.price;
-                                            const breakdown = calculateCommission(shares, price, selectedSymbol.exchange as any);
+                                            const breakdown = calculateCommission(shares, price, selectedSymbol.exchange as any, transactionType);
 
                                             return (
                                                 <>
@@ -471,56 +539,17 @@ export const MarketScreen = () => {
                                                     </View>
 
                                                     <View style={[styles.resultRow, { borderTopWidth: 1, borderTopColor: theme.ui.border, marginTop: 4, paddingTop: 12 }]}>
-                                                        <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '900', fontSize: 16 }]}>{t('market.tradeCost')}</Text>
-                                                        <Text style={[styles.resultValue, { color: theme.primary.main, fontSize: 20, fontWeight: '900' }]}>{breakdown.totalCost.toFixed(2)} AED</Text>
+                                                        <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '900', fontSize: 16 }]}>
+                                                            {transactionType === 'buy' ? t('market.totalCost') : t('market.totalReceived')}
+                                                        </Text>
+                                                        <Text style={[styles.resultValue, { color: transactionType === 'buy' ? theme.primary.main : '#22c55e', fontSize: 18, fontWeight: '900' }]}>
+                                                            {breakdown.totalCost.toFixed(2)} AED
+                                                        </Text>
                                                     </View>
-
-                                                    {!isSimulatorMode && (
-                                                        <View style={[styles.resultRow, { marginTop: 8 }]}>
-                                                            <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.todayChange')}</Text>
-                                                            <Text style={[styles.resultValue, { color: isPositive ? '#22c55e' : '#ef4444' }]}>
-                                                                {isPositive ? '+' : ''}{(shares * (selectedSymbol.change || 0)).toFixed(2)} AED
-                                                            </Text>
-                                                        </View>
-                                                    )}
                                                 </>
                                             );
                                         })()}
                                     </View>
-                                )}
-                            </View>
-                        </View>
-
-                        <View style={[styles.detailCard, isDesktop ? { flex: 2, margin: 0 } : null]}>
-                            <View style={[styles.chartContainer, { alignItems: 'center' }]}>
-                                <Text style={[styles.chartTitle, { color: theme.text.secondary, alignSelf: 'flex-start', marginBottom: 24 }]}>
-                                    {t('market.priceHistory')} (1 Day)
-                                </Text>
-                                {curatedChartData && (
-                                    <LineChart
-                                        data={curatedChartData.data}
-                                        width={isDesktop ? (width >= 1200 ? 600 : 450) : width - 64}
-                                        height={isDesktop ? 400 : 250}
-                                        chartConfig={{
-                                            backgroundColor: 'transparent',
-                                            backgroundGradientFrom: theme.background.secondary,
-                                            backgroundGradientTo: theme.background.secondary,
-                                            fillShadowGradientFrom: curatedChartData.color,
-                                            fillShadowGradientTo: theme.background.secondary,
-                                            fillShadowGradientFromOpacity: 0.5,
-                                            fillShadowGradientToOpacity: 0.05,
-                                            decimalPlaces: 3,
-                                            color: (opacity = 1) => curatedChartData.color,
-                                            labelColor: (opacity = 1) => theme.text.secondary,
-                                            style: { borderRadius: 16 },
-                                            propsForDots: { r: "3", strokeWidth: "1", stroke: curatedChartData.color },
-                                            propsForBackgroundLines: { strokeDasharray: "", strokeWidth: 0.5, stroke: isDark ? '#2A2A2A' : '#E5E7EB' },
-                                            paddingRight: 16,
-                                            propsForLabels: { fontSize: 10, fontWeight: '600' }
-                                        }}
-                                        bezier
-                                        style={{ marginVertical: 8, borderRadius: 16 }}
-                                    />
                                 )}
                             </View>
                         </View>
