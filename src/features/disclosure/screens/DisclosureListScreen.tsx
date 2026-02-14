@@ -203,13 +203,13 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                         </View>
 
                         <View style={[styles.desktopToolbar, { flexDirection: language === 'ar' ? 'row-reverse' : 'row' }]}>
-                            <View style={{ flex: 1 }}>
+                            <View style={{ flex: 1, alignItems: language === 'ar' ? 'flex-end' : 'flex-start' }}>
                                 <ScrollView
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
                                     contentContainerStyle={[
                                         styles.filtersScroll,
-                                        { flexDirection: language === 'ar' ? 'row-reverse' : 'row' }
+                                        { flexDirection: language === 'ar' ? 'row-reverse' : 'row', justifyContent: language === 'ar' ? 'flex-end' : 'flex-start', flexGrow: 1 }
                                     ]}
                                 >
                                     {FILTERS.map((f) => {
@@ -219,6 +219,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                                                 key={f.key}
                                                 style={[
                                                     styles.filterChip,
+                                                    { flexDirection: language === 'ar' ? 'row-reverse' : 'row' },
                                                     {
                                                         backgroundColor: isActive
                                                             ? '#3e7a33'

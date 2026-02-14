@@ -60,7 +60,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
         });
     }, [selected, options, scaleAnims]);
 
-    const styles = getStyles(theme, isDark, isDesktop);
+    const styles = getStyles(theme, isDark, isDesktop, isRTL);
 
     return (
         <View style={styles.container}>
@@ -70,7 +70,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={[
                     styles.scrollContent,
-                    isRTL && { flexDirection: 'row-reverse' },
+                    isRTL && { flexDirection: 'row-reverse', justifyContent: 'flex-end', flexGrow: 1 },
                 ]}
             >
                 {options.map((option) => {
@@ -101,7 +101,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
                                 ]}
                             >
                                 {option.icon && (
-                                    <Animated.View style={{ marginRight: 6 }}>
+                                    <Animated.View style={{ marginRight: isRTL ? 0 : 6, marginLeft: isRTL ? 6 : 0 }}>
                                         <Ionicons
                                             name={option.icon}
                                             size={16}
@@ -121,18 +121,20 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
     );
 };
 
-const getStyles = (theme: any, isDark: boolean, isDesktop: boolean) =>
+const getStyles = (theme: any, isDark: boolean, isDesktop: boolean, isRTL: boolean) =>
     StyleSheet.create({
         container: {
             marginBottom: 16,
-            width: '100%',
+            width: isDesktop ? undefined : '100%',
+            alignSelf: isRTL ? 'flex-end' : 'flex-start',
         },
         title: {
             fontSize: 12,
             fontWeight: '800',
             color: theme.text.tertiary,
             marginBottom: 10,
-            marginLeft: 8,
+            marginHorizontal: 8,
+            textAlign: isRTL ? 'right' : 'left',
             textTransform: 'uppercase',
             letterSpacing: 1.5,
         },
@@ -142,7 +144,7 @@ const getStyles = (theme: any, isDark: boolean, isDesktop: boolean) =>
             gap: 12,
         },
         chip: {
-            flexDirection: 'row',
+            flexDirection: isRTL ? 'row-reverse' : 'row',
             alignItems: 'center',
             paddingHorizontal: isDesktop ? 22 : 18,
             paddingVertical: isDesktop ? 12 : 10,

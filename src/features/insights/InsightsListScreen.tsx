@@ -200,7 +200,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const columnCount = width > 1600 ? 3 : 2;
-  const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark), [theme, isDesktop, isDark]);
+  const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark, isRTL), [theme, isDesktop, isDark, isRTL]);
   const { canAccessInsight } = useSubscriptionAccess();
 
 
@@ -370,7 +370,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
                 </Text>
               </View>
 
-              <View style={{ gap: 12 }}>
+              <View style={{ gap: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                 {!hideAccessFilter && (
                   <FilterChips
                     options={[
@@ -379,7 +379,13 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
                       { key: 'premium', labelKey: 'filter.premium' },
                     ]}
                     selected={typeFilter}
-                    onSelect={(key: string) => setTypeFilter(key as any)}
+                    onSelect={(key: string) => {
+                      if (key === 'premium' && !canAccessInsight('premium')) {
+                        (navigation as any).navigate('Paywall');
+                      } else {
+                        setTypeFilter(key as any);
+                      }
+                    }}
                   />
                 )}
                 <FilterChips
@@ -448,7 +454,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   );
 };
 
-const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleSheet.create({
+const getStyles = (theme: any, isDesktop: boolean, isDark: boolean, isRTL: boolean) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -496,13 +502,13 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
     minHeight: 180,
   },
   insightCardHeader: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
   },
   insightCardLeft: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 8,
   },
@@ -529,6 +535,7 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
   timestamp: {
     fontSize: 12,
     fontWeight: '500',
+    textAlign: isRTL ? 'right' : 'left',
   },
   moreButton: {
     width: 32,
@@ -560,17 +567,17 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
     height: '100%',
   },
   insightFooter: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 'auto',
   },
   engagementRow: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     gap: 8,
   },
   engagementButton: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 12,
@@ -580,6 +587,8 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
   engagementCount: {
     fontSize: 13,
     fontWeight: '700',
+    marginLeft: isRTL ? 0 : 4,
+    marginRight: isRTL ? 4 : 0,
   },
   bookmarkButton: {
     width: 40,
@@ -591,7 +600,8 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
   lockBadge: {
     position: 'absolute',
     top: 12,
-    right: 12,
+    right: isRTL ? undefined : 12,
+    left: isRTL ? 12 : undefined,
     width: 24,
     height: 24,
     borderRadius: 12,

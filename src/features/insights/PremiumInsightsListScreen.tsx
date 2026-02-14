@@ -364,7 +364,13 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
                     { key: 'premium', labelKey: 'filter.premium' },
                   ]}
                   selected={typeFilter}
-                  onSelect={(key: string) => setTypeFilter(key as any)}
+                  onSelect={(key: string) => {
+                    if (key === 'premium' && !hasPremiumAccess) {
+                      (navigation as any).navigate('Paywall');
+                    } else {
+                      setTypeFilter(key as any);
+                    }
+                  }}
                 />
               )}
               <FilterChips
