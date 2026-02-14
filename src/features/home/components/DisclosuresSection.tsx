@@ -8,11 +8,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../app/navigation/types';
 import { spacing } from '../../../core/theme/spacing';
 
-const DisclosuresSection: React.FC = () => {
+const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }) => {
     const { theme } = useTheme();
-    const { t, language } = useLocalization();
+    const { t, language, isRTL } = useLocalization();
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
-    const { disclosures, loading, hasMore, loadMore } = useDisclosures(4);
+    const { disclosures, loading, hasMore, loadMore } = useDisclosures(4, exchange);
 
     if (loading && disclosures.length === 0) {
         return (
@@ -24,9 +24,9 @@ const DisclosuresSection: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.headerRow}>
-                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>
-                    {t('tabs.disclosures')}
+            <View style={[styles.headerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
+                    {exchange ? `${exchange === 'ADX' ? t('market.adxTitle') : t('market.dfmTitle')} ${t('tabs.disclosures')}` : t('tabs.disclosures')}
                 </Text>
                 <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'MarketTab' })}>
                     <Text style={[styles.viewAll, { color: theme.primary.main }]}>{t('common.viewAll')}</Text>
@@ -44,7 +44,7 @@ const DisclosuresSection: React.FC = () => {
                         style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}
                         onPress={() => navigation.navigate('DisclosureDetails', { disclosureId: item._id, disclosure: item })}
                     >
-                        <View style={styles.cardHeader}>
+                        <View style={[styles.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                             <View style={[styles.exchangeBadge, { backgroundColor: isADX ? '#007AFF' : '#E62E2D' }]}>
                                 <Text style={styles.exchangeText}>{isADX ? t('market.adxTitle') : t('market.dfmTitle')}</Text>
                             </View>
@@ -53,12 +53,12 @@ const DisclosuresSection: React.FC = () => {
                             </Text>
                         </View>
 
-                        <Text style={[styles.symbolText, { color: theme.primary.main }]}>{item.symbol}</Text>
-                        <Text style={[styles.companyText, { color: theme.text.secondary }]} numberOfLines={1}>{companyName}</Text>
-                        <Text style={[styles.titleText, { color: theme.text.primary }]} numberOfLines={2}>{title}</Text>
+                        <Text style={[styles.symbolText, { color: theme.primary.main, textAlign: isRTL ? 'right' : 'left' }]}>{item.symbol}</Text>
+                        <Text style={[styles.companyText, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{companyName}</Text>
+                        <Text style={[styles.titleText, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={2}>{title}</Text>
 
-                        <View style={styles.cardFooter}>
-                            <View style={styles.readMore}>
+                        <View style={[styles.cardFooter, { justifyContent: isRTL ? 'flex-start' : 'flex-end' }]}>
+                            <View style={[styles.readMore, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                                 <Text style={[styles.readMoreText, { color: theme.primary.main }]}>{t('disclosures.readDisclosure')}</Text>
                                 <Ionicons name={language === 'ar' ? "chevron-back" : "chevron-forward"} size={14} color={theme.primary.main} />
                             </View>

@@ -120,6 +120,7 @@ const translations = {
     // Chat List Screen
     'chatList.title': 'Chats',
     'chatList.create': 'Create',
+    'chatList.group': 'Group',
     'chatList.searchPlaceholder': 'Search advisor or ticker...',
     'chatList.filterAll': 'All',
     'chatList.filterUnread': 'Unread',
@@ -152,8 +153,40 @@ const translations = {
     'chatList.block': 'Block',
     'chatList.loginRequired': 'Chat Access',
     'chatList.loginMessage': 'Please log in to chat with our experts and community.',
+
+    // Create Group Chat Modal
+    'createGroup.title': 'Create Group',
+    'createGroup.groupDetails': 'Group Details',
+    'createGroup.groupNamePlaceholder': 'Group name (e.g. VIP Gold Traders)',
+    'createGroup.systemGroup': 'System Group',
+    'createGroup.systemGroupDesc': 'Auto-enroll users by tier',
+    'createGroup.broadcastMode': 'Broadcast Mode',
+    'createGroup.broadcastModeDesc': 'Only admins can send',
+    'createGroup.addMembers': 'Add Members',
+    'createGroup.searchPlaceholder': 'Search users by name or email...',
+    'createGroup.noUsersFound': 'No users found',
+    'createGroup.addByTier': 'Add by Tier',
+    'createGroup.addByTierDesc': 'Automatically include all users from selected tiers',
+    'createGroup.optional': 'Optional',
+    'createGroup.freeTier': 'Free Tier',
+    'createGroup.freeTierDesc': 'All free users',
+    'createGroup.premiumTier': 'Premium Tier',
+    'createGroup.premiumTierDesc': 'Premium subscribers',
+    'createGroup.createButton': 'Create Group',
+    'createGroup.createButtonWithCount': 'Create Group ({count} members)',
+    'createGroup.groupNameRequired': 'Group name is required',
+    'createGroup.createdSuccess': 'Group "{name}" created with {count} participant(s) added.',
+    'createGroup.createdPartial': 'Group created but some participants could not be added.',
+    'createGroup.createdEmpty': 'Group "{name}" created successfully.',
+    'createGroup.admin': 'ADMIN',
+    'createGroup.superadmin': 'SUPER',
+
     'notifications.loginRequired': 'Stay Updated',
     'notifications.loginMessage': 'Log in to receive personalized alerts, market updates, and exclusive analysis notifications.',
+
+    // Insights Auth Gate
+    'insights.loginRequired': 'Insights Access',
+    'insights.loginMessage': 'Log in to view expert market insights, analysis, and trading signals.',
 
     // Conversation Screen
     'conversation.typeMessage': 'Type a message...',
@@ -1299,6 +1332,7 @@ const translations = {
     // Chat List Screen
     'chatList.title': 'المحادثات',
     'chatList.create': 'إنشاء',
+    'chatList.group': 'مجموعة',
     'chatList.searchPlaceholder': 'ابحث عن مستشار أو رمز...',
     'chatList.filterAll': 'الكل',
     'chatList.filterUnread': 'غير مقروء',
@@ -1331,8 +1365,40 @@ const translations = {
     'chatList.block': 'حظر',
     'chatList.loginRequired': 'الوصول إلى الدردشة',
     'chatList.loginMessage': 'يرجى تسجيل الدخول للدردشة مع خبرائنا ومجتمعنا.',
+
+    // Create Group Chat Modal
+    'createGroup.title': 'إنشاء مجموعة',
+    'createGroup.groupDetails': 'تفاصيل المجموعة',
+    'createGroup.groupNamePlaceholder': 'اسم المجموعة (مثال: متداولي الذهب VIP)',
+    'createGroup.systemGroup': 'مجموعة نظام',
+    'createGroup.systemGroupDesc': 'تسجيل المستخدمين تلقائياً حسب الفئة',
+    'createGroup.broadcastMode': 'وضع البث',
+    'createGroup.broadcastModeDesc': 'المشرفون فقط يمكنهم الإرسال',
+    'createGroup.addMembers': 'إضافة أعضاء',
+    'createGroup.searchPlaceholder': 'ابحث عن مستخدمين بالاسم أو البريد الإلكتروني...',
+    'createGroup.noUsersFound': 'لم يتم العثور على مستخدمين',
+    'createGroup.addByTier': 'إضافة حسب الفئة',
+    'createGroup.addByTierDesc': 'تضمين جميع المستخدمين من الفئات المحددة تلقائياً',
+    'createGroup.optional': 'اختياري',
+    'createGroup.freeTier': 'الفئة المجانية',
+    'createGroup.freeTierDesc': 'جميع المستخدمين المجانيين',
+    'createGroup.premiumTier': 'الفئة المميزة',
+    'createGroup.premiumTierDesc': 'مشتركو الباقة المميزة',
+    'createGroup.createButton': 'إنشاء مجموعة',
+    'createGroup.createButtonWithCount': 'إنشاء مجموعة ({count} أعضاء)',
+    'createGroup.groupNameRequired': 'اسم المجموعة مطلوب',
+    'createGroup.createdSuccess': 'تم إنشاء مجموعة "{name}" وإضافة {count} مشارك(ين).',
+    'createGroup.createdPartial': 'تم إنشاء المجموعة لكن تعذر إضافة بعض المشاركين.',
+    'createGroup.createdEmpty': 'تم إنشاء مجموعة "{name}" بنجاح.',
+    'createGroup.admin': 'مشرف',
+    'createGroup.superadmin': 'مشرف أعلى',
+
     'notifications.loginRequired': 'ابق على اطلاع',
     'notifications.loginMessage': 'سجل الدخول لتلقي تنبيهات مخصصة، وتحديثات السوق، وإشعارات التحليل الحصرية.',
+
+    // Insights Auth Gate
+    'insights.loginRequired': 'الوصول إلى التحليلات',
+    'insights.loginMessage': 'سجل الدخول لعرض تحليلات الخبراء، وإشارات التداول، ورؤى السوق.',
 
     // Conversation Screen
     'conversation.typeMessage': 'اكتب رسالة...',

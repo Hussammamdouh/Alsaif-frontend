@@ -26,7 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../app/providers/ThemeProvider';
-import { ResponsiveContainer, FilterChips } from '../../shared/components';
+import { ResponsiveContainer, FilterChips, AuthRequiredGate } from '../../shared/components';
 import { useInsights } from './insights.hooks';
 import { useMarketData } from '../../core/hooks/useMarketData';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
@@ -345,100 +345,106 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-      <ResponsiveContainer style={{ flex: 1 }}>
-        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+    <AuthRequiredGate
+      title={t('insights.loginRequired') || 'Insights Access'}
+      message={t('insights.loginMessage') || 'Log in to view expert market insights and analysis.'}
+      icon="bulb-outline"
+    >
+      <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+        <ResponsiveContainer style={{ flex: 1 }}>
+          <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-        {!hideHeader && (
-          <View style={[
-            styles.headerWrapper,
-            isDesktop && styles.desktopHeaderWrapper,
-            { borderBottomWidth: 1, borderBottomColor: theme.ui.border, paddingBottom: 24 },
-            !isDesktop && { paddingTop: 20, borderBottomWidth: 0 }
-          ]}>
-            <View style={{ marginBottom: isDesktop ? 6 : 8, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-              <Text style={[styles.headerTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-                {t('insights.freeInsights')}
-              </Text>
-              <Text style={[styles.headerSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
-                {t('common.tagline')}
-              </Text>
-            </View>
+          {!hideHeader && (
+            <View style={[
+              styles.headerWrapper,
+              isDesktop && styles.desktopHeaderWrapper,
+              { borderBottomWidth: 1, borderBottomColor: theme.ui.border, paddingBottom: 24 },
+              !isDesktop && { paddingTop: 20, borderBottomWidth: 0 }
+            ]}>
+              <View style={{ marginBottom: isDesktop ? 6 : 8, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                <Text style={[styles.headerTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
+                  {t('insights.freeInsights')}
+                </Text>
+                <Text style={[styles.headerSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
+                  {t('common.tagline')}
+                </Text>
+              </View>
 
-            <View style={{ gap: 12 }}>
-              {!hideAccessFilter && (
+              <View style={{ gap: 12 }}>
+                {!hideAccessFilter && (
+                  <FilterChips
+                    options={[
+                      { key: 'all', labelKey: 'filter.all' },
+                      { key: 'free', labelKey: 'filter.free' },
+                      { key: 'premium', labelKey: 'filter.premium' },
+                    ]}
+                    selected={typeFilter}
+                    onSelect={(key: string) => setTypeFilter(key as any)}
+                  />
+                )}
                 <FilterChips
                   options={[
-                    { key: 'all', labelKey: 'filter.all' },
-                    { key: 'free', labelKey: 'filter.free' },
-                    { key: 'premium', labelKey: 'filter.premium' },
+                    { key: 'all', labelKey: 'filter.general' },
+                    { key: 'ADX', labelKey: 'filter.adx' },
+                    { key: 'DFM', labelKey: 'filter.dfm' },
+                    { key: 'Other', labelKey: 'filter.others' },
+                    { key: 'signal', labelKey: 'filter.specific' },
                   ]}
-                  selected={typeFilter}
-                  onSelect={(key: string) => setTypeFilter(key as any)}
+                  selected={marketFilter}
+                  onSelect={(key: string) => setMarketFilter(key as any)}
                 />
-              )}
-              <FilterChips
-                options={[
-                  { key: 'all', labelKey: 'filter.general' },
-                  { key: 'ADX', labelKey: 'filter.adx' },
-                  { key: 'DFM', labelKey: 'filter.dfm' },
-                  { key: 'Other', labelKey: 'filter.others' },
-                  { key: 'signal', labelKey: 'filter.specific' },
-                ]}
-                selected={marketFilter}
-                onSelect={(key: string) => setMarketFilter(key as any)}
-              />
-            </View>
-          </View>
-        )}
-
-
-        {/* Insights List */}
-        <FlatList
-          style={{ flex: 1 }}
-          key={isDesktop ? `grid-${columnCount}` : 'list'}
-          data={filteredInsights}
-          renderItem={renderInsightCard}
-          keyExtractor={(item) => item._id}
-          numColumns={isDesktop ? columnCount : 1}
-          columnWrapperStyle={isDesktop && columnCount > 1 ? { gap: 24, paddingHorizontal: 24 } : null}
-          contentContainerStyle={styles.listContent}
-          ListHeaderComponent={
-            <>
-              {ListHeaderComponent}
-            </>
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => refresh()}
-              tintColor={theme.primary.main}
-              colors={[theme.primary.main]}
-            />
-          }
-          onEndReached={!isDesktop ? loadMore : undefined}
-          onEndReachedThreshold={0.5}
-          ListEmptyComponent={renderEmpty}
-          ListFooterComponent={
-            isDesktop && filteredInsights.length > 0 ? (
-              <View style={styles.desktopFooter}>
-                <TouchableOpacity
-                  style={[styles.loadMoreButton, { backgroundColor: theme.primary.main }]}
-                  onPress={loadMore}
-                >
-                  {insightsLoading ? (
-                    <ActivityIndicator color="#FFF" />
-                  ) : (
-                    <Text style={styles.loadMoreText}>{t('common.loadMore') || 'Load More'}</Text>
-                  )}
-                </TouchableOpacity>
               </View>
-            ) : renderFooter()
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      </ResponsiveContainer>
-    </View>
+            </View>
+          )}
+
+
+          {/* Insights List */}
+          <FlatList
+            style={{ flex: 1 }}
+            key={isDesktop ? `grid-${columnCount}` : 'list'}
+            data={filteredInsights}
+            renderItem={renderInsightCard}
+            keyExtractor={(item) => item._id}
+            numColumns={isDesktop ? columnCount : 1}
+            columnWrapperStyle={isDesktop && columnCount > 1 ? { gap: 24, paddingHorizontal: 24 } : null}
+            contentContainerStyle={styles.listContent}
+            ListHeaderComponent={
+              <>
+                {ListHeaderComponent}
+              </>
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => refresh()}
+                tintColor={theme.primary.main}
+                colors={[theme.primary.main]}
+              />
+            }
+            onEndReached={!isDesktop ? loadMore : undefined}
+            onEndReachedThreshold={0.5}
+            ListEmptyComponent={renderEmpty}
+            ListFooterComponent={
+              isDesktop && filteredInsights.length > 0 ? (
+                <View style={styles.desktopFooter}>
+                  <TouchableOpacity
+                    style={[styles.loadMoreButton, { backgroundColor: theme.primary.main }]}
+                    onPress={loadMore}
+                  >
+                    {insightsLoading ? (
+                      <ActivityIndicator color="#FFF" />
+                    ) : (
+                      <Text style={styles.loadMoreText}>{t('common.loadMore') || 'Load More'}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              ) : renderFooter()
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        </ResponsiveContainer>
+      </View>
+    </AuthRequiredGate>
   );
 };
 

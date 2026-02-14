@@ -75,7 +75,7 @@ export interface Message {
 
 export interface Participant {
   user: User;
-  permission: 'admin' | 'member';
+  permission: 'admin' | 'member' | 'read_only';
   joinedAt: string;
 }
 
@@ -94,6 +94,10 @@ export interface Conversation {
     timestamp: string;
   };
   isPremium: boolean;
+  isSystemGroup?: boolean;
+  settings?: {
+    onlyAdminsCanSend?: boolean;
+  };
 }
 
 export interface ConversationState {

@@ -176,6 +176,8 @@ export const getConversationMessages = async (
     updatedAt: chatData.updatedAt,
     lastMessage: chatData.lastMessage,
     isPremium: chatData.isPremium || false,
+    isSystemGroup: chatData.isSystemGroup || false,
+    settings: chatData.settings || {},
   };
 
   // Transform messages

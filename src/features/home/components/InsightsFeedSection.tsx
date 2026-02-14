@@ -19,7 +19,7 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
     loading: propLoading
 }) => {
     const { theme } = useTheme();
-    const { t } = useLocalization();
+    const { t, isRTL } = useLocalization();
 
     // Stabilize initial params for useInsights to prevent redundant fetches
     const insightsParams = React.useMemo(() => ({ limit: 10 }), []);
@@ -69,8 +69,8 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
 
     return (
         <View style={styles.container}>
-            <View style={styles.headerRow}>
-                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>
+            <View style={[styles.headerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
                     {t('tabs.insights')}
                 </Text>
             </View>
@@ -92,7 +92,7 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
                     >
 
 
-                        <View style={styles.cardHeader}>
+                        <View style={[styles.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                             <View style={[styles.tagBadge, { backgroundColor: isPremium ? `${theme.primary.main}15` : `${theme.text.tertiary}15` }]}>
                                 <Text style={[styles.tagText, { color: isPremium ? theme.primary.main : theme.text.tertiary }]}>
                                     {isPremium ? t('common.premium') : t('common.free')}
@@ -103,27 +103,27 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
                             </Text>
                         </View>
 
-                        <View style={styles.content}>
-                            <Text style={[styles.titleText, { color: theme.text.primary }]} numberOfLines={2}>
+                        <View style={[styles.content, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                            <Text style={[styles.titleText, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={2}>
                                 {item.title}
                             </Text>
-                            <Text style={[styles.summaryText, { color: theme.text.secondary }]} numberOfLines={2}>
+                            <Text style={[styles.summaryText, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={2}>
                                 {item.excerpt}
                             </Text>
                         </View>
 
-                        <View style={[styles.cardFooter, { borderTopColor: theme.border.main }]}>
-                            <View style={styles.statsRow}>
-                                <View style={styles.stat}>
+                        <View style={[styles.cardFooter, { borderTopColor: theme.border.main, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                            <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                <View style={[styles.stat, { flexDirection: isRTL ? 'row-reverse' : 'row', marginRight: isRTL ? 0 : spacing.md, marginLeft: isRTL ? spacing.md : 0 }]}>
                                     <Ionicons name="eye-outline" size={14} color={theme.text.tertiary} />
-                                    <Text style={[styles.statText, { color: theme.text.tertiary }]}>{item.views || 0}</Text>
+                                    <Text style={[styles.statText, { color: theme.text.tertiary, marginLeft: isRTL ? 0 : 4, marginRight: isRTL ? 4 : 0 }]}>{item.views || 0}</Text>
                                 </View>
-                                <View style={styles.stat}>
+                                <View style={[styles.stat, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                                     <Ionicons name="chatbubble-outline" size={14} color={theme.text.tertiary} />
-                                    <Text style={[styles.statText, { color: theme.text.tertiary }]}>{item.commentsCount || 0}</Text>
+                                    <Text style={[styles.statText, { color: theme.text.tertiary, marginLeft: isRTL ? 0 : 4, marginRight: isRTL ? 4 : 0 }]}>{item.commentsCount || 0}</Text>
                                 </View>
                             </View>
-                            <Ionicons name="chevron-forward" size={18} color={theme.primary.main} />
+                            <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={theme.primary.main} />
                         </View>
                     </TouchableOpacity>
                 );

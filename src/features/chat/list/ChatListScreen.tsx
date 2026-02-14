@@ -37,6 +37,7 @@ import { UIConversation, ChatFilter } from './chatList.types';
 import { CHAT_FILTERS, EMPTY_STATES, LIST_CONFIG } from './chatList.constants';
 import { formatUnreadCount } from './chatList.mapper';
 import { NewChatModal } from './NewChatModal';
+import { CreateGroupChatModal } from './CreateGroupChatModal';
 import { ConversationView } from '../conversation-v2/ConversationView';
 
 /**
@@ -59,7 +60,7 @@ const ConversationRow = React.memo<{
 }>(({ conversation, onPress, onLongPress, isSelected }) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const { t } = useLocalization();
+  const { t, isRTL } = useLocalization();
 
   const handlePress = useCallback(() => {
     onPress(conversation);
@@ -75,7 +76,7 @@ const ConversationRow = React.memo<{
         styles.conversationRow,
         { backgroundColor: isSelected ? theme.primary.main + '10' : theme.ui.card },
         pressed && { backgroundColor: theme.background.secondary },
-        isSelected && { borderLeftWidth: 4, borderLeftColor: theme.primary.main },
+        isSelected && (isRTL ? { borderRightWidth: 4, borderRightColor: theme.primary.main } : { borderLeftWidth: 4, borderLeftColor: theme.primary.main }),
       ]}
     >
       {/* Avatar */}
@@ -302,6 +303,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
     const isDesktop = width >= 1024;
 
     const [isNewChatModalVisible, setIsNewChatModalVisible] = useState(false);
+    const [isCreateGroupModalVisible, setIsCreateGroupModalVisible] = useState(false);
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
     const styles = useMemo(() => getStyles(theme), [theme]);
 
@@ -547,14 +549,24 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
           <Text style={[styles.title, { color: theme.text.primary }]}>{t('chatList.title')}</Text>
           <View style={styles.headerActions}>
             {isAdmin && (
-              <TouchableOpacity
-                style={[styles.createButton, { backgroundColor: theme.primary.main }]}
-                activeOpacity={0.8}
-                onPress={() => setIsNewChatModalVisible(true)}
-              >
-                <Icon name="add" size={20} color="#FFFFFF" />
-                <Text style={styles.createButtonText}>{t('chatList.create')}</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 8 }}>
+                <TouchableOpacity
+                  style={[styles.createButton, { backgroundColor: theme.primary.main, flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                  activeOpacity={0.8}
+                  onPress={() => setIsCreateGroupModalVisible(true)}
+                >
+                  <Icon name="people" size={18} color="#FFFFFF" />
+                  <Text style={styles.createButtonText}>{t('chatList.group')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.createButton, { backgroundColor: theme.primary.main, flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                  activeOpacity={0.8}
+                  onPress={() => setIsNewChatModalVisible(true)}
+                >
+                  <Icon name="add" size={20} color="#FFFFFF" />
+                  <Text style={styles.createButtonText}>{t('chatList.create')}</Text>
+                </TouchableOpacity>
+              </View>
             )}
             {!isDesktop && (
               <TouchableOpacity
@@ -569,7 +581,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
           </View>
         </View>
 
-        <View style={[styles.searchContainer, { backgroundColor: theme.ui.card }]}>
+        <View style={[styles.searchContainer, { backgroundColor: theme.ui.card, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <Icon name="search-outline" size={20} color={theme.text.tertiary} style={styles.searchIcon} />
           <TextInput
             style={[styles.searchInput, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}
@@ -622,6 +634,16 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
             handleRefresh();
           }}
         />
+        <CreateGroupChatModal
+          isVisible={isCreateGroupModalVisible}
+          onClose={() => setIsCreateGroupModalVisible(false)}
+          onGroupCreated={(chatId) => {
+            setIsCreateGroupModalVisible(false);
+            if (isDesktop) setSelectedConversationId(chatId);
+            else onNavigateToChat(chatId);
+            handleRefresh();
+          }}
+        />
         <Animated.View style={[styles.fab, { backgroundColor: theme.primary.main, transform: [{ scale: fabScale }], opacity: fabScale }]}>
           <TouchableOpacity onPress={() => setIsNewChatModalVisible(true)} activeOpacity={0.8}>
             <Icon name="create-outline" size={28} color="#FFFFFF" />
@@ -641,9 +663,9 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
             icon="chatbubbles-outline"
           >
             <View style={[styles.desktopCenterContainer, { flex: 1 }]}>
-              <View style={[styles.splitViewCard, { flex: 1, backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+              <View style={[styles.splitViewCard, { flex: 1, backgroundColor: theme.background.secondary, borderColor: theme.border.main, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 {/* Sidebar */}
-                <View style={[styles.sidebar, { borderRightColor: theme.border.main }]}>
+                <View style={[styles.sidebar, isRTL ? { borderLeftWidth: 1, borderLeftColor: theme.border.main, borderRightWidth: 0 } : { borderRightColor: theme.border.main }]}>
                   {renderHeader()}
                   {renderChatListContent()}
                 </View>
@@ -671,6 +693,15 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
               onClose={() => setIsNewChatModalVisible(false)}
               onChatCreated={(chatId) => {
                 setIsNewChatModalVisible(false);
+                setSelectedConversationId(chatId);
+                handleRefresh();
+              }}
+            />
+            <CreateGroupChatModal
+              isVisible={isCreateGroupModalVisible}
+              onClose={() => setIsCreateGroupModalVisible(false)}
+              onGroupCreated={(chatId) => {
+                setIsCreateGroupModalVisible(false);
                 setSelectedConversationId(chatId);
                 handleRefresh();
               }}

@@ -72,6 +72,26 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     const [showSettings, setShowSettings] = useState(false);
 
     const currentUserId = user?.id || '';
+    const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+
+    // Determine if the user can send messages
+    const canSend = useMemo(() => {
+        if (!conversation) return true; // Still loading, assume yes
+        if (conversation.type === 'private') return true;
+
+        const myParticipant = conversation.participants.find(p => p.user.id === currentUserId);
+        if (!myParticipant) return false; // Not a participant
+
+        // If user has read_only permission, they can't send
+        if (myParticipant.permission === 'read_only') return false;
+
+        // If only admins can send, check if user is admin
+        if (conversation.settings?.onlyAdminsCanSend) {
+            return myParticipant.permission === 'admin' || isAdmin;
+        }
+
+        return true;
+    }, [conversation, currentUserId, isAdmin]);
 
     const handleSend = useCallback(async () => {
         if (!inputText.trim() || isSending) return;
@@ -207,65 +227,80 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         </View>
     );
 
-    const renderInputBar = () => (
-        <View style={[styles.inputContainer, { backgroundColor: theme.background.secondary, borderTopColor: theme.ui.border }]}>
-            {(replyingTo || editingMessage) && (
-                <View style={[styles.previewBar, { backgroundColor: theme.background.tertiary, borderLeftWidth: 4, borderLeftColor: theme.primary.main }]}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={[styles.previewTitle, { color: theme.primary.main }]}>
-                            {editingMessage ? t('conversation.editing') : t('conversation.replyingTo')}
-                        </Text>
-                        <Text style={[styles.previewText, { color: theme.text.secondary }]} numberOfLines={1}>
-                            {editingMessage?.content.text || replyingTo?.content.text}
+    const renderInputBar = () => {
+        if (!canSend) {
+            return (
+                <View style={[styles.inputContainer, { backgroundColor: theme.background.secondary, borderTopColor: theme.ui.border }]}>
+                    <View style={styles.blockedInputRow}>
+                        <Icon name="lock-closed" size={18} color={theme.text.tertiary} />
+                        <Text style={[styles.blockedInputText, { color: theme.text.tertiary }]}>
+                            You can't send messages in this group
                         </Text>
                     </View>
+                </View>
+            );
+        }
+
+        return (
+            <View style={[styles.inputContainer, { backgroundColor: theme.background.secondary, borderTopColor: theme.ui.border }]}>
+                {(replyingTo || editingMessage) && (
+                    <View style={[styles.previewBar, { backgroundColor: theme.background.tertiary, borderLeftWidth: 4, borderLeftColor: theme.primary.main }]}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.previewTitle, { color: theme.primary.main }]}>
+                                {editingMessage ? t('conversation.editing') : t('conversation.replyingTo')}
+                            </Text>
+                            <Text style={[styles.previewText, { color: theme.text.secondary }]} numberOfLines={1}>
+                                {editingMessage?.content.text || replyingTo?.content.text}
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (editingMessage) {
+                                    cancelEditing();
+                                    setInputText('');
+                                } else {
+                                    setReplyingTo(null);
+                                }
+                            }}
+                        >
+                            <Icon name="close-circle" size={20} color={theme.text.tertiary} />
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                <View style={styles.inputRow}>
+                    <TouchableOpacity style={styles.attachButton}>
+                        <Icon name="add-circle-outline" size={28} color={theme.text.secondary} />
+                    </TouchableOpacity>
+
+                    <TextInput
+                        style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        placeholder={t('conversation.typeMessage')}
+                        placeholderTextColor={theme.text.tertiary}
+                        multiline
+                        maxLength={5000}
+                    />
+
                     <TouchableOpacity
-                        onPress={() => {
-                            if (editingMessage) {
-                                cancelEditing();
-                                setInputText('');
-                            } else {
-                                setReplyingTo(null);
-                            }
-                        }}
+                        style={[
+                            styles.sendButton,
+                            { backgroundColor: inputText.trim() ? theme.primary.main : theme.background.tertiary },
+                        ]}
+                        onPress={handleSend}
+                        disabled={!inputText.trim() || isSending}
                     >
-                        <Icon name="close-circle" size={20} color={theme.text.tertiary} />
+                        {isSending ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                        ) : (
+                            <Icon name={editingMessage ? "checkmark" : "send"} size={18} color={inputText.trim() ? '#FFFFFF' : theme.text.tertiary} />
+                        )}
                     </TouchableOpacity>
                 </View>
-            )}
-
-            <View style={styles.inputRow}>
-                <TouchableOpacity style={styles.attachButton}>
-                    <Icon name="add-circle-outline" size={28} color={theme.text.secondary} />
-                </TouchableOpacity>
-
-                <TextInput
-                    style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
-                    value={inputText}
-                    onChangeText={setInputText}
-                    placeholder={t('conversation.typeMessage')}
-                    placeholderTextColor={theme.text.tertiary}
-                    multiline
-                    maxLength={5000}
-                />
-
-                <TouchableOpacity
-                    style={[
-                        styles.sendButton,
-                        { backgroundColor: inputText.trim() ? theme.primary.main : theme.background.tertiary },
-                    ]}
-                    onPress={handleSend}
-                    disabled={!inputText.trim() || isSending}
-                >
-                    {isSending ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
-                    ) : (
-                        <Icon name={editingMessage ? "checkmark" : "send"} size={18} color={inputText.trim() ? '#FFFFFF' : theme.text.tertiary} />
-                    )}
-                </TouchableOpacity>
             </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: 'transparent' }]}>
@@ -380,6 +415,8 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     previewTitle: { fontSize: 11, fontWeight: '700', marginBottom: 2 },
     previewText: { fontSize: 13 },
     inputRow: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
+    blockedInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 8 },
+    blockedInputText: { fontSize: 14, fontWeight: '500' },
     attachButton: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
     input: { flex: 1, minHeight: 44, maxHeight: 120, borderRadius: 22, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, fontSize: 15, borderWidth: 1, borderColor: theme.ui.border },
     sendButton: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },

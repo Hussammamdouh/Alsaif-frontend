@@ -3,12 +3,12 @@ import { fetchDisclosures, Disclosure } from './disclosure.api';
 
 export type ExchangeFilter = 'ALL' | 'DFM' | 'ADX';
 
-export const useDisclosures = (limit: number = 5) => {
+export const useDisclosures = (limit: number = 5, initialExchange?: ExchangeFilter) => {
     const [disclosures, setDisclosures] = useState<Disclosure[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [filter, setFilter] = useState<ExchangeFilter>('ALL');
+    const [filter, setFilter] = useState<ExchangeFilter>(initialExchange || 'ALL');
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [totalItems, setTotalItems] = useState(0);

@@ -8,10 +8,13 @@ import DisclosuresSection from './components/DisclosuresSection';
 import { InsightsFeedSection } from './components/InsightsFeedSection';
 import { spacing } from '../../core/theme/spacing';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useUser } from '../../app/auth/auth.hooks';
 
 export const NewHomeScreen: React.FC = () => {
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
+    const user = useUser();
+    const isAuthenticated = !!user;
     const [marketData, setMarketData] = useState<MarketTicker[]>([]);
     const [marketLoading, setMarketLoading] = useState(true);
 
@@ -53,7 +56,7 @@ export const NewHomeScreen: React.FC = () => {
                 <NewHeroCarousel />
 
                 <View style={[styles.gridContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    {/* Column 1: Market Data (Moves to right in RTL) */}
+                    {/* Column 1: Market Data */}
                     <View style={styles.leftColumn}>
                         <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
                             {t('market.title')}
@@ -62,15 +65,27 @@ export const NewHomeScreen: React.FC = () => {
                         <MarketWatchWidget data={marketData} exchange="DFM" />
                     </View>
 
-                    {/* Column 2: Disclosures */}
-                    <View style={styles.middleColumn}>
-                        <DisclosuresSection />
-                    </View>
-
-                    {/* Column 3: Insights */}
-                    <View style={styles.rightColumn}>
-                        <InsightsFeedSection marketData={marketData} loading={marketLoading} />
-                    </View>
+                    {isAuthenticated ? (
+                        <>
+                            {/* Authenticated: Column 2 = All Disclosures, Column 3 = Insights */}
+                            <View style={styles.middleColumn}>
+                                <DisclosuresSection key="all-disclosures" />
+                            </View>
+                            <View style={styles.rightColumn}>
+                                <InsightsFeedSection marketData={marketData} loading={marketLoading} />
+                            </View>
+                        </>
+                    ) : (
+                        <>
+                            {/* Unauthenticated: Column 2 = ADX Disclosures, Column 3 = DFM Disclosures */}
+                            <View style={styles.middleColumn}>
+                                <DisclosuresSection key="adx-disclosures" exchange="ADX" />
+                            </View>
+                            <View style={styles.rightColumn}>
+                                <DisclosuresSection key="dfm-disclosures" exchange="DFM" />
+                            </View>
+                        </>
+                    )}
                 </View>
             </ScrollView>
         </View>
@@ -92,13 +107,13 @@ const styles = StyleSheet.create({
         gap: spacing.xl,
     },
     leftColumn: {
-        flex: 1.2,
+        flex: 1,
     },
     middleColumn: {
-        flex: 2,
+        flex: 1,
     },
     rightColumn: {
-        flex: 1.1,
+        flex: 1,
     },
     sectionTitle: {
         fontSize: 28,
