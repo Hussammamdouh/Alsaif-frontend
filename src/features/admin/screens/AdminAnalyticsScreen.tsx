@@ -118,20 +118,27 @@ export const AdminAnalyticsScreen: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const csvData = await exportFullReport();
+      const data = await exportFullReport();
 
-      if (typeof csvData === 'string' && Platform.OS === 'web') {
-        const blob = new Blob([csvData], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
+      if (Platform.OS === 'web') {
+        // Handle binary xlsx data (ArrayBuffer)
+        const blobData = data instanceof ArrayBuffer
+          ? new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+          : new Blob([data as string], { type: 'text/csv' });
+
+        const ext = data instanceof ArrayBuffer ? 'xlsx' : 'csv';
+        const url = URL.createObjectURL(blobData);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Full_Analytics_${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = `Alsaif_Analytics_${new Date().toISOString().split('T')[0]}.${ext}`;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         URL.revokeObjectURL(url);
         return;
       }
 
-      throw new Error('Full export not supported on this platform or invalid data');
+      throw new Error('Full export not supported on this platform');
     } catch (err) {
       console.error('Full export failed:', err);
       // Fallback to basic export if full fails
