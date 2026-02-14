@@ -91,8 +91,9 @@ export const SubscriptionPlansScreen: React.FC = () => {
     setValidatingPromo(true);
 
     // Try to validate against the most likely targeted plan
-    // If we have a professional plan, use its tier, otherwise use 'premium'
-    const targetTier = professionalPlan?.tier || 'premium';
+    // If we have a featured plan, use its tier, otherwise use 'premium'
+    const featuredPlan = plans.find(p => p.isFeatured || ['premium', 'pro', 'enterprise'].includes(p.tier));
+    const targetTier = featuredPlan?.tier || 'premium';
 
     try {
       const result = await validatePromoCode(promoCode.trim(), targetTier, billingCycle);
@@ -159,8 +160,9 @@ export const SubscriptionPlansScreen: React.FC = () => {
     );
   }
 
-  const investorPlan = plans.find(p => p.tier === 'basic' || p.tier === 'starter');
-  const professionalPlan = plans.find(p => p.tier === 'premium' || p.tier === 'pro');
+  // Determine featured status dynamically
+  const isFeaturedPlan = (plan: any) =>
+    plan.isFeatured || ['premium', 'pro', 'enterprise'].includes(plan.tier);
 
   return (
     <View style={styles.container}>
@@ -240,124 +242,91 @@ export const SubscriptionPlansScreen: React.FC = () => {
               </View>
             )}
 
-            {/* Professional Plans Layout */}
+            {/* Dynamic Plans Layout */}
             <Animated.View style={[styles.plansList, { opacity: fadeAnim }]}>
-              {/* Basic Card */}
-              {investorPlan && (
-                <View style={styles.planCard}>
-                  <LinearGradient
-                    colors={isDark ? ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.01)'] : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.4)']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Text style={styles.tierName}>{investorPlan.name}</Text>
-                  <View style={styles.priceWrap}>
-                    <Text style={styles.currency}>{investorPlan.currency === 'USD' ? '$' : investorPlan.currency}</Text>
-                    {(() => {
-                      const { displayPrice, originalPrice, hasDiscount } = getPriceData(investorPlan);
-                      return (
-                        <>
-                          <Text style={styles.amount}>{displayPrice}</Text>
-                          {hasDiscount && (
-                            <Text style={styles.originalPriceStrikethrough}>{originalPrice}</Text>
-                          )}
-                        </>
-                      );
-                    })()}
-                    <Text style={styles.period}>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</Text>
-                  </View>
+              {plans.map((plan) => {
+                const featured = isFeaturedPlan(plan);
+                const { displayPrice, originalPrice, hasDiscount } = getPriceData(plan);
 
-                  <Text style={styles.tierDesc}>Perfect for individual investors starting their journey.</Text>
-
-                  <View style={styles.divider} />
-
-                  <View style={styles.featuresWrap}>
-                    {investorPlan.features.slice(0, 4).map((f, i) => (
-                      <View key={i} style={styles.featureLine}>
-                        <Ionicons name="checkmark" size={20} color={theme.primary.main} />
-                        <Text style={styles.featureTxt}>{f.name}</Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.actionBtn,
-                      (settings?.isNewSubscriptionsEnabled === false || checkoutLoading) && styles.btnDisabled
-                    ]}
-                    onPress={() => handleSelectPlan(investorPlan._id)}
-                    disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
-                  >
-                    {checkoutLoading && pendingPlanId === investorPlan._id ? (
-                      <ActivityIndicator color={theme.primary.main} />
-                    ) : (
-                      <Text style={[styles.actionBtnText, { color: theme.primary.main }]}>{t('plans.selectPlan')}</Text>
-                    )}
-                  </TouchableOpacity>
-
-                </View>
-              )}
-
-              {/* Professional Card (Featured) */}
-              {professionalPlan && (
-                <View style={[styles.planCard, styles.planCardFeatured]}>
-                  <LinearGradient
-                    colors={[theme.primary.main + '20', 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <View style={styles.recommendedBadge}>
-                    <Text style={styles.recommendedText}>{t('plans.mostPopular') || 'MOST POPULAR'}</Text>
-                  </View>
-                  <Text style={[styles.tierName, { color: theme.primary.main }]}>{professionalPlan.name}</Text>
-                  <View style={styles.priceWrap}>
-                    <Text style={styles.currency}>{professionalPlan.currency === 'USD' ? '$' : professionalPlan.currency}</Text>
-                    {(() => {
-                      const { displayPrice, originalPrice, hasDiscount } = getPriceData(professionalPlan);
-                      return (
-                        <>
-                          <Text style={styles.amount}>{displayPrice}</Text>
-                          {hasDiscount && (
-                            <Text style={styles.originalPriceStrikethrough}>{originalPrice}</Text>
-                          )}
-                        </>
-                      );
-                    })()}
-                    <Text style={styles.period}>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</Text>
-                  </View>
-
-                  <Text style={styles.tierDesc}>Professional tools for serious analysts and traders.</Text>
-
-                  <View style={[styles.divider, { backgroundColor: theme.primary.main + '20' }]} />
-
-                  <View style={styles.featuresWrap}>
-                    {professionalPlan.features.slice(0, 6).map((f, i) => (
-                      <View key={i} style={styles.featureLine}>
-                        <Ionicons name="sparkles" size={16} color={theme.primary.main} />
-                        <Text style={styles.featureTxt}>{f.name}</Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.actionBtnFeatured,
-                      (checkoutLoading || settings?.isNewSubscriptionsEnabled === false) && styles.btnDisabled
-                    ]}
-                    onPress={() => handleSelectPlan(professionalPlan._id)}
-                    disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
-                  >
+                return (
+                  <View key={plan._id} style={[styles.planCard, featured && styles.planCardFeatured]}>
                     <LinearGradient
-                      colors={[theme.primary.main, theme.primary.dark]}
+                      colors={featured
+                        ? [theme.primary.main + '20', 'transparent']
+                        : isDark ? ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.01)'] : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.4)']
+                      }
                       style={StyleSheet.absoluteFill}
                     />
-                    {checkoutLoading && pendingPlanId === professionalPlan._id ? (
-                      <ActivityIndicator color="#FFF" />
-                    ) : (
-                      <Text style={styles.actionBtnTextFeatured}>{t('plans.goProfessional') || 'Go Pro Now'}</Text>
+                    {featured && (
+                      <View style={styles.recommendedBadge}>
+                        <Text style={styles.recommendedText}>{t('plans.mostPopular') || 'MOST POPULAR'}</Text>
+                      </View>
                     )}
-                  </TouchableOpacity>
+                    <Text style={[styles.tierName, featured && { color: theme.primary.main }]}>{plan.name}</Text>
+                    <View style={styles.priceWrap}>
+                      <Text style={styles.currency}>{plan.currency === 'USD' ? '$' : plan.currency}</Text>
+                      <Text style={styles.amount}>{displayPrice}</Text>
+                      {hasDiscount && (
+                        <Text style={styles.originalPriceStrikethrough}>{originalPrice}</Text>
+                      )}
+                      <Text style={styles.period}>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</Text>
+                    </View>
 
-                </View>
-              )}
+                    {plan.description ? (
+                      <Text style={styles.tierDesc}>{plan.description}</Text>
+                    ) : (
+                      <Text style={styles.tierDesc}>{featured ? 'Professional tools for serious analysts and traders.' : 'Perfect for individual investors starting their journey.'}</Text>
+                    )}
+
+                    <View style={[styles.divider, featured && { backgroundColor: theme.primary.main + '20' }]} />
+
+                    <View style={styles.featuresWrap}>
+                      {plan.features.slice(0, 6).map((f, i) => (
+                        <View key={i} style={styles.featureLine}>
+                          <Ionicons name={featured ? "sparkles" : "checkmark"} size={featured ? 16 : 20} color={theme.primary.main} />
+                          <Text style={styles.featureTxt}>{f.name}</Text>
+                        </View>
+                      ))}
+                    </View>
+
+                    {featured ? (
+                      <TouchableOpacity
+                        style={[
+                          styles.actionBtnFeatured,
+                          (checkoutLoading || settings?.isNewSubscriptionsEnabled === false) && styles.btnDisabled
+                        ]}
+                        onPress={() => handleSelectPlan(plan._id)}
+                        disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
+                      >
+                        <LinearGradient
+                          colors={[theme.primary.main, theme.primary.dark]}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        {checkoutLoading && pendingPlanId === plan._id ? (
+                          <ActivityIndicator color="#FFF" />
+                        ) : (
+                          <Text style={styles.actionBtnTextFeatured}>{t('plans.goProfessional') || 'Go Pro Now'}</Text>
+                        )}
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={[
+                          styles.actionBtn,
+                          (settings?.isNewSubscriptionsEnabled === false || checkoutLoading) && styles.btnDisabled
+                        ]}
+                        onPress={() => handleSelectPlan(plan._id)}
+                        disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
+                      >
+                        {checkoutLoading && pendingPlanId === plan._id ? (
+                          <ActivityIndicator color={theme.primary.main} />
+                        ) : (
+                          <Text style={[styles.actionBtnText, { color: theme.primary.main }]}>{t('plans.selectPlan')}</Text>
+                        )}
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })}
             </Animated.View>
 
             {/* Promo Section */}

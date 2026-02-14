@@ -104,7 +104,7 @@ export const DesktopTopNav: React.FC = () => {
 
     const renderLogo = () => (
         <TouchableOpacity
-            style={[styles.logoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1, justifyContent: isRTL ? 'flex-end' : 'flex-start' }]}
+            style={[styles.logoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1 }]}
             onPress={() => navigation.navigate('HomeTab')}
         >
             <Image
@@ -122,7 +122,7 @@ export const DesktopTopNav: React.FC = () => {
     );
 
     const renderActions = () => (
-        <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1, justifyContent: isRTL ? 'flex-start' : 'flex-end', gap: actionGap }]}>
+        <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1, justifyContent: 'flex-end', gap: actionGap }]}>
             {/* Language Toggle */}
             <TouchableOpacity
                 style={[styles.langToggle, { borderColor: theme.text.primary + '30' }]}
