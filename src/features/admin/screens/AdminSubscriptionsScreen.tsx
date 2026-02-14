@@ -148,13 +148,21 @@ export const AdminSubscriptionsScreen: React.FC = () => {
       return;
     }
 
+    console.log('[AdminSubscriptionsScreen] revoking subscription:', {
+      userId: selectedSubscription.user.id,
+      reason: revokeReason,
+      currentStatus: selectedSubscription.status
+    });
+
     try {
       await revokeSubscription(selectedSubscription.user.id, revokeReason);
+      console.log('[AdminSubscriptionsScreen] revocation successful');
       setShowRevokeModal(false);
       setFormError('');
       setSelectedSubscription(null);
       refresh();
     } catch (err: any) {
+      console.error('[AdminSubscriptionsScreen] revocation failed:', err);
       setFormError(err.message || 'Failed to revoke subscription');
     }
   };
@@ -453,7 +461,9 @@ export const AdminSubscriptionsScreen: React.FC = () => {
               label: t('admin.revokeSubscription'),
               icon: 'close-circle-outline',
               onPress: () => {
-                if (selectedSubscription?.status !== 'active') {
+                const canRevoke = selectedSubscription?.status === 'active' || selectedSubscription?.status === 'trial';
+                if (!canRevoke) {
+                  console.log('[AdminSubscriptionsScreen] cannot revoke status:', selectedSubscription?.status);
                   setShowActionSheet(false);
                   return;
                 }

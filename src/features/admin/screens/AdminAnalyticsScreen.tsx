@@ -58,7 +58,7 @@ export const AdminAnalyticsScreen: React.FC = () => {
   );
   const [endDate, setEndDate] = useState(new Date());
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('day');
-  const [activeTab, setActiveTab] = useState<'overview' | 'audience' | 'engagement' | 'revenue'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'audience' | 'engagement' | 'revenue' | 'plans'>('overview');
 
   const {
     userGrowth,
@@ -73,15 +73,19 @@ export const AdminAnalyticsScreen: React.FC = () => {
     revenueOverview,
     revenueTrends,
     paymentMethods,
+    revenueByCycle,
     failedPayments,
     revenueForecast,
     churnRate: hooksChurn,
     arpu,
     ltv,
     comparison,
+    planStats,
+    planLoading,
     loading,
     error,
     refresh,
+    exportFullReport,
   } = useAnalytics({
     startDate,
     endDate,
@@ -112,24 +116,41 @@ export const AdminAnalyticsScreen: React.FC = () => {
     }).format(amount || 0);
   };
 
-  const handleExport = () => {
-    // Prepare data for export
-    const exportData = [
-      { Metric: 'Total Users', Value: engagementMetrics?.totalUsers || 0 },
-      { Metric: 'Active Users', Value: engagementMetrics?.activeUsers || 0 },
-      { Metric: 'New Users', Value: engagementMetrics?.newUsers || 0 },
-      { Metric: 'MRR', Value: formatCurrency(revenueOverview?.mrr) },
-      { Metric: 'ARPU', Value: formatCurrency(revenueOverview?.arpu) },
-    ];
+  const handleExport = async () => {
+    try {
+      const csvData = await exportFullReport();
 
-    // Add tier breakdown if available
-    if (revenueOverview?.revenueByTier) {
-      Object.entries(revenueOverview.revenueByTier).forEach(([tier, value]) => {
-        exportData.push({ Metric: `Revenue (${tier})`, Value: formatCurrency(value as number) });
-      });
+      if (typeof csvData === 'string' && Platform.OS === 'web') {
+        const blob = new Blob([csvData], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Full_Analytics_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+
+      throw new Error('Full export not supported on this platform or invalid data');
+    } catch (err) {
+      console.error('Full export failed:', err);
+      // Fallback to basic export if full fails
+      const exportData = [
+        { Metric: 'Total Users', Value: engagementMetrics?.totalUsers || 0 },
+        { Metric: 'Active Users', Value: engagementMetrics?.activeUsers || 0 },
+        { Metric: 'New Users', Value: engagementMetrics?.newUsers || 0 },
+        { Metric: 'MRR', Value: formatCurrency(revenueOverview?.mrr) },
+        { Metric: 'ARPU', Value: formatCurrency(revenueOverview?.arpu) },
+      ];
+
+      if (revenueOverview?.revenueByTier) {
+        Object.entries(revenueOverview.revenueByTier).forEach(([tier, value]) => {
+          exportData.push({ Metric: `Revenue (${tier})`, Value: formatCurrency(value as number) });
+        });
+      }
+
+      exportToExcel(exportData, `Analytics_Summary_${new Date().toISOString().split('T')[0]}`);
     }
-
-    exportToExcel(exportData, `Analytics_${new Date().toISOString().split('T')[0]}`);
   };
 
   const calculateDelta = (current: number, previous: number) => {
@@ -205,6 +226,7 @@ export const AdminAnalyticsScreen: React.FC = () => {
             {activeTab === 'audience' && renderAudience()}
             {activeTab === 'engagement' && renderEngagement()}
             {activeTab === 'revenue' && renderRevenue()}
+            {activeTab === 'plans' && renderPlans()}
             <View style={{ height: 60 }} />
           </>
         )}
@@ -339,13 +361,13 @@ export const AdminAnalyticsScreen: React.FC = () => {
           </View>
           <View style={localStyles.geoList}>
             {geoDistribution.slice(0, 5).map((item, index) => {
-              const totalUsers = geoDistribution.reduce((acc, curr) => acc + (curr.users || curr.value || 0), 0);
-              const percentage = ((item.users || item.value || 0) / (totalUsers || 1) * 100);
+              const totalUsers = geoDistribution.reduce((acc, curr) => acc + (curr.users || curr.value || curr.count || 0), 0);
+              const percentage = ((item.users || item.value || item.count || 0) / (totalUsers || 1) * 100);
               return (
                 <View key={index} style={localStyles.geoListItem}>
                   <View style={[localStyles.geoInfoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <Text style={[localStyles.geoName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.country || item.name}</Text>
-                    <Text style={[localStyles.geoValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatNumber(item.users || item.value)}</Text>
+                    <Text style={[localStyles.geoValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatNumber(item.users || item.value || item.count)}</Text>
                   </View>
                   <View style={localStyles.progressBg}>
                     <View style={[localStyles.progressFill, { width: `${percentage}%`, backgroundColor: generateChartColors(10)[index] }]} />
@@ -397,13 +419,13 @@ export const AdminAnalyticsScreen: React.FC = () => {
           </View>
           <View style={localStyles.geoList}>
             {geoDistribution.slice(0, 5).map((item, index) => {
-              const totalUsers = geoDistribution.reduce((acc, curr) => acc + (curr.users || curr.value || 0), 0);
-              const percentage = ((item.users || item.value || 0) / (totalUsers || 1) * 100);
+              const totalUsers = geoDistribution.reduce((acc, curr) => acc + (curr.users || curr.value || curr.count || 0), 0);
+              const percentage = ((item.users || item.value || item.count || 0) / (totalUsers || 1) * 100);
               return (
                 <View key={index} style={localStyles.geoListItem}>
                   <View style={[localStyles.geoInfoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <Text style={[localStyles.geoName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.country || item.name}</Text>
-                    <Text style={[localStyles.geoValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatNumber(item.users || item.value)}</Text>
+                    <Text style={[localStyles.geoValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatNumber(item.users || item.value || item.count)}</Text>
                   </View>
                   <View style={localStyles.progressBg}>
                     <View style={[localStyles.progressFill, { width: `${percentage}%`, backgroundColor: generateChartColors(10)[index] }]} />
@@ -513,15 +535,15 @@ export const AdminAnalyticsScreen: React.FC = () => {
           </View>
         )}
 
-        {subscriptionAnalytics && (
+        {revenueByCycle.length > 0 && (
           <View style={[localStyles.cardWrapper, { flex: 1 }]}>
             <Chart
               type="pie"
-              title={t('admin.revenueByTier')}
+              title={t('admin.revenueByCycle')}
               data={formatPieChartData(
-                Object.entries(revenueOverview?.revenueByTier || {}).map(([name, value]) => ({
-                  name: name.charAt(0).toUpperCase() + name.slice(1),
-                  value: value as number,
+                revenueByCycle.map((c: any) => ({
+                  name: c._id?.charAt(0).toUpperCase() + c._id?.slice(1) || 'Unknown',
+                  value: c.revenue || 0,
                 }))
               )}
               height={200}
@@ -556,11 +578,77 @@ export const AdminAnalyticsScreen: React.FC = () => {
     </View>
   );
 
+  const renderPlans = () => (
+    <View style={{ gap: 20 }}>
+      <View style={styles.dashboardGrid}>
+        <StatCard
+          title={t('admin.totalPlans')}
+          value={formatNumber(planStats?.totalPlans || 0)}
+          icon="list"
+          color={CHART_COLORS.PRIMARY}
+        />
+        <StatCard
+          title={t('admin.activeSubscribers')}
+          value={formatNumber(planStats?.plans?.reduce((acc: number, p: any) => acc + (p.activeSubscriberCount || 0), 0) || 0)}
+          icon="people"
+          color={CHART_COLORS.SUCCESS}
+        />
+      </View>
+
+      {planStats?.plans && (
+        <View style={localStyles.cardWrapper}>
+          <View style={localStyles.cardHeader}>
+            <Text style={localStyles.cardTitle}>{t('admin.planBreakdown')}</Text>
+          </View>
+          <View style={localStyles.geoList}>
+            {planStats.plans.map((plan: any, index: number) => {
+              const totalSubs = planStats.plans.reduce((acc: number, p: any) => acc + (p.activeSubscriberCount || 0), 0);
+              const percentage = ((plan.activeSubscriberCount || 0) / (totalSubs || 1) * 100);
+              return (
+                <View key={index} style={localStyles.geoListItem}>
+                  <View style={[localStyles.geoInfoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                      <Text style={[localStyles.geoName, { textAlign: isRTL ? 'right' : 'left' }]}>{plan.name}</Text>
+                      <View style={{ backgroundColor: theme.primary.main + '20', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, [isRTL ? 'marginRight' : 'marginLeft']: 8 }}>
+                        <Text style={{ fontSize: 10, color: theme.primary.main, fontWeight: '700' }}>{plan.tier.toUpperCase()}</Text>
+                      </View>
+                    </View>
+                    <Text style={[localStyles.geoValue, { textAlign: isRTL ? 'left' : 'right' }]}>
+                      {formatNumber(plan.activeSubscriberCount)} {t('admin.active')}
+                    </Text>
+                  </View>
+                  <View style={localStyles.progressBg}>
+                    <View style={[localStyles.progressFill, { width: `${percentage}%`, backgroundColor: generateChartColors(10)[index % 10] }]} />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
+
+      {planStats?.plans && (
+        <View style={localStyles.cardWrapper}>
+          <Chart
+            type="bar"
+            title={t('admin.revenueByPlan')}
+            data={formatChartData(
+              planStats.plans.map((p: any) => p.name),
+              [{ data: planStats.plans.map((p: any) => p.totalRevenue), color: CHART_COLORS.INFO }]
+            )}
+            height={240}
+          />
+        </View>
+      )}
+    </View>
+  );
+
   const tabs = [
     { id: 'overview', label: t('admin.tabOverview'), icon: 'grid' },
     { id: 'audience', label: t('admin.tabAudience'), icon: 'people' },
     { id: 'engagement', label: t('admin.tabEngagement'), icon: 'pulse' },
     { id: 'revenue', label: t('admin.tabRevenue'), icon: 'cash' },
+    { id: 'plans', label: t('admin.plans'), icon: 'list' },
   ];
 
 

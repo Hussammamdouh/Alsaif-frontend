@@ -367,10 +367,12 @@ export const grantSubscription = async (data: SubscriptionGrantData): Promise<vo
 };
 
 export const revokeSubscription = async (userId: string, reason?: string): Promise<void> => {
+  console.log('[adminService] revokeSubscription called:', { userId, reason });
   const response = await apiClient.post<ApiResponse>(
     '/api/subscriptions/revoke',
     { userId, reason }
   );
+  console.log('[adminService] revokeSubscription response:', response);
 
   if (!response.success) {
     throw new Error(response.message || 'Failed to revoke subscription');

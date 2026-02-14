@@ -36,6 +36,7 @@ export const SUBSCRIPTION_STATUSES: Record<string, SubscriptionStatus> = {
   CANCELLED: 'cancelled',
   PENDING: 'pending',
   NONE: 'none',
+  TRIAL: 'trial',
 };
 
 export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
@@ -112,6 +113,7 @@ export const STATUS_COLORS = {
   expired: '#8e8e93',
   cancelled: '#ff3b30',
   none: '#c7c7cc',
+  trial: '#007aff',
   published: '#34c759',
   draft: '#8e8e93',
   archived: '#c7c7cc',

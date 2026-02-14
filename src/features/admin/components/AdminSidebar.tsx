@@ -16,7 +16,7 @@ export const AdminSidebar: React.FC = () => {
     return (
         <View style={styles.desktopSidebar}>
             <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-                <Text style={[styles.headerTitle, { fontSize: 28 }]}>Elsaif</Text>
+                <Text style={[styles.headerTitle, { fontSize: 28 }]}>AlSaif</Text>
                 <Text style={[styles.cardSubtitle, { color: theme.primary.main, fontWeight: '700' }]}>ADMIN PANEL</Text>
             </View>
 

@@ -321,6 +321,11 @@ export const apiRequest = async <T = unknown>(
     }
 
     // Parse and return response
+    const contentType = response.headers.get('content-type');
+    if (contentType && (contentType.includes('text/') || contentType.includes('csv'))) {
+      return (await response.text()) as unknown as T;
+    }
+
     const data = await response.json();
     return data as T;
   } catch (error) {

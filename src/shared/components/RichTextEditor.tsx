@@ -190,7 +190,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 </View>
 
                 {/* Contenteditable Editor */}
-                <View style={[styles.editorContainer, { borderColor: theme.ui.border }]}>
+                <TouchableOpacity
+                    activeOpacity={1}
+                    style={[styles.editorContainer, { borderColor: theme.ui.border }]}
+                    onPress={() => editorRef.current?.focus()}
+                >
                     <div
                         ref={editorRef as any}
                         contentEditable
@@ -207,11 +211,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                             borderBottomLeftRadius: 12,
                             borderBottomRightRadius: 12,
                             overflow: 'auto',
+                            cursor: 'text',
                         }}
                         data-placeholder={placeholder}
                         suppressContentEditableWarning
                     />
-                </View>
+                </TouchableOpacity>
                 <style>{`
                     [contenteditable]:empty:before {
                         content: attr(data-placeholder);

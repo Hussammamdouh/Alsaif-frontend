@@ -75,9 +75,14 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
   const [ltv, setLtv] = useState<any>(null);
   const [revenueTrends, setRevenueTrends] = useState<any[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [revenueByCycle, setRevenueByCycle] = useState<any[]>([]);
   const [failedPayments, setFailedPayments] = useState<any[]>([]);
   const [revenueForecast, setRevenueForecast] = useState<any[]>([]);
   const [breakdownLoading, setBreakdownLoading] = useState(false);
+
+  // Plan Analytics
+  const [planStats, setPlanStats] = useState<any>(null);
+  const [planLoading, setPlanLoading] = useState(false);
 
   // Comparison Data
   const [comparison, setComparison] = useState<any>(null);
@@ -220,12 +225,26 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     setDeviceLoading(true);
     setError(null);
     try {
+      // Placeholder if endpoint exists or just logic
       const data = await analyticsService.getDeviceAnalytics();
       setDeviceAnalytics(data);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch device analytics');
     } finally {
       setDeviceLoading(false);
+    }
+  }, []);
+
+  // Fetch Plan Stats
+  const fetchPlanStats = useCallback(async () => {
+    setPlanLoading(true);
+    try {
+      const data = await analyticsService.getPlanStats();
+      setPlanStats(data);
+    } catch (err: any) {
+      console.error('Failed to fetch plan stats:', err);
+    } finally {
+      setPlanLoading(false);
     }
   }, []);
 
@@ -249,7 +268,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
   const fetchRevenueBreakdown = useCallback(async () => {
     setBreakdownLoading(true);
     try {
-      const [trends, methods, failed, forecast, churn, arpuData, ltvData] = await Promise.all([
+      const [trends, methods, failed, forecast, churn, arpuData, ltvData, cycleStats] = await Promise.all([
         revenueService.getTrends({ startDate: startStr, endDate: endStr, period: 'month' }),
         revenueService.getPaymentBreakdown({ startDate: startStr, endDate: endStr }),
         revenueService.getFailedPayments({ limit: 5, startDate: startStr, endDate: endStr }),
@@ -257,12 +276,14 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
         revenueService.getOverview({ startDate: startStr, endDate: endStr }), // Churn
         revenueService.getOverview({ startDate: startStr, endDate: endStr }), // ARPU
         revenueService.getOverview({ startDate: startStr, endDate: endStr }), // LTV
-      ]) as [any, any, any, any, any, any, any];
+        analyticsService.getRevenueByBillingCycle({ startDate: startStr, endDate: endStr }),
+      ]) as [any, any, any, any, any, any, any, any];
 
       setRevenueTrends(trends || []);
       setPaymentMethods(methods || []);
       setFailedPayments(failed?.payments || []);
       setRevenueForecast(forecast?.forecast || []);
+      setRevenueByCycle(cycleStats || []);
 
       // Use data directly
       if (churn) {
@@ -317,6 +338,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
       fetchRevenueOverview(),
       fetchRevenueBreakdown(),
       fetchComparison(),
+      fetchPlanStats(),
     ]);
     setLoading(false);
   }, [
@@ -332,6 +354,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     fetchRevenueOverview,
     fetchRevenueBreakdown,
     fetchComparison,
+    fetchPlanStats,
   ]);
 
   // Refresh data
@@ -402,6 +425,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     fetchRevenueOverview,
     revenueTrends,
     paymentMethods,
+    revenueByCycle,
     failedPayments,
     revenueForecast,
     churnRate,
@@ -410,10 +434,18 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     breakdownLoading,
     fetchRevenueBreakdown,
 
+    // Plans
+    planStats,
+    planLoading,
+    fetchPlanStats,
+
     // Comparison
     comparison,
     comparisonLoading,
     fetchComparison,
+
+    // Export
+    exportFullReport: () => analyticsService.exportFullReport({ startDate: startStr, endDate: endStr }),
 
     // Utilities
     refresh,

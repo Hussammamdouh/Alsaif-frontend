@@ -135,10 +135,32 @@ export const analyticsService = {
     apiClient.get<any>('/api/admin/analytics/devices/distribution').then(res => res.data || res),
 
   /**
+   * Get subscription plan statistics
+   */
+  getPlanStats: () =>
+    apiClient.get<any>('/api/admin/analytics/plans/stats').then(res => res.data || res),
+
+  /**
+   * Get revenue by billing cycle
+   */
+  getRevenueByBillingCycle: (params?: DateRangeParams) =>
+    apiClient.get<any>('/api/admin/analytics/revenue/by-billing-cycle', params).then(res => res.data || res),
+
+  /**
    * Export analytics data
    */
   exportAnalytics: (params: { type: string } & DateRangeParams) =>
-    apiClient.post<any>('/api/admin/analytics/export', params, true).then(res => res.data || res),
+    apiClient.post<any>(`/api/admin/analytics/export?type=${params.type}`, params, true).then(res => res.data || res),
+
+  /**
+   * Export full analytics report
+   */
+  exportFullReport: (params?: DateRangeParams) => {
+    const queryParts = ['type=full'];
+    if (params?.startDate) queryParts.push(`startDate=${encodeURIComponent(params.startDate)}`);
+    if (params?.endDate) queryParts.push(`endDate=${encodeURIComponent(params.endDate)}`);
+    return apiClient.post<any>(`/api/admin/analytics/export?${queryParts.join('&')}`, null, true);
+  },
 };
 
 // ============================================================================

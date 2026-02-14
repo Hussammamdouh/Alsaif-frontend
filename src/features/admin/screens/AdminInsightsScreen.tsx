@@ -471,362 +471,425 @@ export const AdminInsightsScreen: React.FC = () => {
     onSubmit: () => void,
     title: string
   ) => (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={localStyles.modalOverlay}>
-        <View style={localStyles.modalContainer}>
-          <View style={localStyles.modalContent}>
-            {/* Modal Header */}
-            <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{title}</Text>
-              <TouchableOpacity
-                style={localStyles.modalCloseButton}
-                onPress={() => {
-                  onClose();
-                  setSelectedInsight(null);
-                }}
-              >
-                <Ionicons name="close" size={24} color={theme.text.secondary} />
-              </TouchableOpacity>
-            </View>
-
-            {formError ? (
-              <View style={localStyles.errorBanner}>
-                <Ionicons name="alert-circle" size={20} color={theme.error.main} />
-                <Text style={localStyles.errorText}>{formError}</Text>
-              </View>
-            ) : null}
-
-            <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-              {/* Basic Information Section */}
-              <View style={localStyles.formSection}>
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.insightTitle')} *</Text>
-                  <TextInput
-                    style={localStyles.formInput}
-                    placeholder={t('admin.insightTitlePlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
-                    value={formTitle}
-                    onChangeText={setFormTitle}
-                  />
-                </View>
-
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.insightContent')} *</Text>
-                  <RichTextEditor
-                    value={formContent}
-                    onChange={setFormContent}
-                    placeholder={t('admin.insightContentPlaceholder')}
-                    minHeight={220}
-                  />
-                </View>
-
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.insightExcerpt')}</Text>
-                  <TextInput
-                    style={[localStyles.formInput, localStyles.textArea, { textAlign: isRTL ? 'right' : 'left' }]}
-                    placeholder={t('admin.insightExcerptPlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
-                    value={formExcerpt}
-                    onChangeText={setFormExcerpt}
-                    multiline
-                    numberOfLines={3}
-                  />
-                </View>
+    <>
+      <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+        <View style={localStyles.modalOverlay}>
+          <View style={localStyles.modalContainer}>
+            <View style={localStyles.modalContent}>
+              {/* Modal Header */}
+              <View style={[localStyles.modalHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={[localStyles.modalTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{title}</Text>
+                <TouchableOpacity
+                  style={localStyles.modalCloseButton}
+                  onPress={() => {
+                    onClose();
+                    setSelectedInsight(null);
+                  }}
+                >
+                  <Ionicons name="close" size={24} color={theme.text.secondary} />
+                </TouchableOpacity>
               </View>
 
-              {/* Divider */}
-              <View style={localStyles.divider} />
-
-              {/* Classification Section */}
-              <View style={localStyles.formSection}>
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.insightFormat')} *</Text>
-                  <View style={localStyles.typeButtonsRow}>
-                    {['article', 'signal'].map((format) => (
-                      <TouchableOpacity
-                        key={format}
-                        style={[
-                          localStyles.typeButton,
-                          formInsightFormat === format && localStyles.typeButtonActive,
-                        ]}
-                        onPress={() => setFormInsightFormat(format as any)}
-                      >
-                        <Text
-                          style={[
-                            localStyles.typeButtonText,
-                            formInsightFormat === format && localStyles.typeButtonTextActive,
-                          ]}
-                        >
-                          {t(`admin.${format}`)}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+              {formError ? (
+                <View style={localStyles.errorBanner}>
+                  <Ionicons name="alert-circle" size={20} color={theme.error.main} />
+                  <Text style={localStyles.errorText}>{formError}</Text>
                 </View>
+              ) : null}
 
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.insightType')} *</Text>
-                  <View style={localStyles.typeButtonsRow}>
-                    {['free', 'premium'].map((type) => (
-                      <TouchableOpacity
-                        key={type}
-                        style={[
-                          localStyles.typeButton,
-                          formType === type && localStyles.typeButtonActive,
-                        ]}
-                        onPress={() => setFormType(type as InsightType)}
-                      >
-                        <Text
-                          style={[
-                            localStyles.typeButtonText,
-                            formType === type && localStyles.typeButtonTextActive,
-                          ]}
-                        >
-                          {t(`type.${type}`)}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.insightCategory')} *</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingVertical: 8 }}
-                  >
-                    {Object.values(INSIGHT_CATEGORIES).map((category) => (
-                      <TouchableOpacity
-                        key={category}
-                        style={[
-                          localStyles.categoryChip,
-                          formCategory === category && localStyles.categoryChipActive,
-                        ]}
-                        onPress={() => setFormCategory(category as InsightCategory)}
-                      >
-                        <Text
-                          style={[
-                            localStyles.categoryChipText,
-                            formCategory === category && localStyles.categoryChipTextActive,
-                          ]}
-                        >
-                          {t(`category.${category}`)}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.insightTags')}</Text>
-                  <TextInput
-                    style={localStyles.formInput}
-                    placeholder={t('admin.insightTagsPlaceholder')}
-                    placeholderTextColor={theme.text.tertiary}
-                    value={formTags}
-                    onChangeText={setFormTags}
-                  />
-                </View>
-              </View>
-
-              {/* Market Context Section - Now for all types */}
-              <View style={localStyles.formSection}>
-                <View style={localStyles.divider} />
-                <View style={localStyles.formGroup}>
-                  <Text style={localStyles.label}>{t('admin.market')} *</Text>
-                  <View style={localStyles.typeButtonsRow}>
-                    {['ADX', 'DFM', 'Other'].map((m) => (
-                      <TouchableOpacity
-                        key={m}
-                        style={[
-                          localStyles.typeButton,
-                          formMarket === m && localStyles.typeButtonActive,
-                        ]}
-                        onPress={() => setFormMarket(m as any)}
-                      >
-                        <Text
-                          style={[
-                            localStyles.typeButtonText,
-                            formMarket === m && localStyles.typeButtonTextActive,
-                          ]}
-                        >
-                          {m === 'Other' ? t('admin.other') : m}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              </View>
-
-              {/* Trade Signal Details Section */}
-              {formInsightFormat === 'signal' && (
+              <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+                {/* Basic Information Section */}
                 <View style={localStyles.formSection}>
-                  <View style={localStyles.divider} />
-                  <View style={[localStyles.titleRow, { marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <Ionicons name="trending-up" size={20} color={theme.text.secondary} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 8 }} />
-                    <Text style={localStyles.sectionLabel}>{t('admin.tradeDetails')}</Text>
-                  </View>
-
                   <View style={localStyles.formGroup}>
-                    <Text style={localStyles.label}>{t('admin.stockSymbol')}</Text>
+                    <Text style={localStyles.label}>{t('admin.insightTitle')} *</Text>
                     <TextInput
                       style={localStyles.formInput}
-                      placeholder={t('admin.stockSymbolPlaceholder')}
+                      placeholder={t('admin.insightTitlePlaceholder')}
                       placeholderTextColor={theme.text.tertiary}
-                      value={formSymbol}
-                      onChangeText={setFormSymbol}
+                      value={formTitle}
+                      onChangeText={setFormTitle}
                     />
                   </View>
 
-                  <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
-                      <Text style={localStyles.label}>{t('admin.stockNameEn')}</Text>
-                      <TextInput
-                        style={localStyles.formInput}
-                        placeholder={t('admin.stockNameEnPlaceholder')}
-                        placeholderTextColor={theme.text.tertiary}
-                        value={formStockName}
-                        onChangeText={setFormStockName}
-                      />
-                    </View>
-                    <View style={[localStyles.formGroup, { flex: 1 }]}>
-                      <Text style={localStyles.label}>{t('admin.stockNameAr')}</Text>
-                      <TextInput
-                        style={[localStyles.formInput, { textAlign: 'right' }]}
-                        placeholder={t('admin.stockNameArPlaceholder')}
-                        placeholderTextColor={theme.text.tertiary}
-                        value={formStockNameAr}
-                        onChangeText={setFormStockNameAr}
-                      />
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.insightContent')} *</Text>
+                    <RichTextEditor
+                      value={formContent}
+                      onChange={setFormContent}
+                      placeholder={t('admin.insightContentPlaceholder')}
+                      minHeight={220}
+                    />
+                  </View>
+
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.insightExcerpt')}</Text>
+                    <TextInput
+                      style={[localStyles.formInput, localStyles.textArea, { textAlign: isRTL ? 'right' : 'left' }]}
+                      placeholder={t('admin.insightExcerptPlaceholder')}
+                      placeholderTextColor={theme.text.tertiary}
+                      value={formExcerpt}
+                      onChangeText={setFormExcerpt}
+                      multiline
+                      numberOfLines={3}
+                    />
+                  </View>
+                </View>
+
+                {/* Divider */}
+                <View style={localStyles.divider} />
+
+                {/* Classification Section */}
+                <View style={localStyles.formSection}>
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.insightFormat')} *</Text>
+                    <View style={localStyles.typeButtonsRow}>
+                      {['article', 'signal'].map((format) => (
+                        <TouchableOpacity
+                          key={format}
+                          style={[
+                            localStyles.typeButton,
+                            formInsightFormat === format && localStyles.typeButtonActive,
+                          ]}
+                          onPress={() => setFormInsightFormat(format as any)}
+                        >
+                          <Text
+                            style={[
+                              localStyles.typeButtonText,
+                              formInsightFormat === format && localStyles.typeButtonTextActive,
+                            ]}
+                          >
+                            {t(`admin.${format}`)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
                     </View>
                   </View>
 
-                  <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
-                      <Text style={localStyles.label}>{t('admin.buyPrice')}</Text>
-                      <TextInput
-                        style={localStyles.formInput}
-                        placeholder="0.00"
-                        placeholderTextColor={theme.text.tertiary}
-                        keyboardType="decimal-pad"
-                        value={formBuyPrice}
-                        onChangeText={setFormBuyPrice}
-                      />
-                    </View>
-                    <View style={[localStyles.formGroup, { flex: 1 }]}>
-                      <Text style={localStyles.label}>{t('admin.stopLoss')}</Text>
-                      <TextInput
-                        style={localStyles.formInput}
-                        placeholder="0.00"
-                        placeholderTextColor={theme.text.tertiary}
-                        keyboardType="decimal-pad"
-                        value={formStopLoss}
-                        onChangeText={setFormStopLoss}
-                      />
-                    </View>
-                  </View>
-
-                  <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
-                      <Text style={localStyles.label}>{t('admin.firstGoal')}</Text>
-                      <TextInput
-                        style={localStyles.formInput}
-                        placeholder="0.00"
-                        placeholderTextColor={theme.text.tertiary}
-                        keyboardType="decimal-pad"
-                        value={formFirstGoal}
-                        onChangeText={setFormFirstGoal}
-                      />
-                    </View>
-                    <View style={[localStyles.formGroup, { flex: 1 }]}>
-                      <Text style={localStyles.label}>{t('admin.secondGoal')}</Text>
-                      <TextInput
-                        style={localStyles.formInput}
-                        placeholder="0.00"
-                        placeholderTextColor={theme.text.tertiary}
-                        keyboardType="decimal-pad"
-                        value={formSecondGoal}
-                        onChangeText={setFormSecondGoal}
-                      />
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.insightType')} *</Text>
+                    <View style={localStyles.typeButtonsRow}>
+                      {['free', 'premium'].map((type) => (
+                        <TouchableOpacity
+                          key={type}
+                          style={[
+                            localStyles.typeButton,
+                            formType === type && localStyles.typeButtonActive,
+                          ]}
+                          onPress={() => setFormType(type as InsightType)}
+                        >
+                          <Text
+                            style={[
+                              localStyles.typeButtonText,
+                              formType === type && localStyles.typeButtonTextActive,
+                            ]}
+                          >
+                            {t(`type.${type}`)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
                     </View>
                   </View>
+
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.insightCategory')} *</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{ paddingVertical: 8 }}
+                    >
+                      {Object.values(INSIGHT_CATEGORIES).map((category) => (
+                        <TouchableOpacity
+                          key={category}
+                          style={[
+                            localStyles.categoryChip,
+                            formCategory === category && localStyles.categoryChipActive,
+                          ]}
+                          onPress={() => setFormCategory(category as InsightCategory)}
+                        >
+                          <Text
+                            style={[
+                              localStyles.categoryChipText,
+                              formCategory === category && localStyles.categoryChipTextActive,
+                            ]}
+                          >
+                            {t(`category.${category}`)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.insightTags')}</Text>
+                    <TextInput
+                      style={localStyles.formInput}
+                      placeholder={t('admin.insightTagsPlaceholder')}
+                      placeholderTextColor={theme.text.tertiary}
+                      value={formTags}
+                      onChangeText={setFormTags}
+                    />
+                  </View>
                 </View>
-              )}
 
-              {/* Divider */}
-              <View style={localStyles.divider} />
-
-              {/* Scheduling Section */}
-              <View style={localStyles.formSection}>
-                <View style={[localStyles.titleRow, { marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <Ionicons name="calendar-outline" size={20} color={theme.text.secondary} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 8 }} />
-                  <Text style={localStyles.sectionLabel}>{t('admin.scheduling')}</Text>
+                {/* Market Context Section - Now for all types */}
+                <View style={localStyles.formSection}>
+                  <View style={localStyles.divider} />
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>{t('admin.market')} *</Text>
+                    <View style={localStyles.typeButtonsRow}>
+                      {['ADX', 'DFM', 'Other'].map((m) => (
+                        <TouchableOpacity
+                          key={m}
+                          style={[
+                            localStyles.typeButton,
+                            formMarket === m && localStyles.typeButtonActive,
+                          ]}
+                          onPress={() => setFormMarket(m as any)}
+                        >
+                          <Text
+                            style={[
+                              localStyles.typeButtonText,
+                              formMarket === m && localStyles.typeButtonTextActive,
+                            ]}
+                          >
+                            {m === 'Other' ? t('admin.other') : m}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
                 </View>
 
-                <View style={[localStyles.formGroup, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
-                  <Text style={localStyles.label}>{t('admin.scheduleInsight')}</Text>
-                  <TouchableOpacity
-                    onPress={() => setIsScheduled(!isScheduled)}
-                    style={[
-                      localStyles.statusToggle,
-                      isScheduled && localStyles.statusToggleActive
-                    ]}
-                  >
-                    <View style={[
-                      localStyles.statusToggleCircle,
-                      isScheduled && localStyles.statusToggleCircleActive
-                    ]} />
-                  </TouchableOpacity>
-                </View>
+                {/* Trade Signal Details Section */}
+                {formInsightFormat === 'signal' && (
+                  <View style={localStyles.formSection}>
+                    <View style={localStyles.divider} />
+                    <View style={[localStyles.titleRow, { marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <Ionicons name="trending-up" size={20} color={theme.text.secondary} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 8 }} />
+                      <Text style={localStyles.sectionLabel}>{t('admin.tradeDetails')}</Text>
+                    </View>
 
-                {isScheduled && (
-                  <TouchableOpacity
-                    style={[localStyles.datePickerButton, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                    onPress={() => setShowDatePicker(true)}
-                  >
-                    <Ionicons name="time-outline" size={20} color={theme.primary.main} />
-                    <Text style={[localStyles.datePickerButtonText, { textAlign: isRTL ? 'right' : 'left' }]}>
-                      {scheduledDate.toLocaleString()}
-                    </Text>
-                    <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={16} color={theme.text.tertiary} />
-                  </TouchableOpacity>
+                    <View style={localStyles.formGroup}>
+                      <Text style={localStyles.label}>{t('admin.stockSymbol')}</Text>
+                      <TextInput
+                        style={localStyles.formInput}
+                        placeholder={t('admin.stockSymbolPlaceholder')}
+                        placeholderTextColor={theme.text.tertiary}
+                        value={formSymbol}
+                        onChangeText={setFormSymbol}
+                      />
+                    </View>
+
+                    <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
+                        <Text style={localStyles.label}>{t('admin.stockNameEn')}</Text>
+                        <TextInput
+                          style={localStyles.formInput}
+                          placeholder={t('admin.stockNameEnPlaceholder')}
+                          placeholderTextColor={theme.text.tertiary}
+                          value={formStockName}
+                          onChangeText={setFormStockName}
+                        />
+                      </View>
+                      <View style={[localStyles.formGroup, { flex: 1 }]}>
+                        <Text style={localStyles.label}>{t('admin.stockNameAr')}</Text>
+                        <TextInput
+                          style={[localStyles.formInput, { textAlign: 'right' }]}
+                          placeholder={t('admin.stockNameArPlaceholder')}
+                          placeholderTextColor={theme.text.tertiary}
+                          value={formStockNameAr}
+                          onChangeText={setFormStockNameAr}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
+                        <Text style={localStyles.label}>{t('admin.buyPrice')}</Text>
+                        <TextInput
+                          style={localStyles.formInput}
+                          placeholder="0.00"
+                          placeholderTextColor={theme.text.tertiary}
+                          keyboardType="decimal-pad"
+                          value={formBuyPrice}
+                          onChangeText={setFormBuyPrice}
+                        />
+                      </View>
+                      <View style={[localStyles.formGroup, { flex: 1 }]}>
+                        <Text style={localStyles.label}>{t('admin.stopLoss')}</Text>
+                        <TextInput
+                          style={localStyles.formInput}
+                          placeholder="0.00"
+                          placeholderTextColor={theme.text.tertiary}
+                          keyboardType="decimal-pad"
+                          value={formStopLoss}
+                          onChangeText={setFormStopLoss}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={[localStyles.formRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <View style={[localStyles.formGroup, { flex: 1, [isRTL ? 'marginLeft' : 'marginRight']: 8 }]}>
+                        <Text style={localStyles.label}>{t('admin.firstGoal')}</Text>
+                        <TextInput
+                          style={localStyles.formInput}
+                          placeholder="0.00"
+                          placeholderTextColor={theme.text.tertiary}
+                          keyboardType="decimal-pad"
+                          value={formFirstGoal}
+                          onChangeText={setFormFirstGoal}
+                        />
+                      </View>
+                      <View style={[localStyles.formGroup, { flex: 1 }]}>
+                        <Text style={localStyles.label}>{t('admin.secondGoal')}</Text>
+                        <TextInput
+                          style={localStyles.formInput}
+                          placeholder="0.00"
+                          placeholderTextColor={theme.text.tertiary}
+                          keyboardType="decimal-pad"
+                          value={formSecondGoal}
+                          onChangeText={setFormSecondGoal}
+                        />
+                      </View>
+                    </View>
+                  </View>
                 )}
-              </View>
-            </ScrollView>
 
-            <TouchableOpacity
-              style={localStyles.submitButton}
-              onPress={onSubmit}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <ActivityIndicator size="small" color={theme.primary.contrast} />
-              ) : (
-                <Text style={localStyles.submitButtonText}>{title}</Text>
-              )}
-            </TouchableOpacity>
+                {/* Divider */}
+                <View style={localStyles.divider} />
+
+                {/* Scheduling Section */}
+                <View style={localStyles.formSection}>
+                  <View style={[localStyles.titleRow, { marginBottom: 16, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Ionicons name="calendar-outline" size={20} color={theme.text.secondary} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 8 }} />
+                    <Text style={localStyles.sectionLabel}>{t('admin.scheduling')}</Text>
+                  </View>
+
+                  <View style={[localStyles.formGroup, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                    <Text style={localStyles.label}>{t('admin.scheduleInsight')}</Text>
+                    <TouchableOpacity
+                      onPress={() => setIsScheduled(!isScheduled)}
+                      style={[
+                        localStyles.statusToggle,
+                        isScheduled && localStyles.statusToggleActive
+                      ]}
+                    >
+                      <View style={[
+                        localStyles.statusToggleCircle,
+                        isScheduled && localStyles.statusToggleCircleActive
+                      ]} />
+                    </TouchableOpacity>
+                  </View>
+
+                  {isScheduled && (
+                    <TouchableOpacity
+                      style={[localStyles.datePickerButton, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                      onPress={() => {
+                        console.log('[AdminInsightsScreen] Opening date picker');
+                        setShowDatePicker(true);
+                      }}
+                    >
+                      <Ionicons name="time-outline" size={20} color={theme.primary.main} />
+                      <Text style={[localStyles.datePickerButtonText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                        {scheduledDate.toLocaleString()}
+                      </Text>
+                      <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={16} color={theme.text.tertiary} />
+                    </TouchableOpacity>
+                  )}
+
+                </View>
+              </ScrollView>
+
+              <TouchableOpacity
+                style={localStyles.submitButton}
+                onPress={onSubmit}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <ActivityIndicator size="small" color={theme.primary.contrast} />
+                ) : (
+                  <Text style={localStyles.submitButtonText}>{title}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={scheduledDate}
-          mode="datetime"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          minimumDate={new Date()}
-          onChange={(event, date) => {
-            if (Platform.OS !== 'ios') {
-              setShowDatePicker(false);
-            }
-            if (date) {
-              setScheduledDate(date);
-            }
-          }}
-        />
-      )}
-    </Modal>
+        {/* Picker Modal (Inside main Modal for better Z-index on all platforms) */}
+        {showDatePicker && (
+          Platform.OS === 'web' ? (
+            <Modal visible={showDatePicker} transparent animationType="fade" onRequestClose={() => setShowDatePicker(false)}>
+              <View style={localStyles.modalOverlay}>
+                <View style={[localStyles.modalContainer, { maxWidth: 400, height: 'auto', padding: 20, backgroundColor: theme.background.secondary }]}>
+                  <View style={[localStyles.modalHeader, { borderBottomWidth: 0, marginBottom: 10 }]}>
+                    <Text style={localStyles.modalTitle}>{t('admin.scheduling')}</Text>
+                    <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                      <Ionicons name="close" size={24} color={theme.text.secondary} />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ marginVertical: 20 }}>
+                    <Text style={[localStyles.label, { marginBottom: 8 }]}>{t('admin.scheduleTime')}</Text>
+                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                      <View style={{ flex: 1 }}>
+                        <TextInput
+                          style={[localStyles.formInput, { backgroundColor: theme.background.primary }]}
+                          {...({ type: 'date' } as any)}
+                          defaultValue={scheduledDate.toISOString().split('T')[0]}
+                          onChangeText={(text) => {
+                            const newDate = new Date(scheduledDate);
+                            const [year, month, day] = text.split('-').map(Number);
+                            if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                              newDate.setFullYear(year, month - 1, day);
+                              setScheduledDate(newDate);
+                            }
+                          }}
+                        />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <TextInput
+                          style={[localStyles.formInput, { backgroundColor: theme.background.primary }]}
+                          {...({ type: 'time' } as any)}
+                          defaultValue={scheduledDate.toTimeString().slice(0, 5)}
+                          onChangeText={(text) => {
+                            const newDate = new Date(scheduledDate);
+                            const [hours, minutes] = text.split(':').map(Number);
+                            if (!isNaN(hours) && !isNaN(minutes)) {
+                              newDate.setHours(hours, minutes);
+                              setScheduledDate(newDate);
+                            }
+                          }}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={[localStyles.submitButton, { marginTop: 0 }]}
+                    onPress={() => setShowDatePicker(false)}
+                  >
+                    <Text style={localStyles.submitButtonText}>{t('common.confirm')}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          ) : (
+            <DateTimePicker
+              value={scheduledDate}
+              mode="datetime"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              minimumDate={new Date()}
+              onChange={(event, date) => {
+                if (Platform.OS !== 'ios') {
+                  setShowDatePicker(false);
+                }
+                if (date) {
+                  setScheduledDate(date);
+                }
+              }}
+            />
+          )
+        )}
+      </Modal>
+    </>
   );
 
   if (isLoading && insights.length === 0) {
