@@ -23,98 +23,7 @@ const NAV_ITEMS = [
     { key: 'ChatTab', label: 'tabs.chat', icon: 'chatbubbles-outline' },
 ];
 
-/**
- * Animated Nav Item Component with Lift and Highlight
- */
-const NavItem: React.FC<{
-    item: typeof NAV_ITEMS[0];
-    isActive: boolean;
-    onPress: () => void;
-    theme: any;
-    t: any;
-}> = ({ item, isActive, onPress, theme, t }) => {
-    const hoverAnim = React.useRef(new Animated.Value(0)).current;
-    const activeAnim = React.useRef(new Animated.Value(isActive ? 1 : 0)).current;
 
-    React.useEffect(() => {
-        Animated.spring(activeAnim, {
-            toValue: isActive ? 1 : 0,
-            useNativeDriver: false,
-            friction: 8,
-            tension: 40,
-        }).start();
-    }, [isActive]);
-
-    const onHoverIn = () => {
-        Animated.spring(hoverAnim, {
-            toValue: 1,
-            useNativeDriver: true,
-            friction: 4,
-        }).start();
-    };
-
-    const onHoverOut = () => {
-        Animated.spring(hoverAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-            friction: 4,
-        }).start();
-    };
-
-    const translateY = hoverAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, -4],
-    });
-
-    const scale = hoverAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1, 1.05],
-    });
-
-    return (
-        <Pressable
-            onPress={onPress}
-            onPointerEnter={onHoverIn}
-            onPointerLeave={onHoverOut}
-            style={styles.navItemWrapper}
-        >
-            <Animated.View style={[
-                styles.navItemPill,
-                {
-                    backgroundColor: activeAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['transparent', `${theme.primary.main}15`],
-                    }),
-                    transform: [{ translateY }, { scale }]
-                }
-            ]}>
-                <Text style={[
-                    styles.navItemText,
-                    {
-                        color: isActive ? theme.primary.main : theme.text.secondary,
-                        fontWeight: isActive ? '900' : '700',
-                    }
-                ]}>
-                    {t(item.label)}
-                </Text>
-                <Animated.View
-                    style={[
-                        styles.activeIndicator,
-                        {
-                            backgroundColor: theme.primary.main,
-                            width: activeAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: ['0%', '100%'],
-                            }),
-                            opacity: activeAnim,
-                            height: 4,
-                        }
-                    ]}
-                />
-            </Animated.View>
-        </Pressable>
-    );
-};
 
 export const DesktopTopNav: React.FC = () => {
     const { theme, isDark, toggleTheme } = useTheme();
@@ -124,6 +33,13 @@ export const DesktopTopNav: React.FC = () => {
     const isAdmin = useIsAdmin();
     const user = useUser();
     const isAuthenticated = useIsAuthenticated();
+
+    // Responsive design tokens
+    const isSmallDesktop = width < 1280;
+    const navGap = isSmallDesktop ? 4 : spacing.md;
+    const navItemPadding = isSmallDesktop ? 8 : spacing.lg;
+    const containerPadding = isSmallDesktop ? spacing.lg : spacing['3xl'];
+    const actionGap = isSmallDesktop ? 4 : spacing.sm;
 
     // Enhanced Active Route Detection
     const activeRouteName = useNavigationState(state => {
@@ -188,15 +104,17 @@ export const DesktopTopNav: React.FC = () => {
 
     const renderLogo = () => (
         <TouchableOpacity
-            style={[styles.logoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-            onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
+            style={[styles.logoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1, justifyContent: isRTL ? 'flex-end' : 'flex-start' }]}
+            onPress={() => navigation.navigate('HomeTab')}
         >
             <Image
                 source={require('../../../../assets/logo.png')}
                 style={styles.logo}
                 resizeMode="contain"
             />
-            <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
+            {!isSmallDesktop && (
+                <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
+            )}
             <View style={[styles.premiumBadge, { backgroundColor: `${theme.primary.main}15` }]}>
                 <Text style={[styles.premiumBadgeText, { color: theme.primary.main }]}>PRO</Text>
             </View>
@@ -204,7 +122,7 @@ export const DesktopTopNav: React.FC = () => {
     );
 
     const renderActions = () => (
-        <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1, justifyContent: isRTL ? 'flex-start' : 'flex-end', gap: actionGap }]}>
             {/* Language Toggle */}
             <TouchableOpacity
                 style={[styles.langToggle, { borderColor: theme.text.primary + '30' }]}
@@ -254,11 +172,11 @@ export const DesktopTopNav: React.FC = () => {
             {/* Admin */}
             {isAdmin && (
                 <TouchableOpacity
-                    style={[styles.adminBtn, { backgroundColor: theme.primary.main }]}
+                    style={[styles.adminBtn, { backgroundColor: theme.primary.main, paddingHorizontal: isSmallDesktop ? 12 : spacing.lg }]}
                     onPress={() => navigation.navigate('MainTabs', { screen: 'AdminTab' })}
                 >
                     <Ionicons name="shield-checkmark" size={18} color="#FFF" />
-                    <Text style={styles.adminBtnText}>Admin</Text>
+                    {!isSmallDesktop && <Text style={styles.adminBtnText}>Admin</Text>}
                 </TouchableOpacity>
             )}
 
@@ -287,6 +205,7 @@ export const DesktopTopNav: React.FC = () => {
                 backgroundColor: theme.background.primary,
                 borderBottomColor: theme.border.main,
                 flexDirection: isRTL ? 'row-reverse' : 'row',
+                paddingHorizontal: containerPadding,
                 transform: [{
                     translateY: entryAnim.interpolate({
                         inputRange: [0, 1],
@@ -304,14 +223,42 @@ export const DesktopTopNav: React.FC = () => {
                     {NAV_ITEMS.map((item) => {
                         const isActive = activeRouteName?.includes(item.key.replace('Tab', ''));
                         return (
-                            <NavItem
+                            <Pressable
                                 key={item.key}
-                                item={item}
-                                isActive={!!isActive}
                                 onPress={() => navigation.navigate('MainTabs', { screen: item.key })}
-                                theme={theme}
-                                t={t}
-                            />
+                                style={styles.navItemWrapper}
+                            >
+                                <View style={[
+                                    styles.navItemPill,
+                                    {
+                                        backgroundColor: isActive ? `${theme.primary.main}15` : 'transparent',
+                                        paddingHorizontal: navItemPadding,
+                                    },
+                                ]}>
+                                    <Text style={[
+                                        styles.navItemText,
+                                        {
+                                            color: isActive ? theme.primary.main : theme.text.secondary,
+                                            fontWeight: isActive ? '900' : '700',
+                                            fontSize: isSmallDesktop ? 13 : 15,
+                                        }
+                                    ]}>
+                                        {t(item.label)}
+                                    </Text>
+                                    {isActive && (
+                                        <View
+                                            style={[
+                                                styles.activeIndicator,
+                                                {
+                                                    backgroundColor: theme.primary.main,
+                                                    width: '100%',
+                                                    height: 4,
+                                                }
+                                            ]}
+                                        />
+                                    )}
+                                </View>
+                            </Pressable>
                         );
                     })}
                 </View>
@@ -325,7 +272,6 @@ export const DesktopTopNav: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         height: 88,
-        paddingHorizontal: spacing['3xl'],
         borderBottomWidth: 1,
         zIndex: 1000,
     },
@@ -362,14 +308,8 @@ const styles = StyleSheet.create({
     },
     navLinks: {
         flexDirection: 'row',
-        gap: spacing.md,
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        justifyContent: 'center',
         alignItems: 'center',
         height: '100%',
-        pointerEvents: 'box-none',
     },
     navItemWrapper: {
         height: '100%',

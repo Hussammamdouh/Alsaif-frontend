@@ -109,6 +109,7 @@ export const createUser = async (data: {
   email: string;
   password: string;
   role: string;
+  phoneNumber?: string;
   nationality?: string;
 }): Promise<AdminUser> => {
   const response = await apiClient.post<ApiResponse<{ user: AdminUser }>>(
@@ -129,6 +130,7 @@ export const updateUser = async (
     name?: string;
     email?: string;
     role?: string;
+    phoneNumber?: string;
     nationality?: string;
   }
 ): Promise<AdminUser> => {

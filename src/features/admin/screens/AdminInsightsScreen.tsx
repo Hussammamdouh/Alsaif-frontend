@@ -836,11 +836,9 @@ export const AdminInsightsScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {!isDesktop && (
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.insights')}</Text>
       </View>
       <TouchableOpacity style={styles.addButton} onPress={openCreateModal}>

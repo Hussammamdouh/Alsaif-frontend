@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { createAdminStyles } from '../admin.styles';
 import { useAdminSubscriptions } from '../hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { exportToExcel } from '../../../shared/utils/exportUtils';
 import {
   SUBSCRIPTION_FILTER_OPTIONS,
   STATUS_COLORS,
@@ -174,6 +175,22 @@ export const AdminSubscriptionsScreen: React.FC = () => {
     });
   };
 
+  const handleExport = () => {
+    if (!subscriptions || subscriptions.length === 0) return;
+
+    const exportData = subscriptions.map(sub => ({
+      User: sub.user.name,
+      Email: sub.user.email,
+      Tier: sub.tier,
+      Status: sub.status,
+      StartDate: new Date(sub.startDate).toLocaleDateString(),
+      EndDate: sub.endDate ? new Date(sub.endDate).toLocaleDateString() : 'N/A',
+      AutoRenew: sub.autoRenew ? 'Yes' : 'No'
+    }));
+
+    exportToExcel(exportData, `Subscriptions_${new Date().toISOString().split('T')[0]}`);
+  };
+
   const renderSubscriptionCard = ({ item }: { item: AdminSubscription }) => {
     const statusColor = STATUS_COLORS[item.status] || theme.text.tertiary;
     const tierColor = TIER_COLORS[item.tier];
@@ -292,16 +309,19 @@ export const AdminSubscriptionsScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {!isDesktop && (
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.subscriptionsOverview') : t('admin.subscriptions')}</Text>
       </View>
-      <TouchableOpacity style={[styles.addButton, { [isRTL ? 'marginLeft' : 'marginRight']: isDesktop ? 20 : 0 }]} onPress={openGrantModal}>
-        <Ionicons name="add" size={24} color={theme.primary.contrast} />
-      </TouchableOpacity>
+      <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}>
+        <TouchableOpacity onPress={handleExport} style={localStyles.iconBtn}>
+          <Ionicons name="download-outline" size={22} color={theme.primary.main} />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.addButton, { [isRTL ? 'marginLeft' : 'marginRight']: isDesktop ? 20 : 0 }]} onPress={openGrantModal}>
+          <Ionicons name="add" size={24} color={theme.primary.contrast} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -570,6 +590,11 @@ export const AdminSubscriptionsScreen: React.FC = () => {
 };
 
 const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
+  iconBtn: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: theme.primary.main + '10',
+  },
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,

@@ -274,11 +274,9 @@ export const AdminModerationScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {!isDesktop && (
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.moderationOverview') : t('admin.moderation')}</Text>
       </View>
       <TouchableOpacity onPress={refresh} style={{ [isRTL ? 'marginLeft' : 'marginRight']: isDesktop ? 20 : 0 }}>

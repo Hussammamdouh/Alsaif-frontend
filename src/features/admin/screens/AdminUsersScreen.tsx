@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { createAdminStyles } from '../admin.styles';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { useAdminUsers } from '../hooks';
+import { exportToExcel } from '../../../shared/utils/exportUtils';
 import {
   STATUS_COLORS,
   ROLE_COLORS,
@@ -89,6 +90,7 @@ export const AdminUsersScreen: React.FC = () => {
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPassword, setFormPassword] = useState('');
+  const [formPhoneNumber, setFormPhoneNumber] = useState('');
   const [formRole, setFormRole] = useState<UserRole>('user');
   const [formNationality, setFormNationality] = useState('');
   const [formError, setFormError] = useState('');
@@ -210,6 +212,7 @@ export const AdminUsersScreen: React.FC = () => {
     setFormName('');
     setFormEmail('');
     setFormPassword('');
+    setFormPhoneNumber('');
     setFormRole('user');
     setFormNationality('');
     setFormError('');
@@ -222,7 +225,9 @@ export const AdminUsersScreen: React.FC = () => {
     setFormName(selectedUser.name);
     setFormEmail(selectedUser.email);
     setFormPassword('');
+    setFormPhoneNumber(selectedUser.phoneNumber || '');
     setFormRole(selectedUser.role);
+    setFormNationality(selectedUser.nationality || '');
     setFormError('');
     setShowActionSheet(false);
     setShowEditModal(true);
@@ -256,6 +261,7 @@ export const AdminUsersScreen: React.FC = () => {
         email: formEmail,
         password: formPassword,
         role: formRole,
+        phoneNumber: formPhoneNumber,
         nationality: formNationality,
       });
 
@@ -263,7 +269,9 @@ export const AdminUsersScreen: React.FC = () => {
       setFormName('');
       setFormEmail('');
       setFormPassword('');
+      setFormPhoneNumber('');
       setFormRole('user');
+      setFormNationality('');
       refresh();
     } catch (error: any) {
       console.error('Failed to create user:', error);
@@ -306,6 +314,7 @@ export const AdminUsersScreen: React.FC = () => {
         name: formName,
         email: formEmail,
         role: formRole,
+        phoneNumber: formPhoneNumber,
         nationality: formNationality,
       });
 
@@ -314,6 +323,7 @@ export const AdminUsersScreen: React.FC = () => {
       setSelectedUser(null);
       setFormName('');
       setFormEmail('');
+      setFormPhoneNumber('');
       setFormRole('user');
       setFormNationality('');
       refresh();
@@ -351,6 +361,8 @@ export const AdminUsersScreen: React.FC = () => {
         <View style={localStyles.userInfo}>
           <Text style={localStyles.userName}>{item.name}</Text>
           <Text style={localStyles.userEmail}>{item.email}</Text>
+          {item.phoneNumber && <Text style={localStyles.userDetailText}>{item.phoneNumber}</Text>}
+          {item.nationality && <Text style={localStyles.userDetailText}>{item.nationality}</Text>}
         </View>
         <Ionicons
           name={getStatusIcon(item.status)}
@@ -427,25 +439,40 @@ export const AdminUsersScreen: React.FC = () => {
     );
   };
 
+  const handleExport = () => {
+    if (!users || users.length === 0) return;
+
+    const exportData = users.map(user => ({
+      ID: (user as any).id || (user as any)._id,
+      Name: user.name,
+      Email: user.email,
+      Phone: user.phoneNumber || 'N/A',
+      Nationality: user.nationality || 'N/A',
+      Role: user.role,
+      Status: user.status,
+      CreatedAt: new Date(user.createdAt).toLocaleDateString()
+    }));
+
+    exportToExcel(exportData, `Users_${new Date().toISOString().split('T')[0]}`);
+  };
+
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {!isDesktop && (
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.users')}</Text>
       </View>
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+        <TouchableOpacity style={[localStyles.iconBtn, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]} onPress={handleExport}>
+          <Ionicons name="download-outline" size={22} color={theme.primary.main} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={openCreateModal} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 16 }}>
           <Ionicons name="person-add" size={24} color={theme.primary.main} />
         </TouchableOpacity>
         <TouchableOpacity onPress={refresh} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 16 }}>
           <Ionicons name="refresh" size={24} color={theme.primary.main} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleExportUsers}>
-          <Ionicons name="cloud-download-outline" size={24} color={theme.primary.main} />
         </TouchableOpacity>
       </View>
     </View>
@@ -714,6 +741,19 @@ export const AdminUsersScreen: React.FC = () => {
                   />
                 </View>
 
+                {/* Phone Number Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('register.phoneNumber')}</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('register.phoneNumberPlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formPhoneNumber}
+                    onChangeText={setFormPhoneNumber}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+
                 {/* Nationality Input */}
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.formLabel}>{t('register.nationality')}</Text>
@@ -809,6 +849,19 @@ export const AdminUsersScreen: React.FC = () => {
                   />
                 </View>
 
+                {/* Phone Number Input */}
+                <View style={localStyles.formGroup}>
+                  <Text style={localStyles.formLabel}>{t('register.phoneNumber')}</Text>
+                  <TextInput
+                    style={localStyles.formInput}
+                    placeholder={t('register.phoneNumberPlaceholder')}
+                    placeholderTextColor={theme.text.tertiary}
+                    value={formPhoneNumber}
+                    onChangeText={setFormPhoneNumber}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+
                 {/* Nationality Input */}
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.formLabel}>{t('register.nationality')}</Text>
@@ -854,6 +907,11 @@ export const AdminUsersScreen: React.FC = () => {
 };
 
 const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
+  iconBtn: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: theme.primary.main + '10',
+  },
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -949,6 +1007,12 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   userEmail: {
     fontSize: 14,
     color: theme.text.tertiary,
+    textAlign: isRTL ? 'right' : 'left',
+  },
+  userDetailText: {
+    fontSize: 12,
+    color: theme.text.tertiary,
+    marginTop: 2,
     textAlign: isRTL ? 'right' : 'left',
   },
   userBadges: {

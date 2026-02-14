@@ -21,6 +21,7 @@ import {
   ActivityIndicator,
   useWindowDimensions
 } from 'react-native';
+import { exportToExcel } from '../../../shared/utils/exportUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -267,12 +268,26 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     }
   };
 
+  const handleExport = () => {
+    if (!codes || codes.length === 0) return;
+
+    const exportData = codes.map(code => ({
+      Code: code.code,
+      Type: code.type,
+      Value: code.value || (code.type === 'free_trial' ? `${code.trialDays} Days` : 'N/A'),
+      Usage: `${code.usageCount || 0}${code.maxUses ? ` / ${code.maxUses}` : ''}`,
+      Status: code.isActive ? 'Active' : 'Inactive',
+      ValidUntil: code.validUntil ? new Date(code.validUntil).toLocaleDateString() : 'No Expiry',
+      Description: code.description || ''
+    }));
+
+    exportToExcel(exportData, `DiscountCodes_${new Date().toISOString().split('T')[0]}`);
+  };
+
   const toggleTier = (tier: string) => {
-    if (formApplicableTiers.includes(tier)) {
-      setFormApplicableTiers(formApplicableTiers.filter(t => t !== tier));
-    } else {
-      setFormApplicableTiers([...formApplicableTiers, tier]);
-    }
+    setFormApplicableTiers((prev) =>
+      prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier]
+    );
   };
 
   const getTypeColor = (codeType: string) => {
@@ -416,20 +431,23 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {!isDesktop && (
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.discountCodesOverview') : t('admin.discountCodes')}</Text>
       </View>
-      <TouchableOpacity
-        style={localStyles.addButtonHeader}
-        onPress={openCreateModal}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="add" size={24} color={theme.primary.contrast} />
-      </TouchableOpacity>
+      <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}>
+        <TouchableOpacity onPress={handleExport} style={localStyles.iconBtn}>
+          <Ionicons name="download-outline" size={22} color={theme.primary.main} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={localStyles.addButtonHeader}
+          onPress={openCreateModal}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="add" size={24} color={theme.primary.contrast} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -900,6 +918,19 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
+  errorBannerText: {
+    flex: 1,
+    fontSize: 14,
+    color: theme.error.main,
+    [isRTL ? 'marginRight' : 'marginLeft']: 8,
+    textAlign: isRTL ? 'right' : 'left',
+  },
+  iconBtn: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: theme.primary.main + '10',
+  },
+  // Modal Styles - Improved for both light and dark mode
   discountValue: {
     fontSize: 24,
     fontWeight: '700',

@@ -19,6 +19,7 @@ export interface AdminUser {
   subscriptionTier?: SubscriptionTier;
   subscriptionEndDate?: string;
   avatar?: string;
+  phoneNumber?: string;
   nationality?: string;
   status: UserStatus; // Alias for isActive/subscriptionStatus
   tier?: SubscriptionTier; // Alias for subscriptionTier

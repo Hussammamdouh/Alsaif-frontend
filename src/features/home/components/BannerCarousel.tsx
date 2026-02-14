@@ -13,7 +13,7 @@ import {
 import { bannerService, Banner } from '../../../core/services/api/adminEnhancements.service';
 import { useTheme, useLocalization } from '../../../app/providers';
 
-const CAROUSEL_HEIGHT = 180;
+const CAROUSEL_HEIGHT = 120;
 
 interface BannerCarouselProps {
     type: 'disclosures' | 'news' | 'free' | 'premium';

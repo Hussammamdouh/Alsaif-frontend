@@ -23,6 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { createAdminStyles } from '../admin.styles';
 import { useAnalytics } from '../hooks';
+import { exportToExcel } from '../../../shared/utils/exportUtils';
 import {
   StatCard,
   DateRangePicker,
@@ -111,6 +112,26 @@ export const AdminAnalyticsScreen: React.FC = () => {
     }).format(amount || 0);
   };
 
+  const handleExport = () => {
+    // Prepare data for export
+    const exportData = [
+      { Metric: 'Total Users', Value: engagementMetrics?.totalUsers || 0 },
+      { Metric: 'Active Users', Value: engagementMetrics?.activeUsers || 0 },
+      { Metric: 'New Users', Value: engagementMetrics?.newUsers || 0 },
+      { Metric: 'MRR', Value: formatCurrency(revenueOverview?.mrr) },
+      { Metric: 'ARPU', Value: formatCurrency(revenueOverview?.arpu) },
+    ];
+
+    // Add tier breakdown if available
+    if (revenueOverview?.revenueByTier) {
+      Object.entries(revenueOverview.revenueByTier).forEach(([tier, value]) => {
+        exportData.push({ Metric: `Revenue (${tier})`, Value: formatCurrency(value as number) });
+      });
+    }
+
+    exportToExcel(exportData, `Analytics_${new Date().toISOString().split('T')[0]}`);
+  };
+
   const calculateDelta = (current: number, previous: number) => {
     if (!previous || previous === 0) return undefined;
     const delta = ((current - previous) / previous) * 100;
@@ -124,16 +145,19 @@ export const AdminAnalyticsScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {!isDesktop && (
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.analyticsOverview') : t('admin.analytics')}</Text>
       </View>
-      <TouchableOpacity onPress={refresh} style={localStyles.iconBtn}>
-        <Ionicons name="refresh" size={22} color={theme.primary.main} />
-      </TouchableOpacity>
+      <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}>
+        <TouchableOpacity onPress={handleExport} style={localStyles.iconBtn}>
+          <Ionicons name="download-outline" size={22} color={theme.primary.main} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={refresh} style={localStyles.iconBtn}>
+          <Ionicons name="refresh" size={22} color={theme.primary.main} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 

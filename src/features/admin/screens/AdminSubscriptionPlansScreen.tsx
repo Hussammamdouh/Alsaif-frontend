@@ -42,6 +42,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   const { t, isRTL } = useLocalization();
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [selectedPlanId, setSelectedPlanId] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'deactivated'>('active');
 
   const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
   const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
@@ -251,11 +252,9 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        {!isDesktop && (
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.subscriptionPlansOverview') : t('admin.subscriptionPlans')}</Text>
       </View>
       <TouchableOpacity
@@ -289,16 +288,37 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
           iconColor={theme.primary.main}
         />
       ) : (
-        <FlatList
-          data={plans}
-          renderItem={renderPlanItem}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={[styles.scrollContent, isDesktop && { paddingHorizontal: 24 }]}
-          columnWrapperStyle={isDesktop ? { flexDirection: isRTL ? 'row-reverse' : 'row' } : undefined}
-          refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
-          numColumns={isDesktop ? 2 : 1}
-          key={isDesktop ? 'desktop' : 'mobile'}
-        />
+        <>
+          <View style={localStyles.tabBar}>
+            <TouchableOpacity
+              style={[localStyles.tabItem, activeTab === 'active' && localStyles.tabItemActive]}
+              onPress={() => setActiveTab('active')}
+            >
+              <Text style={[localStyles.tabText, activeTab === 'active' && localStyles.tabTextActive]}>
+                {t('admin.activePlans')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[localStyles.tabItem, activeTab === 'deactivated' && localStyles.tabItemActive]}
+              onPress={() => setActiveTab('deactivated')}
+            >
+              <Text style={[localStyles.tabText, activeTab === 'deactivated' && localStyles.tabTextActive]}>
+                {t('admin.deactivatedPlans')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={plans.filter((p: any) => activeTab === 'active' ? p.isActive : !p.isActive)}
+            renderItem={renderPlanItem}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={[styles.scrollContent, isDesktop && { paddingHorizontal: 24 }]}
+            columnWrapperStyle={isDesktop ? { flexDirection: isRTL ? 'row-reverse' : 'row' } : undefined}
+            refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
+            numColumns={isDesktop ? 2 : 1}
+            key={isDesktop ? 'desktop' : 'mobile'}
+          />
+        </>
       )}
     </>
   );
@@ -325,7 +345,6 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
           visible={showActionSheet}
           onClose={() => {
             setShowActionSheet(false);
-            setSelectedPlan(null);
           }}
           title={selectedPlan?.name || t('admin.planActions')}
           options={[
@@ -599,6 +618,33 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  tabBar: {
+    flexDirection: isRTL ? 'row-reverse' : 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+    backgroundColor: theme.background.primary,
+  },
+  tabItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: theme.background.secondary,
+    borderWidth: 1,
+    borderColor: theme.border.main,
+  },
+  tabItemActive: {
+    backgroundColor: theme.primary.main,
+    borderColor: theme.primary.main,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.text.secondary,
+  },
+  tabTextActive: {
+    color: theme.primary.contrast,
   },
   planHeader: {
     flexDirection: isRTL ? 'row-reverse' : 'row',
