@@ -28,7 +28,7 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
                 <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
                     {exchange ? `${exchange === 'ADX' ? t('market.adxTitle') : t('market.dfmTitle')} ${t('tabs.disclosures')}` : t('tabs.disclosures')}
                 </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'MarketTab' })}>
+                <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'DisclosuresTab' })}>
                     <Text style={[styles.viewAll, { color: theme.primary.main }]}>{t('common.viewAll')}</Text>
                 </TouchableOpacity>
             </View>
