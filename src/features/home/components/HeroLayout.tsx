@@ -147,9 +147,9 @@ const styles = StyleSheet.create({
         marginVertical: spacing.xl,
     },
     carouselWrapper: {
-        height: 390, // Reduced from 520
+        height: 200, // Reduced from 390
         width: '100%',
-        borderRadius: 32, // Slightly reduced radius
+        borderRadius: 24, // Reduced from 32
         overflow: 'hidden',
         position: 'relative',
         backgroundColor: '#000',
@@ -162,64 +162,64 @@ const styles = StyleSheet.create({
     overlay: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
-        paddingHorizontal: 120, // Reduced padding
+        paddingHorizontal: 60, // Reduced from 120
     },
     textContent: {
-        maxWidth: 700,
+        maxWidth: 600,
     },
     heroSub: {
         color: '#FFF',
-        fontSize: 12, // Reduced from 14
+        fontSize: 10, // Reduced from 12
         fontWeight: '800',
-        marginBottom: spacing.sm, // Reduced from md
+        marginBottom: spacing.xs, // Reduced from sm
         opacity: 0.8,
         textTransform: 'uppercase',
-        letterSpacing: 3, // Reduced from 4
+        letterSpacing: 2, // Reduced from 3
     },
     heroTitle: {
         color: '#FFF',
-        fontSize: 48, // Reduced from 64
+        fontSize: 32, // Reduced from 48
         fontWeight: '900',
-        marginBottom: spacing.md, // Reduced from lg
-        lineHeight: 56, // Reduced from 74
+        marginBottom: spacing.xs, // Reduced from md
+        lineHeight: 38, // Reduced from 56
     },
     heroDesc: {
         color: '#FFF',
-        fontSize: 18, // Reduced from 24
+        fontSize: 14, // Reduced from 18
         fontWeight: '500',
-        marginBottom: spacing.xl, // Reduced from 3xl
+        marginBottom: spacing.md, // Reduced from xl
         opacity: 0.9,
-        lineHeight: 28, // Reduced from 36
+        lineHeight: 20, // Reduced from 28
     },
     ctaBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16, // Reduced from 20
-        paddingHorizontal: 36, // Reduced from 48
-        borderRadius: 16, // Reduced from 20
+        paddingVertical: 10, // Reduced from 16
+        paddingHorizontal: 24, // Reduced from 36
+        borderRadius: 12, // Reduced from 16
         alignSelf: 'flex-start',
-        gap: spacing.sm, // Reduced from md
+        gap: spacing.xs, // Reduced from sm
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.3,
-        shadowRadius: 16,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     ctaText: {
         color: '#FFF',
-        fontSize: 16, // Reduced from 18
+        fontSize: 14, // Reduced from 16
         fontWeight: '800',
     },
     arrow: {
         position: 'absolute',
         top: '50%',
-        width: 48, // Reduced from 64
-        height: 48, // Reduced from 64
-        borderRadius: 24, // Reduced from 32
+        width: 36, // Reduced from 48
+        height: 36, // Reduced from 48
+        borderRadius: 18, // Reduced from 24
         backgroundColor: 'rgba(255,255,255,0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: -24, // Reduced from -32
+        marginTop: -18, // Reduced from -24
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
     },
@@ -231,13 +231,13 @@ const styles = StyleSheet.create({
     },
     indicators: {
         position: 'absolute',
-        bottom: spacing.xl, // Reduced from 3xl
-        left: spacing['4xl'], // Reduced from 5xl
+        bottom: spacing.md, // Reduced from xl
+        left: spacing['4xl'],
         flexDirection: 'row',
-        gap: spacing.sm, // Reduced from md
+        gap: spacing.xs, // Reduced from sm
     },
     dot: {
-        height: 6, // Reduced from 8
-        borderRadius: 3,
+        height: 4, // Reduced from 6
+        borderRadius: 2,
     },
 });

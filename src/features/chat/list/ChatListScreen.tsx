@@ -543,7 +543,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
         <FlatList
           data={listData}
           renderItem={renderItem}
-          keyExtractor={(item: any) => 'type' in item ? `header-${item.title}` : item.id}
+          keyExtractor={(item: any) => item.type === 'header' ? `header-${item.title}` : item.id}
           ItemSeparatorComponent={ItemSeparator}
           ListFooterComponent={renderListFooter}
           refreshControl={

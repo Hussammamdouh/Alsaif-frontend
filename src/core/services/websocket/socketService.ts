@@ -31,10 +31,8 @@ export enum SocketEvent {
 }
 
 class SocketService {
-  private socket: Socket | null = null;
-  private isConnecting: boolean = false;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 5;
+  private pendingEmissions: { event: string; data: any }[] = [];
+  private currentChatId: string | null = null;
 
   /**
    * Initialize and connect to WebSocket server
@@ -63,7 +61,6 @@ class SocketService {
       }
 
       console.log('[SocketService] Connecting to WebSocket server with token...');
-      console.log('[SocketService] Token length:', session.tokens.accessToken.length);
 
       // Create socket connection with auth token
       this.socket = io(SOCKET_URL, {
@@ -78,18 +75,33 @@ class SocketService {
       });
 
       // Connection event handlers
-      this.socket.on(SocketEvent.CONNECTION, () => {
+      this.socket.on('connect', () => {
         console.log('[SocketService] Connected to WebSocket server');
         this.reconnectAttempts = 0;
         this.isConnecting = false;
+
+        // Process any pending emissions
+        if (this.pendingEmissions.length > 0) {
+          console.log(`[SocketService] Processing ${this.pendingEmissions.length} pending emissions`);
+          this.pendingEmissions.forEach(({ event, data }) => {
+            this.socket?.emit(event, data);
+          });
+          this.pendingEmissions = [];
+        }
+
+        // Auto-rejoin current chat if it exists
+        if (this.currentChatId) {
+          console.log('[SocketService] Auto-rejoining chat:', this.currentChatId);
+          this.socket?.emit(SocketEvent.JOIN_CHAT, { chatId: this.currentChatId });
+        }
       });
 
-      this.socket.on(SocketEvent.DISCONNECT, (reason) => {
+      this.socket.on('disconnect', (reason) => {
         console.log('[SocketService] Disconnected:', reason);
         this.isConnecting = false;
       });
 
-      this.socket.on(SocketEvent.ERROR, (error) => {
+      this.socket.on('error', (error) => {
         console.error('[SocketService] Socket error:', error);
         this.isConnecting = false;
       });
@@ -137,6 +149,7 @@ class SocketService {
     }
     this.isConnecting = false;
     this.reconnectAttempts = 0;
+    this.currentChatId = null;
   }
 
   /**
@@ -151,7 +164,8 @@ class SocketService {
    */
   emit(event: SocketEvent | string, data?: any): void {
     if (!this.socket?.connected) {
-      console.warn('[SocketService] Cannot emit - socket not connected');
+      console.log(`[SocketService] Socket not connected. Buffering event: ${event}`);
+      this.pendingEmissions.push({ event, data });
       return;
     }
 
@@ -189,6 +203,7 @@ class SocketService {
    * Join a chat room
    */
   joinChat(chatId: string): void {
+    this.currentChatId = chatId;
     this.emit(SocketEvent.JOIN_CHAT, { chatId });
   }
 
@@ -196,6 +211,9 @@ class SocketService {
    * Leave a chat room
    */
   leaveChat(chatId: string): void {
+    if (this.currentChatId === chatId) {
+      this.currentChatId = null;
+    }
     this.emit(SocketEvent.LEAVE_CHAT, { chatId });
   }
 
