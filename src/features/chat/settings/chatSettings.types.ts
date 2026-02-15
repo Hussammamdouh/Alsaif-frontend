@@ -50,5 +50,6 @@ export interface ChatSettingsResponse {
  * Update settings request
  */
 export interface UpdateSettingsRequest {
+    name?: string;
     onlyAdminsCanSend?: boolean;
 }

@@ -7,11 +7,13 @@ import { ConversationView } from './ConversationView';
 interface ConversationScreenProps {
   conversationId: string;
   onNavigateBack: () => void;
+  onChatRemoved?: (chatId: string) => void;
 }
 
 export const ConversationScreen: React.FC<ConversationScreenProps> = ({
   conversationId,
   onNavigateBack,
+  onChatRemoved,
 }) => {
   const { theme, isDark } = useTheme();
 
@@ -23,6 +25,7 @@ export const ConversationScreen: React.FC<ConversationScreenProps> = ({
       <ConversationView
         conversationId={conversationId}
         onNavigateBack={onNavigateBack}
+        onChatRemoved={onChatRemoved || ((chatId: string) => onNavigateBack())}
       />
     </SafeAreaView>
   );

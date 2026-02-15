@@ -325,6 +325,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
       handleArchive,
       handleDelete,
       handleBlock,
+      removeConversation,
     } = useChatList();
 
     // Desktop: Select first conversation automatically if none selected
@@ -344,6 +345,29 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
         onNavigateToChat(conversation.id);
       }
     }, [isDesktop, onNavigateToChat]);
+
+    /**
+     * Handle chat removed (optimistic UI for leave/delete group)
+     * On desktop: remove from list and select the next chat
+     * On mobile: just navigate back (already handled by ChatSettingsScreen)
+     */
+    const handleChatRemoved = useCallback((chatId: string) => {
+      // Optimistically remove from the conversation list
+      removeConversation(chatId);
+
+      // On desktop, select the next available conversation
+      if (isDesktop) {
+        const remaining = conversations.filter(c => c.id !== chatId);
+        if (remaining.length > 0) {
+          setSelectedConversationId(remaining[0].id);
+        } else {
+          setSelectedConversationId(null);
+        }
+      } else {
+        // On mobile, navigate back to chat list
+        onNavigateToChat('');
+      }
+    }, [removeConversation, isDesktop, conversations, onNavigateToChat]);
 
     // Animation values
     const headerOpacity = useRef(new Animated.Value(0)).current;
@@ -677,6 +701,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
                       conversationId={selectedConversationId}
                       hideBackButton
                       isSplitView
+                      onChatRemoved={handleChatRemoved}
                     />
                   ) : (
                     <View style={styles.noChatSelected}>

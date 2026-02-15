@@ -17,6 +17,8 @@ import {
     Platform,
     StatusBar,
     Dimensions,
+    Modal,
+    TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -25,6 +27,7 @@ import { useTheme, useLocalization } from '../../../app/providers';
 import { ResponsiveContainer } from '../../../shared/components';
 import { useChatSettings } from './chatSettings.hooks';
 import { ChatParticipant } from './chatSettings.types';
+import { ConfirmationModal } from '../../admin/components/ConfirmationModal';
 
 const { width } = Dimensions.get('window');
 const isDesktop = width > 768;
@@ -32,11 +35,13 @@ const isDesktop = width > 768;
 interface ChatSettingsScreenProps {
     chatId: string;
     onNavigateBack: () => void;
+    onChatRemoved?: (chatId: string) => void;
 }
 
 export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
     chatId,
     onNavigateBack,
+    onChatRemoved,
 }) => {
     const { theme, isDark } = useTheme();
     const { t } = useLocalization();
@@ -51,9 +56,87 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
         grantSendPermission,
         revokeSendPermission,
         kickUser,
+        deleteGroup,
+        leaveGroup,
     } = useChatSettings(chatId);
 
     const [selectedMember, setSelectedMember] = useState<ChatParticipant | null>(null);
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showEditNameModal, setShowEditNameModal] = useState(false);
+    const [newName, setNewName] = useState('');
+
+    /**
+     * Handle leaving the group
+     */
+    const handleLeaveGroup = useCallback(() => {
+        setShowLeaveModal(true);
+    }, []);
+
+    /**
+     * Confirm leaving the group
+     */
+    const confirmLeaveGroup = useCallback(async () => {
+        const success = await leaveGroup();
+        if (success) {
+            if (onChatRemoved) {
+                onChatRemoved(chatId);
+            } else {
+                onNavigateBack();
+            }
+        } else {
+            throw new Error(t('chat.settings.leaveFailed'));
+        }
+    }, [leaveGroup, onNavigateBack, onChatRemoved, chatId, t]);
+
+    /**
+     * Handle deleting the group
+     */
+    const handleDeleteGroup = useCallback(() => {
+        setShowDeleteModal(true);
+    }, []);
+
+    /**
+     * Confirm deleting the group
+     */
+    const confirmDeleteGroup = useCallback(async () => {
+        const success = await deleteGroup();
+        if (success) {
+            if (onChatRemoved) {
+                onChatRemoved(chatId);
+            } else {
+                onNavigateBack();
+            }
+        } else {
+            throw new Error(t('chat.settings.deleteFailed'));
+        }
+    }, [deleteGroup, onNavigateBack, onChatRemoved, chatId, t]);
+
+    /**
+     * Handle updating group name
+     */
+    const handleUpdateName = useCallback(async () => {
+        if (!newName.trim()) {
+            Alert.alert(t('common.error'), t('chat.settings.nameRequired'));
+            return;
+        }
+
+        const success = await updateSettings({ name: newName.trim() });
+        if (success) {
+            setShowEditNameModal(false);
+            Alert.alert(t('common.success'), t('chat.settings.updateSuccess'));
+        } else {
+            Alert.alert(t('common.error'), t('chat.settings.updateFailed'));
+        }
+    }, [newName, updateSettings, t]);
+
+    /**
+     * Open edit name modal
+     */
+    const openEditNameModal = useCallback(() => {
+        setNewName(settings?.name || '');
+        setShowEditNameModal(true);
+    }, [settings?.name]);
 
     /**
      * Toggle admin-only messaging
@@ -288,13 +371,92 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
                     </View>
                 </View>
 
+                {!settings?.isSystemGroup && (
+                    <View style={[styles.settingsSection, {
+                        backgroundColor: isDark ? theme.background.secondary : '#FFFFFF',
+                        borderColor: theme.border.light,
+                        marginTop: 16,
+                        marginHorizontal: 0
+                    }]}>
+                        <View style={styles.sectionHeaderRow}>
+                            <Icon name="cog-outline" size={18} color={theme.text.secondary} />
+                            <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>
+                                {settings?.type === 'private'
+                                    ? t('chat.settings.chatActions') || 'Chat Actions'
+                                    : t('chat.settings.groupActions')}
+                            </Text>
+                        </View>
+
+                        <View style={styles.actionRow}>
+                            {settings?.type === 'private' ? (
+                                /* Private chats: Delete Chat for any participant */
+                                <TouchableOpacity
+                                    style={[styles.actionButton, { backgroundColor: theme.error.main + '15' }]}
+                                    onPress={handleDeleteGroup}
+                                    disabled={isUpdating}
+                                >
+                                    <Icon name="trash-outline" size={20} color={theme.error.main} />
+                                    <Text style={[styles.actionButtonText, { color: theme.error.main, fontWeight: '700' }]}>
+                                        {t('chat.settings.deleteChat') || 'Delete Chat'}
+                                    </Text>
+                                </TouchableOpacity>
+                            ) : (
+                                /* Group chats: Leave Group + admin-only Change/Delete Group */
+                                <>
+                                    {settings?.isAdmin && (
+                                        <TouchableOpacity
+                                            style={[styles.actionButton, { backgroundColor: theme.primary.main + '10', marginBottom: 12 }]}
+                                            onPress={openEditNameModal}
+                                            disabled={isUpdating}
+                                        >
+                                            <Icon name="create-outline" size={20} color={theme.primary.main} />
+                                            <Text style={[styles.actionButtonText, { color: theme.primary.main }]}>
+                                                {t('chat.settings.changeName')}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    <TouchableOpacity
+                                        style={[styles.actionButton, { backgroundColor: theme.error.main + '10' }]}
+                                        onPress={handleLeaveGroup}
+                                        disabled={isUpdating}
+                                    >
+                                        <Icon name="log-out-outline" size={20} color={theme.error.main} />
+                                        <Text style={[styles.actionButtonText, { color: theme.error.main }]}>
+                                            {t('chat.settings.leaveGroup')}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    {settings?.isAdmin && (
+                                        <TouchableOpacity
+                                            style={[styles.actionButton, { backgroundColor: theme.error.main + '15', marginTop: 12 }]}
+                                            onPress={handleDeleteGroup}
+                                            disabled={isUpdating}
+                                        >
+                                            <Icon name="trash-outline" size={20} color={theme.error.main} />
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={[styles.actionButtonText, { color: theme.error.main, fontWeight: '700' }]}>
+                                                    {t('chat.settings.deleteGroup')}
+                                                </Text>
+                                                <Text style={[styles.actionButtonSubtext, { color: theme.error.main + '80' }]}>
+                                                    {t('chat.settings.deleteGroupDescription')}
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    )}
+                                </>
+                            )}
+                        </View>
+                    </View>
+                )}
+
                 <View style={styles.listHeaderContainer}>
                     <Text style={[styles.listHeaderTitle, { color: theme.text.primary }]}>
                         {t('chat.settings.members')}
                     </Text>
                 </View>
             </View>
-        </View>
+        </View >
     );
 
     if (isLoading) {
@@ -352,6 +514,95 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
                     showsVerticalScrollIndicator={false}
                 />
             </View>
+
+            {/* Leave Group Confirmation Modal */}
+            <ConfirmationModal
+                visible={showLeaveModal}
+                onClose={() => setShowLeaveModal(false)}
+                onConfirm={confirmLeaveGroup}
+                title={t('chat.settings.leaveTitle')}
+                message={t('chat.settings.leaveConfirm')}
+                confirmText={t('chat.settings.leave') || t('chat.settings.leaveGroup')}
+                cancelText={t('common.cancel')}
+                destructive
+                icon="log-out-outline"
+            />
+
+            {/* Delete Group/Chat Confirmation Modal */}
+            <ConfirmationModal
+                visible={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDeleteGroup}
+                title={settings?.type === 'private'
+                    ? (t('chat.settings.deleteChatTitle') || 'Delete Chat')
+                    : t('chat.settings.deleteTitle')}
+                message={settings?.type === 'private'
+                    ? (t('chat.settings.deleteChatConfirm') || 'Are you sure you want to delete this chat?')
+                    : t('chat.settings.deleteConfirm')}
+                confirmText={settings?.type === 'private'
+                    ? (t('chat.settings.deleteChat') || 'Delete Chat')
+                    : (t('chat.settings.delete') || t('chat.settings.deleteGroup'))}
+                cancelText={t('common.cancel')}
+                destructive
+                icon="trash-outline"
+            />
+
+            {/* Edit Group Name Modal */}
+            <Modal
+                visible={showEditNameModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowEditNameModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+                        <View style={styles.modalHeader}>
+                            <Icon name="create-outline" size={24} color={theme.primary.main} />
+                            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>
+                                {t('chat.settings.editNameTitle')}
+                            </Text>
+                        </View>
+
+                        <TextInput
+                            style={[styles.nameInput, {
+                                backgroundColor: isDark ? theme.background.primary : '#F5F7FA',
+                                color: theme.text.primary,
+                                borderColor: theme.border.main
+                            }]}
+                            value={newName}
+                            onChangeText={setNewName}
+                            placeholder={t('chat.settings.newNamePlaceholder')}
+                            placeholderTextColor={theme.text.tertiary}
+                            autoFocus
+                        />
+
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, { backgroundColor: theme.background.primary }]}
+                                onPress={() => setShowEditNameModal(false)}
+                            >
+                                <Text style={[styles.modalButtonText, { color: theme.text.secondary }]}>
+                                    {t('common.cancel')}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.modalButton, { backgroundColor: theme.primary.main }]}
+                                onPress={handleUpdateName}
+                                disabled={isUpdating}
+                            >
+                                {isUpdating ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontWeight: '700' }]}>
+                                        {t('common.save')}
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -580,6 +831,24 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    actionRow: {
+        marginTop: 8,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 12,
+        gap: 12,
+    },
+    actionButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    actionButtonSubtext: {
+        fontSize: 12,
+        marginTop: 2,
+    },
     statusContainer: {},
     errorText: {
         fontSize: 16,
@@ -594,6 +863,60 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
     },
     retryButtonText: {
         color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        width: '100%',
+        maxWidth: 400,
+        borderRadius: 20,
+        padding: 24,
+        borderWidth: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginBottom: 20,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '800',
+        letterSpacing: -0.5,
+    },
+    nameInput: {
+        width: '100%',
+        height: 56,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        fontSize: 16,
+        borderWidth: 1,
+        marginBottom: 24,
+    },
+    modalActions: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    modalButton: {
+        flex: 1,
+        height: 48,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalButtonText: {
+        fontSize: 15,
         fontWeight: '600',
     },
 });

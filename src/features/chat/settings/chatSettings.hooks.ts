@@ -6,6 +6,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { apiClient } from '../../../core/services/api/apiClient';
 import { ChatSettings, ChatSettingsResponse, UpdateSettingsRequest } from './chatSettings.types';
+import { chatEvents } from '../chatEvents';
 
 /**
  * Hook for fetching and managing chat settings
@@ -154,6 +155,60 @@ export function useChatSettings(chatId: string) {
         }
     }, [chatId, fetchSettings]);
 
+    /**
+     * Delete the group
+     */
+    const deleteGroup = useCallback(async () => {
+        if (!chatId) return false;
+
+        setIsUpdating(true);
+
+        try {
+            const response = await apiClient.delete<{ success: boolean }>(
+                `/api/chats/${chatId}`
+            );
+
+            if (response.success) {
+                chatEvents.emitChatRemoved(chatId);
+                return true;
+            }
+            return false;
+        } catch (err: any) {
+            console.error('[useChatSettings] Delete error:', err);
+            setError(err.message);
+            return false;
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [chatId]);
+
+    /**
+     * Leave the group
+     */
+    const leaveGroup = useCallback(async () => {
+        if (!chatId) return false;
+
+        setIsUpdating(true);
+
+        try {
+            const response = await apiClient.post<{ success: boolean }>(
+                `/api/chats/${chatId}/leave`
+            );
+
+            if (response.success) {
+                chatEvents.emitChatRemoved(chatId);
+                return true;
+            }
+            return false;
+        } catch (err: any) {
+            console.error('[useChatSettings] Leave error:', err);
+            setError(err.message);
+            return false;
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [chatId]);
+
     // Fetch settings on mount
     useEffect(() => {
         fetchSettings();
@@ -169,5 +224,7 @@ export function useChatSettings(chatId: string) {
         grantSendPermission,
         revokeSendPermission,
         kickUser,
+        deleteGroup,
+        leaveGroup,
     };
 }

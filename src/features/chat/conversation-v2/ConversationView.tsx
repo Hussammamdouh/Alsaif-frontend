@@ -32,6 +32,7 @@ interface ConversationViewProps {
     hideBackButton?: boolean;
     onNavigateBack?: () => void;
     isSplitView?: boolean;
+    onChatRemoved?: (chatId: string) => void;
 }
 
 export const ConversationView: React.FC<ConversationViewProps> = ({
@@ -39,6 +40,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     hideBackButton = false,
     onNavigateBack,
     isSplitView = false,
+    onChatRemoved,
 }) => {
     const { theme, isDark } = useTheme();
     const { t } = useLocalization();
@@ -390,7 +392,16 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
             )}
 
             <Modal visible={showSettings} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => setShowSettings(false)}>
-                <ChatSettingsScreen chatId={conversationId} onNavigateBack={() => setShowSettings(false)} />
+                <ChatSettingsScreen
+                    chatId={conversationId}
+                    onNavigateBack={() => setShowSettings(false)}
+                    onChatRemoved={(chatId: string) => {
+                        setShowSettings(false);
+                        if (onChatRemoved) {
+                            onChatRemoved(chatId);
+                        }
+                    }}
+                />
             </Modal>
         </View>
     );

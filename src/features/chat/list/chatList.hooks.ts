@@ -23,6 +23,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../app/navigation/types';
 import { useLocalization } from '../../../app/providers';
 import { useSubscriptionAccess } from '../../subscription/useSubscriptionAccess';
+import { chatEvents } from '../chatEvents';
 
 /**
  * Initial Chat List State
@@ -191,6 +192,17 @@ export const useChatList = () => {
       // Don't disconnect socket here - it should stay connected for the app session
     };
   }, [loadConversations, handleChatListUpdate]);
+
+  // Listen for chat removal events (optimistic UI from any screen)
+  useEffect(() => {
+    const unsubscribe = chatEvents.onChatRemoved((chatId: string) => {
+      setState(prev => ({
+        ...prev,
+        conversations: prev.conversations.filter(c => c.id !== chatId),
+      }));
+    });
+    return unsubscribe;
+  }, []);
 
   /**
    * Refresh conversations (pull-to-refresh)
@@ -384,6 +396,17 @@ export const useChatList = () => {
     );
   }, [t]);
 
+  /**
+   * Remove a conversation from the list (optimistic UI)
+   * Used when user leaves or deletes a group
+   */
+  const removeConversation = useCallback((conversationId: string) => {
+    setState(prev => ({
+      ...prev,
+      conversations: prev.conversations.filter(c => c.id !== conversationId),
+    }));
+  }, []);
+
   return {
     // State
     conversations: filteredConversations,
@@ -405,6 +428,7 @@ export const useChatList = () => {
     handleArchive,
     handleDelete,
     handleBlock,
+    removeConversation,
   };
 };
 

@@ -273,8 +273,10 @@ export const useConversation = (conversationId: string) => {
    * Load initial messages on mount
    */
   useEffect(() => {
+    // Reset state when conversationId changes to avoid showing stale data from previous chats
+    setState(INITIAL_STATE);
     loadMessages(1, false);
-  }, [conversationId, loadMessages]); // Added loadMessages to dependencies
+  }, [conversationId, loadMessages]);
 
   /**
    * WebSocket event handlers

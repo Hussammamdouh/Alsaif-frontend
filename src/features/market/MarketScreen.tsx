@@ -136,7 +136,7 @@ export const MarketScreen = () => {
         <View style={[styles.selectorContainer, isDesktop && { width: '100%', alignSelf: 'center', marginHorizontal: 0, paddingHorizontal: spacing.lg }]}>
             <View style={{ flexDirection: 'row', flex: 1, backgroundColor: theme.background.secondary, borderRadius: 12, padding: 4 }}>
                 <TouchableOpacity
-                    style={[styles.selectorButton, selectedExchange === 'DFM' && styles.selectorButtonActive]}
+                    style={[styles.selectorButton, selectedExchange === 'DFM' && [styles.selectorButtonActive, { backgroundColor: '#3B82F6', shadowColor: '#3B82F6' }]]}
                     onPress={() => { setSelectedExchange('DFM'); setSelectedSymbol(null); }}
                 >
                     <Text style={[styles.selectorText, selectedExchange === 'DFM' ? styles.selectorTextActive : styles.selectorTextInactive]}>
@@ -145,7 +145,7 @@ export const MarketScreen = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={[styles.selectorButton, selectedExchange === 'ADX' && styles.selectorButtonActive]}
+                    style={[styles.selectorButton, selectedExchange === 'ADX' && [styles.selectorButtonActive, { backgroundColor: '#EAB308', shadowColor: '#EAB308' }]]}
                     onPress={() => { setSelectedExchange('ADX'); setSelectedSymbol(null); }}
                 >
                     <Text style={[styles.selectorText, selectedExchange === 'ADX' ? styles.selectorTextActive : styles.selectorTextInactive]}>
@@ -229,7 +229,7 @@ export const MarketScreen = () => {
         const SelectionCard = ({ type, title, desc, icon, onPress, theme }: any) => {
             const [isHovered, setIsHovered] = useState(false);
             const isADX = type === 'ADX';
-            const accentColor = isADX ? '#007AFF' : '#E62E2D';
+            const accentColor = isADX ? '#EAB308' : '#3B82F6';
 
             return (
                 <Pressable
@@ -319,17 +319,17 @@ export const MarketScreen = () => {
                     <Text style={[styles.promptSubtitle, { color: theme.text.secondary }]}>{t('market.selectMarketPrompt')}</Text>
                     <View style={styles.marketPillContainer}>
                         <TouchableOpacity
-                            style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
+                            style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: '#3B82F6' }]}
                             onPress={() => setSelectedExchange('DFM')}
                         >
-                            <Icon name="business" size={24} color={theme.primary.main} />
+                            <Icon name="business" size={24} color="#3B82F6" />
                             <Text style={[styles.marketPillText, { color: theme.text.primary }]}>{t('market.dubai')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
+                            style={[styles.marketPill, { backgroundColor: theme.background.secondary, borderColor: '#EAB308' }]}
                             onPress={() => setSelectedExchange('ADX')}
                         >
-                            <Icon name="trending-up" size={24} color={theme.primary.main} />
+                            <Icon name="trending-up" size={24} color="#EAB308" />
                             <Text style={[styles.marketPillText, { color: theme.text.primary }]}>{t('market.abuDhabi')}</Text>
                         </TouchableOpacity>
                     </View>
