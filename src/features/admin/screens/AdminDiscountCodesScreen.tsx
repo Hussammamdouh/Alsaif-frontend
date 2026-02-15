@@ -540,7 +540,6 @@ export const AdminDiscountCodesScreen: React.FC = () => {
           visible={showActionSheet}
           onClose={() => {
             setShowActionSheet(false);
-            setSelectedCode(null);
           }}
           title={selectedCode?.code || t('admin.codeActions')}
           options={[
@@ -586,7 +585,10 @@ export const AdminDiscountCodesScreen: React.FC = () => {
 
         <ConfirmationModal
           visible={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setSelectedCode(null);
+          }}
           onConfirm={handleDelete}
           title={t('admin.deleteCode')}
           message={t('admin.deleteCodeMessage')}

@@ -287,7 +287,6 @@ export const AdminBannersScreen: React.FC = () => {
                     visible={showActionSheet}
                     onClose={() => {
                         setShowActionSheet(false);
-                        setSelectedBanner(null);
                     }}
                     title={selectedBanner?.title || t('admin.selectAction')}
                     options={[
@@ -318,7 +317,10 @@ export const AdminBannersScreen: React.FC = () => {
 
                 <ConfirmationModal
                     visible={showDeleteModal}
-                    onClose={() => setShowDeleteModal(false)}
+                    onClose={() => {
+                        setShowDeleteModal(false);
+                        setSelectedBanner(null);
+                    }}
                     onConfirm={handleDelete}
                     title={t('admin.deleteBanner')}
                     message={t('admin.deleteMessage')}

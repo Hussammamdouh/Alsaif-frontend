@@ -187,12 +187,12 @@ export const HomeScreen: React.FC = React.memo(() => {
             </Text>
             {!hasPremiumAccess && (
               <LinearGradient
-                colors={activeTab === 'premium' ? ['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)'] : [theme.primary.main, theme.primary.dark]}
+                colors={activeTab === 'premium' ? [theme.primary.light, theme.primary.main] : [theme.primary.main, theme.primary.dark]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.premiumBadge}
               >
-                <Text style={[styles.premiumBadgeText, { color: activeTab === 'premium' ? '#FFFFFF' : '#FFFFFF' }]}>PRO</Text>
+                <Text style={[styles.premiumBadgeText, { color: theme.primary.contrast }]}>PRO</Text>
               </LinearGradient>
             )}
           </View>
@@ -298,10 +298,10 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.background.primary,
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: theme.primary.contrast,
     fontSize: 10,
     fontWeight: '700',
   },

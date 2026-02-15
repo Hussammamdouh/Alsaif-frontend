@@ -17,7 +17,9 @@ import {
   Linking,
   StatusBar,
   Dimensions,
+  StyleSheet,
 } from 'react-native';
+import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../app/navigation/types';
@@ -167,7 +169,7 @@ const NotificationsScreen: React.FC = () => {
 
     Alert.alert(
       t('notifications.markAllRead'),
-      t('notifications.markAllReadConfirm', { count: unreadCount }) || `Mark all ${unreadCount} notifications as read?`,
+      t('notifications.markAllReadConfirm', { count: unreadCount }) || `Mark all ${unreadCount} notifications as read ? `,
       [
         { text: t('common.cancel'), style: 'cancel' },
         { text: t('notifications.markAllRead'), onPress: markAllAsRead },
@@ -198,7 +200,7 @@ const NotificationsScreen: React.FC = () => {
     (notification: Notification) => {
       const unread = isNotificationUnread(notification);
       const icon = getNotificationIcon(notification.type);
-      const color = getNotificationColor(notification.type);
+      const color = getNotificationColor(notification.type, theme);
       const title = getNotificationTitle(notification.type, notification);
       const time = formatNotificationTime(notification.createdAt, t, language);
 
@@ -214,11 +216,11 @@ const NotificationsScreen: React.FC = () => {
               {/* Broadcast Badge */}
               {notification.richContent?.metadata?.broadcast && (
                 <View style={styles.broadcastBadge}>
-                  <Icon name="megaphone" size={10} color="#fff" />
+                  <Icon name="megaphone" size={10} color={theme.primary.contrast} />
                 </View>
               )}
 
-              <Icon name={icon} size={24} color="#fff" />
+              <Icon name={icon} size={24} color={theme.primary.contrast} />
 
               {/* Priority Badge */}
               {(notification.priority === 'high' || notification.priority === 'urgent') && (
@@ -480,7 +482,12 @@ const NotificationsScreen: React.FC = () => {
       style={styles.container}
       edges={['top']}
     >
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+
+      <ExpoLinearGradient
+        colors={isDark ? ['#121212', '#1a1a1a'] : ['#FFFFFF', '#f8fafc']}
+        style={StyleSheet.absoluteFill}
+      />
 
       <AuthRequiredGate
         title={t('notifications.loginRequired') || 'Stay Updated'}
@@ -495,7 +502,7 @@ const NotificationsScreen: React.FC = () => {
               style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}
             >
               <Icon name={isRTL ? "chevron-forward" : "chevron-back"} size={24} color={theme.text.primary} />
-              <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('notifications.title')}</Text>
+              <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
             </TouchableOpacity>
 
             {notifications.length > 0 && (

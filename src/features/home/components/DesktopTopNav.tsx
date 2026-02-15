@@ -164,6 +164,7 @@ export const DesktopTopNav: React.FC = () => {
                     styles.badge,
                     {
                         backgroundColor: theme.semantic.negative,
+                        borderColor: theme.background.primary,
                         transform: [{ scale: pulseAnim }]
                     }
                 ]} />
@@ -367,7 +368,6 @@ const styles = StyleSheet.create({
         height: 8,
         borderRadius: 4,
         borderWidth: 1.5,
-        borderColor: '#FFF',
     },
     adminBtn: {
         flexDirection: 'row',

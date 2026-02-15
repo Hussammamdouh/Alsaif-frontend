@@ -427,7 +427,6 @@ export const AdminModerationScreen: React.FC = () => {
           visible={showActionSheet}
           onClose={() => {
             setShowActionSheet(false);
-            setSelectedItem(null);
           }}
           title={t('admin.moderationActions')}
           options={[
@@ -460,7 +459,10 @@ export const AdminModerationScreen: React.FC = () => {
 
         <ConfirmationModal
           visible={showResolveModal}
-          onClose={() => setShowResolveModal(false)}
+          onClose={() => {
+            setShowResolveModal(false);
+            setSelectedItem(null);
+          }}
           onConfirm={handleRemove}
           title={activeTab === 'queue' ? t('admin.rejectContentLabel') : t('admin.removeContentLabel')}
           message={activeTab === 'queue' ? t('admin.rejectContent') || 'Confirm rejection?' : t('admin.removeMessage')}

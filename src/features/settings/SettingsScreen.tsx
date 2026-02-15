@@ -1662,9 +1662,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   disabled={isRevoking}
                 >
                   {isRevoking ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={theme.primary.contrast} />
                   ) : (
-                    <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                    <Text style={[styles.modalButtonText, { color: theme.primary.contrast }]}>
                       {t('settings.logoutAllDevices')}
                     </Text>
                   )}
@@ -1715,9 +1715,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   disabled={isCancelling}
                 >
                   {isCancelling ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={theme.primary.contrast} />
                   ) : (
-                    <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                    <Text style={[styles.modalButtonText, { color: theme.primary.contrast }]}>
                       {t('settings.cancelSubscription')}
                     </Text>
                   )}

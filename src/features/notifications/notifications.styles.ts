@@ -36,7 +36,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: theme.text.primary,
+    color: theme.mode === 'dark' ? '#FFFFFF' : theme.text.primary,
     letterSpacing: 0.5,
     textAlign: isRTL ? 'right' : 'left',
   },
@@ -52,7 +52,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     justifyContent: 'center',
   },
   unreadBadgeText: {
-    color: '#fff',
+    color: theme.primary.contrast,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -97,10 +97,10 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   categoryFilterText: {
     fontSize: 13,
     fontWeight: '600',
-    color: theme.text.secondary,
+    color: theme.mode === 'dark' ? '#CCCCCC' : theme.text.secondary,
   },
   categoryFilterTextActive: {
-    color: '#fff',
+    color: theme.primary.contrast,
     fontWeight: '700',
   },
 
@@ -112,11 +112,11 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     alignItems: isRTL ? 'flex-end' : 'flex-start',
   },
   sectionHeaderText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.text.disabled,
+    fontSize: 13,
+    fontWeight: '800',
+    color: theme.mode === 'dark' ? '#999999' : theme.text.secondary,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     textAlign: isRTL ? 'right' : 'left',
   },
 
@@ -125,13 +125,18 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     backgroundColor: theme.background.secondary,
     paddingVertical: 18,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.ui.border,
     flexDirection: isRTL ? 'row-reverse' : 'row',
     alignItems: 'flex-start',
+    marginHorizontal: 16,
+    marginVertical: 6,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: theme.mode === 'dark' ? 0.3 : 0.08,
+    elevation: 3,
   },
   notificationItemUnread: {
-    backgroundColor: theme.isDark ? 'rgba(45, 106, 79, 0.15)' : 'rgba(45, 106, 79, 0.08)',
+    backgroundColor: theme.mode === 'dark' ? 'rgba(67, 135, 48, 0.25)' : 'rgba(67, 135, 48, 0.12)',
   },
   notificationContent: {
     flex: 1,
@@ -146,7 +151,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     justifyContent: 'center',
     marginLeft: isRTL ? 16 : 0,
     marginRight: isRTL ? 0 : 16,
-    shadowColor: '#000',
+    shadowColor: theme.shadow.color,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -166,7 +171,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   notificationTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: theme.text.primary,
+    color: theme.mode === 'dark' ? '#FFFFFF' : theme.text.primary,
     flex: 1,
     marginLeft: isRTL ? 8 : 0,
     marginRight: isRTL ? 0 : 8,
@@ -174,22 +179,22 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     textAlign: isRTL ? 'right' : 'left',
   },
   notificationTitleUnread: {
-    color: theme.isDark ? '#d4af37' : '#2d6a4f',
+    color: theme.mode === 'dark' ? theme.primary.light : theme.primary.main,
   },
   notificationTime: {
     fontSize: 11,
-    color: theme.text.disabled,
+    color: theme.mode === 'dark' ? '#AAAAAA' : theme.text.disabled,
     fontWeight: '500',
     textAlign: isRTL ? 'left' : 'right',
   },
   notificationBody: {
     fontSize: 14,
-    color: theme.text.secondary,
+    color: theme.mode === 'dark' ? '#E0E0E0' : theme.text.secondary,
     lineHeight: 22,
     textAlign: isRTL ? 'right' : 'left',
   },
   notificationBodyUnread: {
-    color: theme.text.primary,
+    color: theme.mode === 'dark' ? '#FFFFFF' : theme.text.primary,
   },
   notificationImage: {
     width: '100%',
@@ -198,15 +203,15 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     marginTop: 14,
     backgroundColor: theme.background.tertiary,
     borderWidth: 1,
-    borderColor: theme.ui.border,
+    borderColor: theme.border.light,
   },
   unreadIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#d4af37',
-    marginRight: isRTL ? 8 : 0,
-    marginLeft: isRTL ? 0 : 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.primary.main,
+    marginRight: isRTL ? 12 : 0,
+    marginLeft: isRTL ? 0 : 12,
     marginTop: 8,
   },
 
@@ -225,11 +230,11 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.ui.border,
+    borderColor: theme.border.light,
   },
   ctaButtonPrimary: {
-    backgroundColor: '#2d6a4f',
-    borderColor: '#2d6a4f',
+    backgroundColor: theme.primary.main,
+    borderColor: theme.primary.main,
   },
   ctaButtonDanger: {
     backgroundColor: theme.accent.error,
@@ -238,14 +243,14 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   ctaButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.text.primary,
+    color: theme.mode === 'dark' ? '#FFFFFF' : theme.text.primary,
   },
   ctaButtonTextPrimary: {
-    color: '#fff',
+    color: theme.primary.contrast,
     fontWeight: '700',
   },
   ctaButtonTextDanger: {
-    color: '#fff',
+    color: theme.accent.error,
     fontWeight: '700',
   },
 
@@ -254,7 +259,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     position: 'absolute',
     bottom: -2,
     right: -2,
-    backgroundColor: '#d4af37',
+    backgroundColor: theme.accent.warning,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 4,
@@ -267,7 +272,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   priorityBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#fff',
+    color: '#000000',
     textTransform: 'uppercase',
   },
 
@@ -292,7 +297,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     marginRight: isRTL ? 8 : 0,
     marginLeft: isRTL ? 0 : 8,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
   },
   desktopContentWrapper: {
     flex: 1,
@@ -322,13 +327,13 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: theme.text.primary,
+    color: theme.mode === 'dark' ? '#FFFFFF' : theme.text.primary,
     marginBottom: 12,
     textAlign: 'center',
   },
   emptyStateText: {
     fontSize: 15,
-    color: theme.text.secondary,
+    color: theme.mode === 'dark' ? '#AAAAAA' : theme.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -350,7 +355,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   },
   errorStateText: {
     fontSize: 15,
-    color: theme.text.secondary,
+    color: theme.mode === 'dark' ? '#AAAAAA' : theme.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
@@ -369,7 +374,7 @@ export const createStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.primary.contrast,
   },
 
   // Loading Footer

@@ -20,7 +20,15 @@ export const getNotificationIcon = (type: string): string => {
 /**
  * Get color for notification type
  */
-export const getNotificationColor = (type: string): string => {
+export const getNotificationColor = (type: string, theme?: any): string => {
+  if (theme) {
+    if (type.startsWith('subscription:')) return theme.primary.main;
+    if (type.startsWith('insight:')) return theme.accent.warning;
+    if (type.startsWith('engagement:')) return theme.accent.info;
+    if (type.startsWith('premium:')) return theme.accent.warning;
+    if (type.startsWith('system:')) return theme.primary.main;
+    if (type.startsWith('marketing:')) return theme.accent.info;
+  }
   return NOTIFICATION_COLORS[type] || '#007aff';
 };
 
