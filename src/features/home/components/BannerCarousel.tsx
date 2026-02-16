@@ -13,7 +13,8 @@ import {
 import { bannerService, Banner } from '../../../core/services/api/adminEnhancements.service';
 import { useTheme, useLocalization } from '../../../app/providers';
 
-const CAROUSEL_HEIGHT = 60;
+// REMOVED static constant
+
 
 interface BannerCarouselProps {
     type: 'disclosures' | 'news' | 'free' | 'premium';
@@ -22,7 +23,11 @@ interface BannerCarouselProps {
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
     const { theme } = useTheme();
     const { t } = useLocalization();
+
     const { width } = useWindowDimensions();
+    const isMobileOrTablet = width < 1024;
+    const carouselHeight = isMobileOrTablet ? 120 : 60;
+
     const [banners, setBanners] = useState<Banner[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -84,9 +89,9 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
         <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => handleBannerPress(item)}
-            style={[styles.bannerContainer, { width }]}
+            style={[styles.bannerContainer, { width, height: carouselHeight }]}
         >
-            <Image source={{ uri: item.imageUrl }} style={[styles.bannerImage, { width }]} resizeMode="cover" />
+            <Image source={{ uri: item.imageUrl }} style={[styles.bannerImage, { width, height: carouselHeight }]} resizeMode="cover" />
             {item.partner && (
                 <View style={[styles.partnerBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
                     <Text style={styles.partnerText}>{t('common.ad')}: {item.partner}</Text>
@@ -103,7 +108,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
 
     if (loading) {
         return (
-            <View style={[styles.loadingContainer, { width, height: CAROUSEL_HEIGHT }]}>
+            <View style={[styles.loadingContainer, { width, height: carouselHeight }]}>
                 <ActivityIndicator size="small" color={theme.primary.main} />
             </View>
         );
@@ -114,7 +119,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
     }
 
     return (
-        <View style={[styles.container, { width }]}>
+        <View style={[styles.container, { width, height: carouselHeight }]}>
             <FlatList
                 ref={flatListRef}
                 data={banners}
@@ -157,18 +162,16 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ type }) => {
 
 const styles = StyleSheet.create({
     container: {
-        height: CAROUSEL_HEIGHT,
+
     },
     loadingContainer: {
         justifyContent: 'center',
         alignItems: 'center',
     },
     bannerContainer: {
-        height: CAROUSEL_HEIGHT,
         overflow: 'hidden',
     },
     bannerImage: {
-        height: CAROUSEL_HEIGHT,
     },
     partnerBadge: {
         position: 'absolute',
