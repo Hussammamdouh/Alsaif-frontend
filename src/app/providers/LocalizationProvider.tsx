@@ -444,6 +444,7 @@ const translations = {
 
     // Insights Screen
     'insights.title': 'Insights',
+    'insights.insight': 'INSIGHT',
     'insights.searchPlaceholder': 'Search insights...',
     'insights.freeInsights': 'Free Advice',
     'insights.premiumInsights': 'Premium Insights',
@@ -1563,6 +1564,7 @@ const translations = {
     'tabs.home': 'الرئيسية',
     'tabs.disclosures': 'الإفصاحات',
     'tabs.insights': 'التوصيات',
+    'insights.insight': 'توصية',
     'tabs.news': 'الأخبار',
     'tabs.chat': 'المحادثات',
     'tabs.market': 'السوق',
@@ -1677,7 +1679,7 @@ const translations = {
     // Insights Screen
     'insights.title': 'التوصية',
     'insights.searchPlaceholder': 'Search insights...',
-    'insights.freeInsights': 'توصية مجانية',
+    'insights.freeInsights': 'التوصيات',
     'insights.premiumInsights': 'توصية مميزة',
     'insights.noInsights': 'لا توجد توصية متاحة',
     'insights.noInsightsMessage': 'عد لاحقًا لمزيد من التحديثات.',

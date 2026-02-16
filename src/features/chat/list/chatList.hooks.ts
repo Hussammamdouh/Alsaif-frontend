@@ -160,11 +160,9 @@ export const useChatList = () => {
         updatedConversations = [uiConversation, ...prev.conversations];
       }
 
-      // Sort by updatedAt to keep most recent first
+      // Sort by sortableTimestamp to keep most recent first
       updatedConversations.sort((a, b) => {
-        const aTime = new Date(a.lastMessageTime || 0).getTime();
-        const bTime = new Date(b.lastMessageTime || 0).getTime();
-        return bTime - aTime;
+        return (b.sortableTimestamp || 0) - (a.sortableTimestamp || 0);
       });
 
       return {

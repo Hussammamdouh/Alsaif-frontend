@@ -106,7 +106,9 @@ const InsightCard: React.FC<InsightCardProps> = ({
           <View style={styles.insightCardLeft}>
             {item.tags[0] && (
               <View style={[styles.symbolBadge, { backgroundColor: theme.primary.main + '15' }]}>
-                <Text style={[styles.symbolText, { color: theme.primary.main }]}>{item.tags[0].toUpperCase()}</Text>
+                <Text style={[styles.symbolText, { color: theme.primary.main }]}>
+                  {item.tags[0].toUpperCase() === 'ANALYSIS' ? t('insights.insight') : item.tags[0].toUpperCase()}
+                </Text>
               </View>
             )}
             <View
@@ -122,9 +124,9 @@ const InsightCard: React.FC<InsightCardProps> = ({
             <Text style={[styles.timestamp, { color: theme.text.tertiary }]}>{formatTimeAgo(item.publishedAt || item.createdAt, t)}</Text>
           </View>
 
-          <TouchableOpacity style={styles.moreButton}>
-            <Ionicons name={ICONS.more as any} size={18} color={theme.text.tertiary} />
-          </TouchableOpacity>
+          <View style={styles.moreButton}>
+            {/* 3-dot menu removed as per request */}
+          </View>
         </View>
 
         <Text style={[styles.insightTitle, { color: theme.text.primary }]} numberOfLines={2}>
@@ -170,13 +172,7 @@ const InsightCard: React.FC<InsightCardProps> = ({
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={[styles.bookmarkButton, { backgroundColor: theme.background.tertiary }]}>
-            <Ionicons
-              name={(item.hasBookmarked ? ICONS.bookmark : ICONS.bookmarkOutline) as any}
-              size={18}
-              color={item.hasBookmarked ? theme.primary.main : theme.text.tertiary}
-            />
-          </TouchableOpacity>
+          {/* Save button removed as per request */}
         </View>
 
         {item.type === 'premium' && !hasAccess && (

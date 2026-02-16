@@ -177,6 +177,10 @@ export const mapConversationToUI = (conversation: Conversation, currentUserId?: 
     ? formatTimestamp(conversation.lastMessage.timestamp)
     : '';
 
+  const sortableTimestamp = conversation.lastMessage?.timestamp
+    ? new Date(conversation.lastMessage.timestamp).getTime()
+    : new Date(conversation.updatedAt || conversation.createdAt).getTime();
+
   return {
     id: conversation.id,
     type: conversation.type,
@@ -186,6 +190,7 @@ export const mapConversationToUI = (conversation: Conversation, currentUserId?: 
     avatarUrls: avatarData.avatarUrls,
     lastMessageText,
     lastMessageTime,
+    sortableTimestamp,
     unreadCount: conversation.unreadCount,
     isMuted: conversation.isMuted,
     isPinned: conversation.isPinned,

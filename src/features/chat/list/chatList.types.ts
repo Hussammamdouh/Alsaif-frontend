@@ -82,6 +82,7 @@ export interface UIConversation {
   badgeColor?: string;
   hasPermission: boolean;
   isRead: boolean;
+  sortableTimestamp: number;
 }
 
 /**

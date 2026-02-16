@@ -152,17 +152,19 @@ export const getConversationMessages = async (
     type: chatData.type,
     name: chatData.name,
     avatar: chatData.avatar,
-    participants: chatData.participants.map((p: any) => ({
-      user: {
-        id: p.user?._id || p.user || 'unknown',
-        name: p.user?.name || p.user?.email || 'Unknown User',
-        email: p.user?.email || '',
-        avatar: p.user?.avatar,
-        role: p.user?.role || 'user',
-      },
-      permission: p.permission,
-      joinedAt: p.joinedAt,
-    })),
+    participants: chatData.participants
+      .filter((p: any) => p.user && (p.user._id || typeof p.user === 'string'))
+      .map((p: any) => ({
+        user: {
+          id: p.user?._id || p.user || 'unknown',
+          name: p.user?.name || p.user?.email || 'Unknown User',
+          email: p.user?.email || '',
+          avatar: p.user?.avatar,
+          role: p.user?.role || 'user',
+        },
+        permission: p.permission,
+        joinedAt: p.joinedAt,
+      })),
     createdBy: chatData.createdBy ? {
       id: chatData.createdBy._id,
       name: chatData.createdBy.name || 'Unknown',
