@@ -23,6 +23,7 @@ import { AdminDashboardScreen } from '../../features/admin';
 import { DisclosureListScreen } from '../../features/disclosure/screens/DisclosureListScreen';
 import { InsightsListScreen } from '../../features/insights/InsightsListScreen';
 import { DesktopTopNav } from '../../features/home/components/DesktopTopNav';
+import { AuthRequiredGate } from '../../shared/components/AuthRequiredGate';
 import { useWindowDimensions } from 'react-native';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -180,8 +181,17 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
               <TabIcon name="bar-chart-outline" color={color} focused={focused} />
             ),
           }}
-          component={MarketScreen}
-        />
+        >
+          {() => (
+            <AuthRequiredGate
+              title={t('auth.marketLoginTitle') || "Market Data Access"}
+              message={t('auth.marketLoginMessage') || "Sign in to view real-time market data, watchlists, and advanced charts."}
+              icon="bar-chart-outline"
+            >
+              <MarketScreen />
+            </AuthRequiredGate>
+          )}
+        </Tab.Screen>
 
 
         {/* Chat Tab */}

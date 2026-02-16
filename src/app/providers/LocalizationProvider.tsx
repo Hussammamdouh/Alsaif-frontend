@@ -49,6 +49,8 @@ const translations = {
     'auth.loginMessage': 'Please log in or create an account to access this feature.',
     'auth.login': 'Log In',
     'auth.register': 'Create Account',
+    'auth.marketLoginTitle': 'Market Data Access',
+    'auth.marketLoginMessage': 'Sign in to view real-time market data, watchlists, and advanced charts.',
 
     // Register Screen
     'register.title': 'Create Your Account',
@@ -1282,6 +1284,8 @@ const translations = {
     'auth.loginMessage': 'يرجى تسجيل الدخول أو إنشاء حساب للوصول إلى هذه الميزة.',
     'auth.login': 'تسجيل الدخول',
     'auth.register': 'إنشاء حساب',
+    'auth.marketLoginTitle': 'بيانات السوق',
+    'auth.marketLoginMessage': 'سجل الدخول لعرض بيانات السوق الحية وقوائم المراقبة والرسوم البيانية المتقدمة.',
 
     // Register Screen
     'register.title': 'أنشئ حسابك',
