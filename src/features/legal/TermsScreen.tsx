@@ -1,8 +1,3 @@
-/**
- * Terms and Conditions Screen
- * Premium design with localized legal content
- */
-
 import React from 'react';
 import {
     View,
@@ -21,6 +16,8 @@ import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../app/auth';
+import { useProfile } from '../profile/profile.hooks';
 
 const { width } = Dimensions.get('window');
 
@@ -34,6 +31,9 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
     const navigation = useNavigation<any>();
     const { width } = Dimensions.get('window');
     const isDesktop = width >= 1024;
+    const { state: authState } = useAuth();
+    const { subscription } = useProfile();
+    const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';
 
     const handleTabChange = React.useCallback((tab: SettingsTab) => {
         switch (tab) {
@@ -47,7 +47,9 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                 navigation.navigate('Main', { screen: 'Security' });
                 break;
             case 'subscription':
-                navigation.navigate('Main', { screen: 'Subscription' });
+                if (isAdmin) return;
+                const isSubscribed = subscription?.tier === 'premium' && subscription?.status === 'active';
+                navigation.navigate('Main', { screen: isSubscribed ? 'Subscription' : 'Paywall' });
                 break;
             case 'terms':
                 // Already here
@@ -56,7 +58,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                 navigation.navigate('Main', { screen: 'About' });
                 break;
         }
-    }, [navigation]);
+    }, [navigation, isAdmin, subscription]);
 
     const renderSection = (titleKey: string, contentKey: string | string[]) => {
         return (
@@ -179,6 +181,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                 activeTab="terms"
                 onTabChange={handleTabChange}
                 onLogout={() => { }}
+                showSubscription={!isAdmin}
             >
                 {content}
             </SettingsLayout>

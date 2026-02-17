@@ -22,7 +22,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImage } from '../../core/services/media/mediaService';
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { styles } from './profile.styles';
 import { useProfile } from './profile.hooks';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
@@ -56,12 +56,23 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
   onLogout
 }) => {
   const { profile, updateProfile, subscription, isLoading, loadProfile } = useProfile();
+  console.log('[ProfileScreen] Render', { hasProfile: !!profile, isLoading, role: profile?.role });
   const { language, t } = useLocalization();
   const { theme, isDark } = useTheme();
-  const { logout: authLogout } = useAuth();
+  const { logout: authLogout, state: authState } = useAuth();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const navigation = useNavigation<any>();
+
+  const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';
+
+  // Force refetch when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('[ProfileScreen] Focus - reloading profile');
+      loadProfile();
+    }, [loadProfile])
+  );
 
   /**
    * Handle logout button press with localization
@@ -160,8 +171,10 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
         navigation.navigate('Main', { screen: 'Security' });
         break;
       case 'subscription':
+        if (isAdmin) return;
         if (onNavigateToSubscription) {
-          onNavigateToSubscription(subscription?.tier === 'premium');
+          const isSubscribed = subscription?.tier === 'premium' && subscription?.status === 'active';
+          onNavigateToSubscription(isSubscribed);
         }
         break;
       case 'terms':
@@ -171,7 +184,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
         navigation.navigate('Main', { screen: 'About' });
         break;
     }
-  }, [onNavigateToSettings, onNavigateToSubscription, subscription, navigation]);
+  }, [onNavigateToSettings, onNavigateToSubscription, subscription, navigation, isAdmin]);
 
   /**
    * Format join date
@@ -262,40 +275,39 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
 
           {/* Stats Section */}
           <View style={styles.statsContainer}>
-            {profile?.role !== 'admin' && profile?.role !== 'superadmin' && (
+            <View style={[styles.statItem, {
+              backgroundColor: theme.background.secondary,
+              borderColor: theme.border.main
+            }]}>
+              <View style={[styles.statIconContainer, { backgroundColor: theme.primary.main + '10' }]}>
+                <Ionicons name="calendar-outline" size={22} color={theme.primary.main} />
+              </View>
+              <Text style={[styles.statValue, { color: theme.text.primary }]}>{joinDate}</Text>
+              <Text style={[styles.statLabel, { color: theme.text.tertiary }]}>{t('profile.memberSince')}</Text>
+            </View>
+
+            {!isAdmin && (
               <View style={[styles.statItem, {
                 backgroundColor: theme.background.secondary,
                 borderColor: theme.border.main
               }]}>
-                <View style={[styles.statIconContainer, { backgroundColor: theme.primary.main + '10' }]}>
-                  <Ionicons name="calendar-outline" size={22} color={theme.primary.main} />
+                <View style={[styles.statIconContainer, { backgroundColor: '#10B98110' }]}>
+                  <Ionicons
+                    name={subscription?.tier === 'premium' ? 'star' : 'person-outline'}
+                    size={22}
+                    color="#10B981"
+                  />
                 </View>
-                <Text style={[styles.statValue, { color: theme.text.primary }]}>{joinDate}</Text>
-                <Text style={[styles.statLabel, { color: theme.text.tertiary }]}>{t('profile.memberSince')}</Text>
+                <Text style={[styles.statValue, { color: theme.text.primary }]}>
+                  {subscription?.tier === 'premium' ? t('profile.premium') : t('profile.free')}
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.text.tertiary }]}>{t('profile.subscription')}</Text>
               </View>
             )}
-
-            <View style={[styles.statItem, {
-              backgroundColor: theme.background.secondary,
-              borderColor: theme.border.main,
-              flex: profile?.role === 'admin' || profile?.role === 'superadmin' ? 1 : undefined
-            }]}>
-              <View style={[styles.statIconContainer, { backgroundColor: '#10B98110' }]}>
-                <Ionicons
-                  name={subscription?.tier === 'premium' ? 'star' : 'person-outline'}
-                  size={22}
-                  color="#10B981"
-                />
-              </View>
-              <Text style={[styles.statValue, { color: theme.text.primary }]}>
-                {subscription?.tier === 'premium' ? t('profile.premium') : t('profile.free')}
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.text.tertiary }]}>{t('profile.subscription')}</Text>
-            </View>
           </View>
 
-          {/* Subscription Card */}
-          {subscription && (
+          {/* Subscription Card - HIDDEN for Admins */}
+          {!isAdmin && subscription && (
             <View style={[styles.subscriptionCard, {
               backgroundColor: subscription.tier === 'premium' ? theme.primary.main + '05' : theme.background.secondary,
               borderColor: subscription.tier === 'premium' ? theme.primary.main + '30' : theme.border.main
@@ -335,11 +347,11 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
                 </View>
               )}
 
-              {onNavigateToSubscription && profile?.role !== 'admin' && profile?.role !== 'superadmin' && (
+              {onNavigateToSubscription && (
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={[styles.subscriptionButton, { backgroundColor: theme.primary.main }]}
-                  onPress={() => onNavigateToSubscription(subscription.tier === 'premium')}
+                  onPress={() => onNavigateToSubscription(subscription.tier === 'premium' && subscription.status === 'active')}
                 >
                   <Text style={styles.subscriptionButtonText}>
                     {subscription.tier === 'premium'
@@ -352,7 +364,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
           )}
 
           {/* Insight Requests for Premium Users */}
-          {subscription?.tier === 'premium' && onNavigateToInsightRequests && (
+          {subscription?.tier === 'premium' && onNavigateToInsightRequests && !isAdmin && (
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: theme.text.tertiary }, isDesktop && { marginBottom: 8, marginTop: 12 }]}>
                 {t('insights.premiumInsights')}
@@ -506,6 +518,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
           activeTab="profile"
           onTabChange={handleTabChange}
           onLogout={handleLogoutPress}
+          showSubscription={!isAdmin}
         >
           {renderProfileContent()}
         </SettingsLayout>

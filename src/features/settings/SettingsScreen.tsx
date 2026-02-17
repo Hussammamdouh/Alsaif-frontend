@@ -70,12 +70,44 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
     const { cancelSubscription, isCancelling } = useSubscriptionCancellation();
     const { theme, themeMode, toggleTheme, setThemeMode } = useTheme();
     const { t, language, setLanguage } = useLocalization();
-    const { logout: authLogout } = useAuth();
+    const { logout: authLogout, state: authState } = useAuth();
     const { width } = useWindowDimensions();
     const isDesktop = width >= 1024;
     const navigation = useNavigation<any>();
 
-    // Local state for modals and inputs
+    const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';
+
+    // ... (rest of local state)
+
+    /**
+     * Handle sidebar tab change for Desktop
+     */
+    const handleTabChange = useCallback((tab: SettingsTab) => {
+      switch (tab) {
+        case 'profile':
+          navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } });
+          break;
+        case 'preferences':
+          // Already here
+          break;
+        case 'security':
+          onNavigateToSecurity();
+          break;
+        case 'subscription':
+          if (isAdmin) return;
+          if (onNavigateToSubscription) {
+            const isSubscribed = subscription?.tier === 'premium' && subscription?.status === 'active';
+            onNavigateToSubscription(isSubscribed);
+          }
+          break;
+        case 'terms':
+          navigation.navigate('Main', { screen: 'Terms' });
+          break;
+        case 'about':
+          navigation.navigate('Main', { screen: 'About' });
+          break;
+      }
+    }, [onNavigateToSecurity, onNavigateToSubscription, subscription, navigation, isAdmin]);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [showDeviceManagementModal, setShowDeviceManagementModal] = useState(false);
     const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
@@ -700,33 +732,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
       }
     }, []);
 
-    /**
-     * Handle sidebar tab change for Desktop
-     */
-    const handleTabChange = useCallback((tab: SettingsTab) => {
-      switch (tab) {
-        case 'profile':
-          navigation.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfileTab' } });
-          break;
-        case 'preferences':
-          // Already here
-          break;
-        case 'security':
-          onNavigateToSecurity();
-          break;
-        case 'subscription':
-          if (onNavigateToSubscription) {
-            onNavigateToSubscription(subscription?.tier === 'premium');
-          }
-          break;
-        case 'terms':
-          navigation.navigate('Main', { screen: 'Terms' });
-          break;
-        case 'about':
-          navigation.navigate('Main', { screen: 'About' });
-          break;
-      }
-    }, [onNavigateToSecurity, onNavigateToSubscription, subscription, navigation]);
+
 
     const renderSettingsContent = () => (
       <View style={isDesktop ? { width: '100%' } : null}>
@@ -1226,7 +1232,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
           <SettingsLayout
             activeTab="preferences"
             onTabChange={handleTabChange}
-            onLogout={authLogout}
+            onLogout={() => setShowLogoutAllDevicesModal(true)}
+            showSubscription={!isAdmin}
           >
             {renderSettingsContent()}
           </SettingsLayout>

@@ -15,6 +15,8 @@ import { Asset } from 'expo-asset';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
 import { Dimensions } from 'react-native';
+import { useAuth } from '../../app/auth';
+import { useProfile } from '../profile/profile.hooks';
 
 export const AboutScreen = () => {
     const { theme } = useTheme();
@@ -22,6 +24,9 @@ export const AboutScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
     const { width } = Dimensions.get('window');
     const isDesktop = width >= 1024;
+    const { state: authState } = useAuth();
+    const { subscription } = useProfile();
+    const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';
 
     const handleTabChange = React.useCallback((tab: SettingsTab) => {
         switch (tab) {
@@ -35,7 +40,9 @@ export const AboutScreen = () => {
                 navigation.navigate('Main', { screen: 'Security' });
                 break;
             case 'subscription':
-                navigation.navigate('Main', { screen: 'Subscription' });
+                if (isAdmin) return;
+                const isSubscribed = subscription?.tier === 'premium' && subscription?.status === 'active';
+                navigation.navigate('Main', { screen: isSubscribed ? 'Subscription' : 'Paywall' });
                 break;
             case 'terms':
                 navigation.navigate('Main', { screen: 'Terms' });
@@ -44,7 +51,7 @@ export const AboutScreen = () => {
                 // Already here
                 break;
         }
-    }, [navigation]);
+    }, [navigation, isAdmin, subscription]);
 
     // For web, we navigate to PdfViewerScreen which handles the iframe/proxy
     const openPDF = () => {
@@ -144,6 +151,7 @@ export const AboutScreen = () => {
                 activeTab="about"
                 onTabChange={handleTabChange}
                 onLogout={() => { }}
+                showSubscription={!isAdmin}
             >
                 {content}
             </SettingsLayout>

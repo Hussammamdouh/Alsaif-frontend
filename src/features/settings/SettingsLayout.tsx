@@ -12,6 +12,7 @@ interface SettingsLayoutProps {
   activeTab: SettingsTab;
   onTabChange: (tab: SettingsTab) => void;
   onLogout: () => void;
+  showSubscription?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   activeTab,
   onTabChange,
   onLogout,
+  showSubscription = true,
 }) => {
   const { theme } = useTheme();
   const { t, isRTL } = useLocalization();
@@ -37,7 +39,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
     { id: 'profile', icon: 'person-outline', label: t('profile.title') },
     { id: 'preferences', icon: 'settings-outline', label: t('common.settings') },
     { id: 'security', icon: 'lock-closed-outline', label: t('profile.security') },
-    { id: 'subscription', icon: 'card-outline', label: t('profile.subscription') },
+    ...(showSubscription ? [{ id: 'subscription', icon: 'card-outline', label: t('profile.subscription') }] : []),
     { id: 'terms', icon: 'document-text-outline', label: t('legal.terms.title') },
     { id: 'about', icon: 'information-circle-outline', label: t('about.title') },
   ];

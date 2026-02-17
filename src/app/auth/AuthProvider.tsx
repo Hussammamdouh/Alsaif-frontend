@@ -159,11 +159,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [state.isAuthenticated, state.session]);
 
-  /**
+  /*
    * Login
    */
   const login = useCallback(async (email: string, password: string) => {
     await AuthActions.login(dispatch, email, password);
+    // User requested explicit refresh after login on web to ensure fresh state
+    if (Platform.OS === 'web') {
+      console.log('[AuthProvider] Web login success - reloading page to ensure clean state');
+      window.location.reload();
+    }
   }, []);
 
   const register = useCallback(

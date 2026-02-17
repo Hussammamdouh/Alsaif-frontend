@@ -1,8 +1,3 @@
-/**
- * Profile Hooks
- * Custom hooks for profile feature
- */
-
 import { useState, useCallback, useEffect } from 'react';
 import {
   getCurrentProfile,
@@ -13,6 +8,7 @@ import {
   ProfileState,
   UpdateProfileRequest
 } from './profile.types';
+import { useAuth } from '../../app/auth';
 
 const INITIAL_STATE: ProfileState = {
   profile: null,
@@ -28,24 +24,41 @@ const INITIAL_STATE: ProfileState = {
  */
 export const useProfile = () => {
   const [state, setState] = useState<ProfileState>(INITIAL_STATE);
+  const { state: authState } = useAuth();
+  const { isAuthenticated, session } = authState;
+  const userId = session?.user?.id;
 
   /**
    * Load profile data
    */
   const loadProfile = useCallback(async () => {
+    console.log('[useProfile] loadProfile called', { isAuthenticated, userId });
+
+    if (!isAuthenticated) {
+      console.log('[useProfile] Not authenticated, resetting state');
+      setState(INITIAL_STATE);
+      return;
+    }
+
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
+      console.log('[useProfile] Fetching profile and subscription...');
 
       const [profile, subscription] = await Promise.all([
         getCurrentProfile(),
-        getSubscription().catch(() => ({
-          tier: 'free' as const,
-          status: 'active' as const,
-          startDate: null,
-          endDate: null,
-          autoRenew: false
-        }))
+        getSubscription().catch((err) => {
+          console.warn('[useProfile] getSubscription failed, using default', err);
+          return {
+            tier: 'free' as const,
+            status: 'active' as const,
+            startDate: null,
+            endDate: null,
+            autoRenew: false
+          };
+        })
       ]);
+
+      console.log('[useProfile] Data fetched successfully', { profileId: profile.id, subTier: subscription.tier });
 
       setState(prev => ({
         ...prev,
@@ -56,13 +69,15 @@ export const useProfile = () => {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to load profile';
+      console.error('[useProfile] Load failed', errorMessage);
+
       setState(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage
       }));
     }
-  }, []);
+  }, [isAuthenticated, userId]);
 
   /**
    * Update profile
@@ -93,11 +108,11 @@ export const useProfile = () => {
   }, []);
 
   /**
-   * Initial load
+   * Initial load & Auth state sync
    */
   useEffect(() => {
     loadProfile();
-  }, [loadProfile]);
+  }, [loadProfile, userId]); // Reload when user changes
 
   return {
     ...state,

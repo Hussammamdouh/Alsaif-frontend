@@ -43,6 +43,8 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     const { width } = useWindowDimensions();
     const navigation = useNavigation<any>();
     const isDesktop = width >= 1024;
+    const { state: authState } = useAuth();
+    const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';
 
     const [sessions, setSessions] = useState<ActiveSession[]>([]);
     const [loading, setLoading] = useState(true);
@@ -91,6 +93,8 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
         fetchSessions(false);
     }, [fetchSessions]);
 
+    // ... (rest of local state)
+
     /**
      * Handle sidebar tab change for Desktop
      */
@@ -106,8 +110,10 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                 // Already on security
                 break;
             case 'subscription':
-                // We don't have subscription info here, but we can try to navigate if we had it
-                // For now, just navigate to settings where subscription management usually lives
+                if (isAdmin) return;
+                // Since we don't have subscription state here, we rely on the Profile/Settings screens
+                // or we could fetch it, but usually standard users go via Profile.
+                // Best effort: navigate to Settings where expected
                 onNavigateToSettings();
                 break;
             case 'terms':
@@ -117,7 +123,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                 navigation.navigate('Main', { screen: 'About' });
                 break;
         }
-    }, [onNavigateToSettings, navigation]);
+    }, [onNavigateToSettings, navigation, isAdmin]);
 
     const handleRevokeSession = async (sessionId: string) => {
         Alert.alert(
@@ -299,6 +305,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                         activeTab="security"
                         onTabChange={handleTabChange}
                         onLogout={authLogout}
+                        showSubscription={!isAdmin}
                     >
                         <ScrollView
                             style={{ flex: 1 }}
