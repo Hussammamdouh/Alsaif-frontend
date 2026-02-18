@@ -28,6 +28,10 @@ import type {
 /**
  * Get published insights with optional filters
  */
+import { loadAuthSession } from '../../app/auth/auth.storage';
+
+// ...
+
 export const getPublishedInsights = async (
   params: InsightsQueryParams = {}
 ): Promise<InsightsListResponse> => {
@@ -41,21 +45,29 @@ export const getPublishedInsights = async (
     ...(params.insightFormat && { insightFormat: params.insightFormat }),
   };
 
-  return apiClient.get(API_ENDPOINTS.INSIGHTS_PUBLISHED, queryParams, false);
+  // Check if user is logged in to send auth token (access control)
+  const session = await loadAuthSession();
+  const requiresAuth = !!session;
+
+  return apiClient.get(API_ENDPOINTS.INSIGHTS_PUBLISHED, queryParams, requiresAuth);
 };
 
 /**
  * Get featured insights
  */
 export const getFeaturedInsights = async (): Promise<InsightsListResponse> => {
-  return apiClient.get(API_ENDPOINTS.INSIGHTS_FEATURED, {}, false);
+  const session = await loadAuthSession();
+  const requiresAuth = !!session;
+  return apiClient.get(API_ENDPOINTS.INSIGHTS_FEATURED, {}, requiresAuth);
 };
 
 /**
  * Get single insight by ID
  */
 export const getInsightById = async (id: string): Promise<InsightDetailResponse> => {
-  return apiClient.get(API_ENDPOINTS.INSIGHT_BY_ID(id), {}, false);
+  const session = await loadAuthSession();
+  const requiresAuth = !!session;
+  return apiClient.get(API_ENDPOINTS.INSIGHT_BY_ID(id), {}, requiresAuth);
 };
 
 /**

@@ -38,7 +38,7 @@ export const InsightRequestModal: React.FC<InsightRequestModalProps> = ({ isVisi
         submitRequest({ title: title.trim(), details: details.trim() });
     };
 
-    const isSubmitDisabled = !title.trim() || !details.trim() || title.length < 5 || details.length < 20;
+    const isSubmitDisabled = !title.trim() || !details.trim();
 
     return (
         <Modal
