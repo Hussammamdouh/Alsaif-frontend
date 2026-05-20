@@ -68,7 +68,7 @@ export const Input: React.FC<InputProps> = React.memo(
           {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
 
           <TextInput
-            style={[styles.input, leftIcon && styles.inputWithLeftIcon, { color: theme.text.primary }]}
+            style={[styles.input, leftIcon ? styles.inputWithLeftIcon : undefined, { color: theme.text.primary }]}
             value={value}
             onChangeText={onChangeText}
             onFocus={handleFocus}

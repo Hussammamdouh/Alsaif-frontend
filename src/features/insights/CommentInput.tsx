@@ -14,16 +14,17 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { insightsStyles as styles } from './insights.styles';
+import { createInsightsStyles } from './insights.styles';
 import { COLORS, LIMITS } from './insights.constants';
-import { validateComment } from './insights.utils';
-import type { Comment } from './insights.types';
+import { validateInsightComment } from './insights.utils';
+import type { InsightComment } from './insights.types';
+import { useTheme } from '../../app/providers/ThemeProvider';
 
 interface CommentInputProps {
   insightId: string;
   placeholder?: string;
-  replyTo?: Comment | null;
-  editComment?: Comment | null;
+  replyTo?: InsightComment | null;
+  editComment?: InsightComment | null;
   onSubmit: (content: string) => Promise<void>;
   onCancel?: () => void;
   autoFocus?: boolean;
@@ -38,6 +39,9 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   onCancel,
   autoFocus = false,
 }) => {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => createInsightsStyles(theme), [theme]);
+
   const [content, setContent] = useState(editComment?.content || '');
   const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -63,7 +67,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   };
 
   const handleSubmit = async () => {
-    const validation = validateComment(content);
+    const validation = validateInsightComment(content);
     if (!validation.valid) {
       Alert.alert('Invalid Comment', validation.error);
       return;
@@ -173,7 +177,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.commentInputActions}>
+          <View style={styles.commentActions}>
             {/* Cancel Button (for edit mode) */}
             {(isEditing || isReplying) && (
               <TouchableOpacity
@@ -187,7 +191,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
             {/* Send Button */}
             <TouchableOpacity
               style={[
-                styles.sendButton,
+                styles.commentSendButton,
                 (!isValid || submitting) && styles.sendButtonDisabled,
               ]}
               onPress={handleSubmit}

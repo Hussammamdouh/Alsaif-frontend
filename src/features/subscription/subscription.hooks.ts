@@ -389,10 +389,8 @@ export const useSystemSettings = () => {
     try {
       setLoading(true);
       setError(null);
-      // This is a superadmin endpoint, but we need a public or general authenticated one for users to see status
-      // Actually, let's assume we made getSystemSettings accessible or we need a public endpoint.
-      // For now, I'll use the superadmin one but typically you'd want a common/config endpoint.
-      const response = await apiClient.get('/superadmin/system/settings') as any;
+      // Fetch system settings from the public/authenticated subscription endpoint
+      const response = await apiClient.get(API_ENDPOINTS.SUBSCRIPTION_SYSTEM_SETTINGS) as any;
 
       if (response.success && response.data) {
         setSettings(response.data);
@@ -412,7 +410,7 @@ export const useSystemSettings = () => {
   const toggleSubscriptionPause = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.post('/superadmin/subscriptions/pause', {}) as any;
+      const response = await apiClient.post('/api/superadmin/subscriptions/pause', {}) as any;
       if (response.success && response.data) {
         setSettings(response.data);
       } else {
@@ -428,7 +426,7 @@ export const useSystemSettings = () => {
   const toggleNewSubscriptions = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.post('/superadmin/subscriptions/toggle-new', {}) as any;
+      const response = await apiClient.post('/api/superadmin/subscriptions/toggle-new', {}) as any;
       if (response.success && response.data) {
         setSettings(response.data);
       } else {

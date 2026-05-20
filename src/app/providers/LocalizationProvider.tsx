@@ -490,6 +490,8 @@ const translations = {
     'insights.reportOther': 'Other',
     'insights.premiumLoginRequired': 'Premium Insights',
     'insights.premiumLoginMessage': 'Log in or subscribe to access our exclusive market analysis and premium insights.',
+    'insights.confirmDeleteComment': 'Are you sure you want to delete this comment? This action cannot be undone.',
+    'insights.loadError': 'Failed to load insight. Please try again.',
 
     // Paywall Screen
     'paywall.badge': 'ALSAIF PRO',
@@ -1726,6 +1728,8 @@ const translations = {
     'insights.reportOther': 'سبب آخر',
     'insights.premiumLoginRequired': 'توصية مميزة',
     'insights.premiumLoginMessage': 'سجل الدخول أو اشترك للوصول إلى تحليلات السوق الحصرية والتوصية المميزة لدينا.',
+    'insights.confirmDeleteComment': 'هل أنت متأكد من رغبتك في حذف هذا التعليق؟ لا يمكن التراجع عن هذا الإجراء.',
+    'insights.loadError': 'فشل تحميل التوصية. يرجى المحاولة مرة أخرى.',
 
     // Paywall Screen
     'paywall.badge': 'السيف برو',

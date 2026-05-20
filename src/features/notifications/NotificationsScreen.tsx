@@ -50,19 +50,54 @@ const { width } = Dimensions.get('window');
 const isDesktop = width > 768;
 
 /**
- * Cleanse JSON body if it's stringified
+ * Strips HTML tags and decodes common HTML entities to return human-readable plain text.
+ */
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  
+  let text = html;
+  
+  // Replace HTML breaks/block-elements with newlines or spaces
+  text = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/<li>/gi, '• ')
+    .replace(/<\/li>/gi, '\n');
+    
+  // Remove all HTML tags
+  text = text.replace(/<[^>]*>/g, '');
+  
+  // Decode common HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'");
+    
+  // Remove duplicate/excessive newlines and whitespace
+  return text.replace(/\n\s*\n/g, '\n').trim();
+};
+
+/**
+ * Cleanse JSON body if it's stringified, and strip any HTML tags.
  */
 const cleanseBody = (body: string): string => {
   if (!body) return '';
+  let result = body;
   if (body.trim().startsWith('{')) {
     try {
       const parsed = JSON.parse(body);
-      return parsed.body || parsed.title || body;
+      result = parsed.body || parsed.title || body;
     } catch (e) {
-      return body;
+      result = body;
     }
   }
-  return body;
+  return stripHtml(result);
 };
 
 const NotificationsScreen: React.FC = () => {
@@ -248,7 +283,7 @@ const NotificationsScreen: React.FC = () => {
                   ]}
                   numberOfLines={1}
                 >
-                  {t(title)}
+                  {t(stripHtml(title))}
                 </Text>
                 {!isDesktop && <Text style={styles.notificationTime}>{time}</Text>}
               </View>

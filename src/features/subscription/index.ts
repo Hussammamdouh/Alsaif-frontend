@@ -31,12 +31,10 @@ export type {
   SubscriptionPlan,
   SubscriptionPlanFeature,
   UserSubscription,
-  SubscriptionHistoryEntry,
+  SubscriptionHistory,
   CheckoutSession,
-  SubscriptionApiResponse,
-  SubscriptionPlansApiResponse,
-  SubscriptionHistoryApiResponse,
-  CheckoutApiResponse,
+  PromoValidation,
+  SubscriptionState,
 } from './subscription.types';
 
 // Constants (select exports)
@@ -53,12 +51,13 @@ export {
 // Utilities
 export {
   mapSubscriptionResponse,
-  mapSubscriptionPlanResponse,
-  mapSubscriptionHistoryResponse,
+  mapPlanResponse,
+  mapHistoryResponse,
   mapCheckoutResponse,
   formatCurrency,
   formatDate,
   formatRelativeTime,
   calculateDiscountedPrice,
-  calculateEndDate,
+  getTotalPrice,
+  mapPromoValidationResponse,
 } from './subscription.mapper';

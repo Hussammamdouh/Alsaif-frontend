@@ -9,22 +9,23 @@ export { PremiumInsightsListScreen } from './PremiumInsightsListScreen';
 export { InsightDetailsScreen } from './InsightDetailsScreen';
 
 // Components
-export { CommentThread } from './CommentThread';
-export { CommentItem } from './CommentItem';
+export { InsightCommentThread as CommentThread } from './CommentThread';
+export { InsightCommentItem as CommentItem } from './CommentItem';
 export { CommentInput } from './CommentInput';
 
 // Hooks
 export {
   useInsights,
   useInsightDetail,
-  useComments,
+  useInsightComments,
   useReplies,
-  useCreateComment,
-  useReplyToComment,
-  useLikeComment,
-  useDeleteComment,
-  useUpdateComment,
-  useFlagComment,
+  useCreateInsightComment,
+  useReplyToInsightComment,
+  useLikeInsightComment,
+  useDeleteInsightComment,
+  useUpdateInsightComment,
+  useFlagInsightComment,
+  useReport,
 } from './insights.hooks';
 
 // Types
@@ -35,28 +36,26 @@ export type {
   Insight,
   InsightAuthor,
   InsightListItem,
-  Comment,
+  InsightComment,
   CommentAuthor,
-  CreateCommentPayload,
-  UpdateCommentPayload,
-  ReplyToCommentPayload,
-  FlagCommentPayload,
+  CreateInsightCommentPayload,
+  UpdateInsightCommentPayload,
+  ReplyToInsightCommentPayload,
+  FlagInsightCommentPayload,
   InsightsListResponse,
   InsightDetailResponse,
-  CommentsResponse,
+  InsightCommentsResponse,
   RepliesResponse,
-  CreateCommentResponse,
+  CreateInsightCommentResponse,
   LikeResponse,
-  InsightFilter,
   InsightSortBy,
   InsightsQueryParams,
-  CommentsQueryParams,
+  InsightCommentsQueryParams,
 } from './insights.types';
 
 // Constants
 export {
   CATEGORY_CONFIG,
-  FILTER_CONFIG,
   SORT_CONFIG,
   COLORS as INSIGHTS_COLORS,
   ICONS as INSIGHTS_ICONS,
@@ -79,8 +78,8 @@ export {
   stripHtml,
   generateExcerpt,
   getTypeBadgeColor,
-  validateComment,
-  canReplyToComment,
+  validateInsightComment,
+  canReplyToInsightComment,
   sortInsights,
   filterInsightsByType,
   searchInsights,
@@ -91,4 +90,4 @@ export {
 } from './insights.utils';
 
 // Styles
-export { insightsStyles } from './insights.styles';
+export { createInsightsStyles } from './insights.styles';

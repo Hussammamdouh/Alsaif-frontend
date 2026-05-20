@@ -55,6 +55,8 @@ export type MainStackParamList = {
   Notifications: { category?: string };
   PdfViewer: { url: string | any; title: string };
   DisclosureDetails: { disclosureId: string; disclosure?: any };
+  NewsDetail: { newsId: string; title: string };
+  NewsList: undefined;
 
   // User Subscription Screens
   Subscription: undefined;

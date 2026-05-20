@@ -25,6 +25,8 @@ import {
   InsightDetailsScreen,
 } from '../../features/insights';
 import { PdfViewerScreen, DisclosureDetailsScreen } from '../../features/disclosure';
+import { NewsDetailScreen } from '../../features/news/screens/NewsDetailScreen';
+import { NewsListScreen } from '../../features/news/screens/NewsListScreen';
 import { UserRequestHistoryScreen } from '../../features/insights/requests/UserRequestHistoryScreen';
 import {
   AdminDashboardScreen,
@@ -190,6 +192,8 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
       <MainStack.Screen name="InsightDetail" component={InsightDetailsScreen} />
       <MainStack.Screen name="PdfViewer" component={PdfViewerScreen} />
       <MainStack.Screen name="DisclosureDetails" component={DisclosureDetailsScreen} />
+      <MainStack.Screen name="NewsDetail" component={NewsDetailScreen} />
+      <MainStack.Screen name="NewsList" component={NewsListScreen} />
       <MainStack.Screen name="InsightRequests" component={UserRequestHistoryScreen} />
       <MainStack.Screen name="Notifications" component={NotificationsScreen} />
 
