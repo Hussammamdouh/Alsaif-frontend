@@ -651,11 +651,11 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
   },
   promoSection: {
     marginTop: 80,
-    paddingHorizontal: 24,
+    paddingHorizontal: isDesktop ? 24 : (width < 400 ? 12 : 20),
   },
   promoCard: {
     backgroundColor: theme.background.secondary,
-    padding: 32,
+    padding: isDesktop ? 32 : (width < 400 ? 16 : 24),
     borderRadius: 24,
     borderWidth: 1,
     borderColor: theme.border.main,
@@ -675,7 +675,7 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
     height: 56,
     backgroundColor: theme.background.primary,
     borderRadius: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: width < 400 ? 12 : 20,
     fontSize: 16,
     fontWeight: '600',
     color: theme.text.primary,
@@ -683,7 +683,7 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
     borderColor: theme.border.main,
   },
   promoApplyBtn: {
-    paddingHorizontal: 24,
+    paddingHorizontal: width < 400 ? 16 : 24,
     height: 56,
     backgroundColor: theme.primary.main + '15',
     borderRadius: 12,

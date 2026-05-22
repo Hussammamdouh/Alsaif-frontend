@@ -14,6 +14,7 @@ import {
   Alert,
   RefreshControl,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -474,6 +475,42 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
                   </View>
                   <Text style={[styles.menuLabel, { color: theme.text.primary }]}>
                     {t('about.title')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />
+              </TouchableOpacity>
+
+              <View style={[styles.divider, { backgroundColor: theme.border.main }]} />
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('https://www.instagram.com/alsaifdata?igsh=MXZycWgzYmludmEzZA==')}
+              >
+                <View style={styles.menuItemLeft}>
+                  <View style={[styles.menuIconContainer, { backgroundColor: '#E1306C10' }]}>
+                    <Ionicons name="logo-instagram" size={22} color="#E1306C" />
+                  </View>
+                  <Text style={[styles.menuLabel, { color: theme.text.primary }]}>
+                    {t('profile.instagram')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />
+              </TouchableOpacity>
+
+              <View style={[styles.divider, { backgroundColor: theme.border.main }]} />
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('https://x.com/alsaifanalysis?s=11')}
+              >
+                <View style={styles.menuItemLeft}>
+                  <View style={[styles.menuIconContainer, { backgroundColor: '#1DA1F210' }]}>
+                    <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
+                  </View>
+                  <Text style={[styles.menuLabel, { color: theme.text.primary }]}>
+                    {t('profile.x')}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />

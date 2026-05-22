@@ -803,7 +803,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                   >
                     <View style={styles.settingLeft}>
                       <Icon name="shield-checkmark-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
-                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>Security & Sessions</Text>
+                      <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.securitySessions')}</Text>
                     </View>
                     <View style={styles.settingRight}>
                       <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
