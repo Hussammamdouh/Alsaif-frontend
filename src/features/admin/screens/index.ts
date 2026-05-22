@@ -9,6 +9,7 @@ export { AdminInsightsScreen } from './AdminInsightsScreen';
 export { AdminSubscriptionsScreen } from './AdminSubscriptionsScreen';
 export { AdminBroadcastScreen } from './AdminBroadcastScreen';
 export { AdminAuditLogsScreen } from './AdminAuditLogsScreen';
+export { AdminSystemControlScreen } from './AdminSystemControlScreen';
 
 // New feature screens
 export { AdminAnalyticsScreen } from './AdminAnalyticsScreen';

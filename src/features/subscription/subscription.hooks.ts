@@ -407,10 +407,12 @@ export const useSystemSettings = () => {
     fetchSettings();
   }, [fetchSettings]);
 
-  const toggleSubscriptionPause = async () => {
+  const toggleSubscriptionPause = async (pausedState?: boolean) => {
+    if (!settings && pausedState === undefined) return;
     try {
       setLoading(true);
-      const response = await apiClient.post('/api/superadmin/subscriptions/pause', {}) as any;
+      const paused = pausedState !== undefined ? pausedState : !settings?.isSubscriptionsPaused;
+      const response = await apiClient.post('/api/superadmin/subscriptions/pause', { paused }) as any;
       if (response.success && response.data) {
         setSettings(response.data);
       } else {
@@ -423,10 +425,13 @@ export const useSystemSettings = () => {
     }
   };
 
-  const toggleNewSubscriptions = async () => {
+  const toggleNewSubscriptions = async (enabledState?: boolean, customMessage?: string) => {
+    if (!settings && enabledState === undefined) return;
     try {
       setLoading(true);
-      const response = await apiClient.post('/api/superadmin/subscriptions/toggle-new', {}) as any;
+      const enabled = enabledState !== undefined ? enabledState : !settings?.isNewSubscriptionsEnabled;
+      const message = customMessage || settings?.subscriptionDisabledMessage || 'New subscriptions are temporarily disabled';
+      const response = await apiClient.post('/api/superadmin/subscriptions/toggle-new', { enabled, message }) as any;
       if (response.success && response.data) {
         setSettings(response.data);
       } else {

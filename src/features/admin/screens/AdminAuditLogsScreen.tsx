@@ -92,7 +92,9 @@ export const AdminAuditLogsScreen: React.FC = () => {
   };
 
   const renderLogCard = (log: AuditLog) => {
-    const severityColor = SEVERITY_COLORS[log.severity];
+    const severity = log.severity || 'info';
+    const action = log.action || 'UNKNOWN';
+    const severityColor = SEVERITY_COLORS[severity] || theme.text.tertiary;
     const roleColor = log.actor?.role ? ROLE_COLORS[log.actor.role] : theme.text.tertiary;
 
     return (
@@ -112,7 +114,7 @@ export const AdminAuditLogsScreen: React.FC = () => {
             ]}
           >
             <Ionicons
-              name={getSeverityIcon(log.severity) as any}
+              name={getSeverityIcon(severity) as any}
               size={20}
               color={severityColor}
             />
@@ -120,18 +122,18 @@ export const AdminAuditLogsScreen: React.FC = () => {
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 4 }}>
               <Ionicons
-                name={getActionIcon(log.action) as any}
+                name={getActionIcon(action) as any}
                 size={16}
                 color={theme.text.primary}
                 style={{ [isRTL ? 'marginLeft' : 'marginRight']: 6 }}
               />
-              <Text style={styles.cardTitle}>{log.action.replace(/_/g, ' ')}</Text>
+              <Text style={styles.cardTitle}>{action.replace(/_/g, ' ')}</Text>
             </View>
             <Text style={styles.cardSubtitle}>{formatDate(log.timestamp)}</Text>
           </View>
           <View style={[styles.badge, { backgroundColor: severityColor + '20' }]}>
             <Text style={[styles.badgeText, { color: severityColor }]}>
-              {log.severity.toUpperCase()}
+              {severity.toUpperCase()}
             </Text>
           </View>
         </View>
@@ -313,12 +315,12 @@ export const AdminAuditLogsScreen: React.FC = () => {
       </ScrollView>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        {isLoading && logs.length === 0 ? (
+        {isLoading && (!logs || logs.length === 0) ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.primary.main} />
             <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
-        ) : error && logs.length === 0 ? (
+        ) : error && (!logs || logs.length === 0) ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle" size={64} color={theme.error.main} />
             <Text style={styles.errorTitle}>{t('common.error')}</Text>
@@ -332,7 +334,7 @@ export const AdminAuditLogsScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
-        ) : logs.length === 0 ? (
+        ) : !logs || logs.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons
               name="document-text-outline"
@@ -340,9 +342,9 @@ export const AdminAuditLogsScreen: React.FC = () => {
               color={theme.text.tertiary}
               style={styles.emptyIcon}
             />
-            <Text style={styles.emptyTitle}>No Audit Logs Found</Text>
+            <Text style={styles.emptyTitle}>{t('admin.noAuditLogs')}</Text>
             <Text style={styles.emptyMessage}>
-              No logs match your current filters
+              {t('admin.noAuditLogsMessage')}
             </Text>
           </View>
         ) : (

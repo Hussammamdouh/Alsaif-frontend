@@ -25,6 +25,7 @@ import { useAdminDashboard } from '../hooks';
 import { useSystemSettings } from '../../subscription/subscription.hooks';
 import { DASHBOARD_SECTIONS, DASHBOARD_SECTION_TRANSLATIONS, CHART_COLORS } from '../admin.constants';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { useUser } from '../../../app/auth';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ResponsiveContainer } from '../../../shared/components';
 import { AdminSidebar } from '../components/AdminSidebar';
@@ -37,6 +38,8 @@ export const AdminDashboardScreen: React.FC = () => {
   const { settings, toggleSubscriptionPause, toggleNewSubscriptions } = useSystemSettings();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
+  const user = useUser();
+  const isSuper = user?.role === 'superadmin';
 
   const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
 
@@ -311,7 +314,7 @@ export const AdminDashboardScreen: React.FC = () => {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('admin.allSections')}</Text>
           </View>
-          {DASHBOARD_SECTIONS.map(renderSectionCard)}
+          {DASHBOARD_SECTIONS.filter(section => !(section as any).superadminOnly || isSuper).map(renderSectionCard)}
         </>
       )}
     </ScrollView>

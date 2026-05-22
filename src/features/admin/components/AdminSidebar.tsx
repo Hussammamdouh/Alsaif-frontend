@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { useUser } from '../../../app/auth';
 import { DASHBOARD_SECTIONS, DASHBOARD_SECTION_TRANSLATIONS } from '../admin.constants';
 import { createAdminStyles } from '../admin.styles';
 
@@ -12,6 +13,8 @@ export const AdminSidebar: React.FC = () => {
     const { theme } = useTheme();
     const { t, isRTL } = useLocalization();
     const styles = createAdminStyles(theme, isRTL);
+    const user = useUser();
+    const isSuper = user?.role === 'superadmin';
 
     return (
         <View style={styles.desktopSidebar}>
@@ -20,7 +23,7 @@ export const AdminSidebar: React.FC = () => {
                 <Text style={[styles.cardSubtitle, { color: theme.primary.main, fontWeight: '700' }]}>ADMIN PANEL</Text>
             </View>
 
-            {DASHBOARD_SECTIONS.map((section) => {
+            {DASHBOARD_SECTIONS.filter(section => !(section as any).superadminOnly || isSuper).map((section) => {
                 const translations = DASHBOARD_SECTION_TRANSLATIONS[section.id as keyof typeof DASHBOARD_SECTION_TRANSLATIONS];
                 const isActive = route.name === section.route;
 

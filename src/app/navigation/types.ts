@@ -90,6 +90,7 @@ export type MainStackParamList = {
   AdminBulkActions: undefined;
   AdminBanners: undefined;
   AdminGroupChat: undefined;
+  AdminSystemControl: undefined;
 };
 
 declare global {

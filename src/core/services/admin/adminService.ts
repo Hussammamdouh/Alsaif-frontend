@@ -457,18 +457,90 @@ export const getAuditLogs = async (
   if (filters?.startDate) params.append('startDate', filters.startDate);
   if (filters?.endDate) params.append('endDate', filters.endDate);
 
-  const response = await apiClient.get<ApiResponse<{ logs: AuditLog[]; pagination: any }>>(
+  const response = await apiClient.get<{ success: boolean; data: AuditLog[]; pagination: any; message?: string }>(
     `/api/superadmin/audit-logs?${params.toString()}`
   );
 
-  if (!response.success || !response.data) {
+  if (!response.success) {
     throw new Error(response.message || 'Failed to fetch audit logs');
   }
 
   return {
-    data: response.data.logs,
-    pagination: response.data.pagination,
+    data: response.data || [],
+    pagination: response.pagination,
   };
+};
+
+// ==================== SUPERADMIN SYSTEM CONTROL ====================
+
+export const getSystemStats = async (): Promise<any> => {
+  const response = await apiClient.get<ApiResponse<any>>(
+    '/api/superadmin/system/stats'
+  );
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to fetch system stats');
+  }
+  return response.data;
+};
+
+export const getCollectionAnalysis = async (): Promise<any> => {
+  const response = await apiClient.get<ApiResponse<any>>(
+    '/api/superadmin/database/analysis'
+  );
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to fetch database collection analysis');
+  }
+  return response.data;
+};
+
+export const performDatabaseMaintenance = async (): Promise<any> => {
+  const response = await apiClient.post<ApiResponse<any>>(
+    '/api/superadmin/database/maintenance'
+  );
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to perform database maintenance');
+  }
+  return response.data;
+};
+
+export const clearFailedJobs = async (): Promise<any> => {
+  const response = await apiClient.post<ApiResponse<any>>(
+    '/api/superadmin/jobs/clear-failed'
+  );
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to clear failed jobs');
+  }
+  return response.data;
+};
+
+export const retryFailedJobs = async (): Promise<any> => {
+  const response = await apiClient.post<ApiResponse<any>>(
+    '/api/superadmin/jobs/retry-failed'
+  );
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to retry failed jobs');
+  }
+  return response.data;
+};
+
+export const resetPerformanceMetrics = async (): Promise<any> => {
+  const response = await apiClient.post<ApiResponse<any>>(
+    '/api/superadmin/performance/reset'
+  );
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to reset performance metrics');
+  }
+  return response.data;
+};
+
+export const getSystemSettings = async (): Promise<any> => {
+  const response = await apiClient.get<ApiResponse<any>>(
+    '/api/superadmin/system/settings'
+  );
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to fetch system settings');
+  }
+  return response.data;
 };
 
 export default {
@@ -500,4 +572,13 @@ export default {
 
   // Audit Logs
   getAuditLogs,
+
+  // Superadmin System Control
+  getSystemStats,
+  getCollectionAnalysis,
+  performDatabaseMaintenance,
+  clearFailedJobs,
+  retryFailedJobs,
+  resetPerformanceMetrics,
+  getSystemSettings,
 };

@@ -41,6 +41,7 @@ import {
   AdminDiscountCodesScreen,
   AdminBannersScreen,
   AdminGroupChatScreen,
+  AdminSystemControlScreen,
 } from '../../features/admin';
 import { TermsScreen } from '../../features/legal/TermsScreen';
 import { AboutScreen } from '../../features/about';
@@ -333,6 +334,13 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
           <AdminGuard>
             <AdminGroupChatScreen onNavigateBack={() => adminNav.goBack()} />
           </AdminGuard>
+        )}
+      </MainStack.Screen>
+      <MainStack.Screen name="AdminSystemControl">
+        {() => (
+          <SuperadminGuard>
+            <AdminSystemControlScreen />
+          </SuperadminGuard>
         )}
       </MainStack.Screen>
     </MainStack.Navigator>

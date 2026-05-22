@@ -20,3 +20,4 @@ export { useNotificationTemplates } from './useNotificationTemplates';
 export { useBulkActions } from './useBulkActions';
 export { useFilters } from './useFilters';
 export { useBanners } from './useBanners';
+export { useAdminSystemControl } from './useAdminSystemControl';

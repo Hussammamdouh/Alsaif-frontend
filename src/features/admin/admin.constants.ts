@@ -277,6 +277,7 @@ export const ADMIN_ROUTES = {
   SUBSCRIPTIONS: 'AdminSubscriptions',
   BROADCAST: 'AdminBroadcast',
   AUDIT_LOGS: 'AdminAuditLogs',
+  SYSTEM_CONTROL: 'AdminSystemControl',
   // New Admin Enhancement Routes
   ANALYTICS: 'AdminAnalytics',
   MODERATION: 'AdminModeration',
@@ -340,6 +341,14 @@ export const DASHBOARD_SECTION_TRANSLATIONS = {
   banners: {
     titleKey: 'admin.bannerManagement',
     descriptionKey: 'admin.manageHomeBanners',
+  },
+  system_control: {
+    titleKey: 'admin.systemControl',
+    descriptionKey: 'admin.systemControlOverview',
+  },
+  audit_logs: {
+    titleKey: 'admin.auditLogs',
+    descriptionKey: 'admin.auditLogsOverview',
   },
 } as const;
 
@@ -416,5 +425,23 @@ export const DASHBOARD_SECTIONS = [
     route: ADMIN_ROUTES.BANNERS,
     description: 'Manage home screen carousel banners and partner ads',
     color: '#ff9f0a',
+  },
+  {
+    id: 'system_control',
+    title: 'System Control',
+    icon: 'settings',
+    route: ADMIN_ROUTES.SYSTEM_CONTROL,
+    description: 'Monitor stats, database, queue, overrides',
+    color: '#ff3b30',
+    superadminOnly: true,
+  },
+  {
+    id: 'audit_logs',
+    title: 'Audit Logs',
+    icon: 'list',
+    route: ADMIN_ROUTES.AUDIT_LOGS,
+    description: 'View system audits and logs',
+    color: '#8e8e93',
+    superadminOnly: true,
   },
 ];

@@ -6,7 +6,9 @@
 import { StyleSheet, I18nManager } from 'react-native';
 import { ColorPalette } from '../../core/theme/colors';
 
-export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nManager.isRTL) => StyleSheet.create({
+export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nManager.isRTL) => {
+  const isManualRTL = isRTL !== I18nManager.isRTL;
+  return StyleSheet.create({
   // Container
   container: {
     flex: 1,
@@ -14,7 +16,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
   },
   desktopContentWrapper: {
     flex: 1,
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     backgroundColor: theme.background.primary,
   },
   safeArea: {
@@ -25,7 +27,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
   // Header
   header: {
     height: 110,
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 45,
@@ -42,7 +44,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     paddingTop: 45,
   },
   sidebarItem: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 20,
@@ -67,7 +69,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     backgroundColor: theme.background.primary,
   },
   headerLeft: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
   },
   backButton: {
@@ -81,7 +83,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     textAlign: isRTL ? 'right' : 'left',
   },
   headerRight: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 12,
   },
@@ -108,7 +110,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     borderBottomColor: theme.border.main,
   },
   searchBar: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.tertiary,
     borderRadius: 10,
@@ -138,7 +140,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     borderBottomColor: theme.border.main,
   },
   filterTabsContent: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     gap: 8,
     flexGrow: 1,
     justifyContent: 'flex-start',
@@ -190,7 +192,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     padding: 16,
   },
   cardHeader: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
@@ -210,7 +212,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
 
   // List Items
   listItem: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     backgroundColor: theme.background.secondary,
     padding: 16,
@@ -233,7 +235,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     textAlign: isRTL ? 'right' : 'left',
   },
   listItemRight: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     gap: 12,
   },
@@ -248,7 +250,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
 
   // Dashboard Specific
   dashboardGrid: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 16,
     marginBottom: 24,
@@ -260,7 +262,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     maxWidth: 350,
   },
   dashboardStatCard: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderRadius: 16,
@@ -302,7 +304,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
 
   // Quick Actions
   quickActionsGrid: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     flexWrap: 'wrap',
     gap: 12,
     marginBottom: 24,
@@ -336,19 +338,19 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     textAlign: 'center',
   },
   settingRow: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   settingLeft: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     flex: 1,
   },
 
   // Section
   sectionHeader: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
@@ -493,7 +495,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
 
   // Stats
   statRow: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -558,14 +560,15 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     textAlign: isRTL ? 'right' : 'left',
   },
   modalButtons: {
-    flexDirection: isRTL ? 'row-reverse' : 'row',
+    flexDirection: isManualRTL ? 'row-reverse' : 'row',
     gap: 12,
     marginTop: 24,
   },
   modalButton: {
     flex: 1,
   },
-});
+  });
+};
 
 // Export for backward compatibility (will be deprecated)
 export const adminStyles = createAdminStyles({
