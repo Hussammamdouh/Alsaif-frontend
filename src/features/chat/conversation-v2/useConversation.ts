@@ -91,14 +91,16 @@ export const useConversation = (conversationId: string) => {
    * Actual message will be received via WebSocket event
    */
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, type: string = 'text', fileData?: any) => {
       try {
         setState(prev => ({ ...prev, isSending: true, error: null }));
 
         await conversationService.sendMessage(
           conversationId,
           content,
-          state.replyingTo?.id
+          state.replyingTo?.id,
+          type,
+          fileData
         );
 
         setState(prev => ({

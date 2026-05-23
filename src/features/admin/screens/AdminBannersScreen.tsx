@@ -19,11 +19,14 @@ import {
     Switch,
     ActivityIndicator,
     Image,
-    useWindowDimensions
+    useWindowDimensions,
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadImage } from '../../../core/services/media/mediaService';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { createAdminStyles } from '../admin.styles';
 import { useBanners } from '../hooks';
@@ -58,6 +61,63 @@ export const AdminBannersScreen: React.FC = () => {
     const [formIsActive, setFormIsActive] = useState(true);
     const [formDisplayDuration, setFormDisplayDuration] = useState('');
     const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+    const handlePickImage = useCallback(async () => {
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'We need camera roll permissions to upload banner images.');
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const selectedImage = result.assets[0];
+
+                // Validate size (max 5MB)
+                const MAX_FILE_SIZE = 5 * 1024 * 1024;
+                let fileSize = selectedImage.fileSize;
+                if (!fileSize && selectedImage.uri) {
+                    try {
+                        const response = await fetch(selectedImage.uri);
+                        const blob = await response.blob();
+                        fileSize = blob.size;
+                    } catch (e) {
+                        console.log('Error getting size from blob:', e);
+                    }
+                }
+
+                if (fileSize && fileSize > MAX_FILE_SIZE) {
+                    Alert.alert(t('common.error'), t('media.fileTooLarge'));
+                    return;
+                }
+
+                setIsUploadingImage(true);
+                try {
+                    const imageUrl = await uploadImage(
+                        selectedImage.uri,
+                        'banner.jpg',
+                        'image/jpeg'
+                    );
+                    setFormImageUrl(imageUrl);
+                    Alert.alert(t('common.success'), t('media.uploadSuccess'));
+                } catch (uploadErr: any) {
+                    console.error('[AdminBannersScreen] Banner upload error:', uploadErr);
+                    Alert.alert(t('common.error'), uploadErr.message || t('media.uploadFailed'));
+                } finally {
+                    setIsUploadingImage(false);
+                }
+            }
+        } catch (pickerErr) {
+            console.error('[AdminBannersScreen] Image picker error:', pickerErr);
+        }
+    }, [t]);
 
     const {
         banners,
@@ -377,14 +437,35 @@ export const AdminBannersScreen: React.FC = () => {
 
                                 <View style={localStyles.formGroup}>
                                     <Text style={localStyles.label}>{t('admin.bannerImageUrl')} *</Text>
-                                    <TextInput
-                                        style={localStyles.input}
-                                        value={formImageUrl}
-                                        onChangeText={setFormImageUrl}
-                                        placeholder="https://example.com/image.jpg"
-                                        placeholderTextColor={theme.text.tertiary}
-                                        autoCapitalize="none"
-                                    />
+                                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                                        <TextInput
+                                            style={[localStyles.input, { flex: 1, marginBottom: 0 }]}
+                                            value={formImageUrl}
+                                            onChangeText={setFormImageUrl}
+                                            placeholder="https://example.com/image.jpg"
+                                            placeholderTextColor={theme.text.tertiary}
+                                            autoCapitalize="none"
+                                        />
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: theme.primary.main,
+                                                width: 44,
+                                                height: 44,
+                                                borderRadius: 8,
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                [isRTL ? 'marginRight' : 'marginLeft']: 10,
+                                            }}
+                                            onPress={handlePickImage}
+                                            disabled={isUploadingImage}
+                                        >
+                                            {isUploadingImage ? (
+                                                <ActivityIndicator size="small" color={theme.primary.contrast} />
+                                            ) : (
+                                                <Ionicons name="camera-outline" size={20} color={theme.primary.contrast} />
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
 
                                 <View style={localStyles.formGroup}>

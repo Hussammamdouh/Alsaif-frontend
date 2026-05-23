@@ -313,6 +313,13 @@ const translations = {
     'common.premium': 'PREMIUM',
     'common.free': 'FREE',
 
+    // Media
+    'media.fileTooLarge': 'File is too large. Maximum size is 5MB.',
+    'media.uploadFailed': 'Failed to upload image. Please try again.',
+    'media.uploadSuccess': 'Image uploaded successfully.',
+    'media.selectImage': 'Select Image',
+    'media.uploadImage': 'Upload Image',
+
     // Time
     'time.justNow': 'Just now',
     'time.minutesAgo': '{count}m ago',
@@ -1606,6 +1613,13 @@ const translations = {
     'common.viewAll': 'عرض الكل',
     'common.premium': 'مميز',
     'common.free': 'مجاني',
+
+    // Media
+    'media.fileTooLarge': 'الملف كبير جداً. الحد الأقصى للحجم هو 5 ميجابايت.',
+    'media.uploadFailed': 'فشل تحميل الصورة. يرجى المحاولة مرة أخرى.',
+    'media.uploadSuccess': 'تم تحميل الصورة بنجاح.',
+    'media.selectImage': 'اختر صورة',
+    'media.uploadImage': 'تحميل الصورة',
 
     // Time
     'time.justNow': 'الآن',

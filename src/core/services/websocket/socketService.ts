@@ -220,8 +220,8 @@ class SocketService {
   /**
    * Send a message
    */
-  sendMessage(chatId: string, content: string, replyTo?: string): void {
-    this.emit(SocketEvent.SEND_MESSAGE, { chatId, content, replyTo });
+  sendMessage(chatId: string, content: string, replyTo?: string, type: string = 'text', fileData?: any): void {
+    this.emit(SocketEvent.SEND_MESSAGE, { chatId, content, replyTo, type, fileData });
   }
 
   /**

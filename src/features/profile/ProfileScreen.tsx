@@ -125,9 +125,27 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setIsUpdatingAvatar(true);
         const selectedImage = result.assets[0];
 
+        // Validate file size (max 5MB)
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        let fileSize = selectedImage.fileSize;
+        if (!fileSize && selectedImage.uri) {
+          try {
+            const response = await fetch(selectedImage.uri);
+            const blob = await response.blob();
+            fileSize = blob.size;
+          } catch (e) {
+            console.log('Error getting size from blob:', e);
+          }
+        }
+
+        if (fileSize && fileSize > MAX_FILE_SIZE) {
+          Alert.alert(t('common.error'), t('media.fileTooLarge'));
+          return;
+        }
+
+        setIsUpdatingAvatar(true);
         try {
           // 1. Upload to media service
           const imageUrl = await uploadImage(
@@ -506,8 +524,8 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
                 onPress={() => Linking.openURL('https://x.com/alsaifanalysis?s=11')}
               >
                 <View style={styles.menuItemLeft}>
-                  <View style={[styles.menuIconContainer, { backgroundColor: '#1DA1F210' }]}>
-                    <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
+                  <View style={[styles.menuIconContainer, { backgroundColor: theme.text.primary + '10' }]}>
+                    <Ionicons name="logo-x" size={22} color={theme.text.primary} />
                   </View>
                   <Text style={[styles.menuLabel, { color: theme.text.primary }]}>
                     {t('profile.x')}
@@ -534,7 +552,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
             </TouchableOpacity>
 
             <Text style={[styles.versionText, { color: theme.text.tertiary }]}>
-              Elsaif Analysis v1.0.0
+              Alsaif Analysis v1.0.0
             </Text>
           </View>
 

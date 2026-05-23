@@ -195,9 +195,11 @@ export const getConversationMessages = async (
 export const sendMessage = async (
   conversationId: string,
   content: string,
-  replyToId?: string
+  replyToId?: string,
+  type: string = 'text',
+  fileData?: any
 ): Promise<void> => {
-  socketService.sendMessage(conversationId, content, replyToId);
+  socketService.sendMessage(conversationId, content, replyToId, type, fileData);
 };
 
 /**

@@ -20,6 +20,8 @@ import {
     Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadImage } from '../../../core/services/media/mediaService';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { useUser } from '../../../app/auth/auth.hooks';
 import { useConversation } from './useConversation';
@@ -72,6 +74,70 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     const [showOptions, setShowOptions] = useState(false);
     const [isDeletingConfirm, setIsDeletingConfirm] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [isUploadingFile, setIsUploadingFile] = useState(false);
+
+    const handleAttach = useCallback(async () => {
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'We need camera roll permissions to attach images.');
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const selectedImage = result.assets[0];
+
+                // Validate size (max 5MB)
+                const MAX_FILE_SIZE = 5 * 1024 * 1024;
+                let fileSize = selectedImage.fileSize;
+                if (!fileSize && selectedImage.uri) {
+                    try {
+                        const response = await fetch(selectedImage.uri);
+                        const blob = await response.blob();
+                        fileSize = blob.size;
+                    } catch (e) {
+                        console.log('Error getting size from blob:', e);
+                    }
+                }
+
+                if (fileSize && fileSize > MAX_FILE_SIZE) {
+                    Alert.alert(t('common.error'), t('media.fileTooLarge'));
+                    return;
+                }
+
+                setIsUploadingFile(true);
+                try {
+                    // Upload image
+                    const url = await uploadImage(
+                        selectedImage.uri,
+                        selectedImage.fileName || 'attachment.jpg',
+                        'image/jpeg'
+                    );
+
+                    // Send message with fileData
+                    await sendMessage('', 'image', {
+                        url,
+                        name: selectedImage.fileName || 'attachment.jpg',
+                        size: fileSize || 0,
+                        mimeType: 'image/jpeg',
+                    });
+                } catch (uploadErr: any) {
+                    console.error('[ConversationView] Attach upload error:', uploadErr);
+                    Alert.alert(t('common.error'), uploadErr.message || t('media.uploadFailed'));
+                } finally {
+                    setIsUploadingFile(false);
+                }
+            }
+        } catch (pickerErr) {
+            console.error('[ConversationView] Attachment picker error:', pickerErr);
+        }
+    }, [t, sendMessage]);
 
     const currentUserId = user?.id || '';
     const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
@@ -271,8 +337,16 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                 )}
 
                 <View style={styles.inputRow}>
-                    <TouchableOpacity style={styles.attachButton}>
-                        <Icon name="add-circle-outline" size={28} color={theme.text.secondary} />
+                    <TouchableOpacity 
+                        style={styles.attachButton}
+                        onPress={handleAttach}
+                        disabled={isUploadingFile}
+                    >
+                        {isUploadingFile ? (
+                            <ActivityIndicator size="small" color={theme.primary.main} />
+                        ) : (
+                            <Icon name="add-circle-outline" size={28} color={theme.text.secondary} />
+                        )}
                     </TouchableOpacity>
 
                     <TextInput

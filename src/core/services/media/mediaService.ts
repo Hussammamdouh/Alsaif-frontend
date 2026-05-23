@@ -3,15 +3,18 @@
  * handles image uploads and other media operations
  */
 
+import { Platform } from 'react-native';
 import { apiClient } from '../api/apiClient';
+
+import { getApiBaseUrl } from '../../config/env';
 
 interface UploadResponse {
     success: boolean;
     message: string;
     data: {
-        imageUrl: string;
+        url: string;
         filename: string;
-        mimetype: string;
+        mimeType?: string;
         size: number;
     };
 }
@@ -30,14 +33,20 @@ export const uploadImage = async (
 ): Promise<string> => {
     const formData = new FormData();
 
-    // React Native FormData expects a specific object for files
-    const fileData = {
-        uri,
-        name,
-        type,
-    } as any;
-
-    formData.append('image', fileData);
+    if (Platform.OS === 'web') {
+        // Browser FormData requires a real File or Blob
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        formData.append('image', blob, name);
+    } else {
+        // React Native FormData expects a specific object for files
+        const fileData = {
+            uri,
+            name,
+            type,
+        } as any;
+        formData.append('image', fileData);
+    }
 
     const response = await apiClient.post<UploadResponse>(
         '/api/media/upload',
@@ -48,5 +57,7 @@ export const uploadImage = async (
         throw new Error(response.message || 'Failed to upload image');
     }
 
-    return response.data.imageUrl;
+    const relativeUrl = response.data.url;
+    const baseUrl = getApiBaseUrl();
+    return relativeUrl.startsWith('http') ? relativeUrl : `${baseUrl}${relativeUrl}`;
 };

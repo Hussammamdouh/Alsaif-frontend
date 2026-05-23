@@ -333,9 +333,10 @@ export const fetchMessages = async (
           avatar: msg.sender.avatar,
         },
         content: {
-          type: MessageType.TEXT,
           text: msg.content,
         },
+        type: msg.type || MessageType.TEXT,
+        file: msg.file,
         createdAt: msg.createdAt,
         status: msg.status || MessageStatus.SENT,
         isEdited: msg.isEdited || false,
