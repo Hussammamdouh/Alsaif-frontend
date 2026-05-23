@@ -297,7 +297,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
     const user = useUser();
-    const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
     const { width } = useWindowDimensions();
     const isDesktop = width >= 1024;

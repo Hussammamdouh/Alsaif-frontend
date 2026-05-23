@@ -62,7 +62,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   console.log('[BottomTabNavigator] Session User:', user);
   console.log('[BottomTabNavigator] User Role:', user?.role);
 
-  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
   console.log('[BottomTabNavigator] isAdmin:', isAdmin);
 
   // Custom tab bar icon wrapper with animation

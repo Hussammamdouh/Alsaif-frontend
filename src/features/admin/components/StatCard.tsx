@@ -13,6 +13,7 @@ interface StatCardProps {
   trend?: string;
   trendUp?: boolean;
   onPress?: () => void;
+  style?: any;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -24,6 +25,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   trend,
   trendUp,
   onPress,
+  style,
 }) => {
   const { theme } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -53,7 +55,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <Animated.View style={[styles.wrapper, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View style={[styles.wrapper, style, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
       <Pressable
         onPress={onPress}
         onPressIn={handlePressIn}

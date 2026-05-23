@@ -209,6 +209,41 @@ export function useChatSettings(chatId: string) {
         }
     }, [chatId]);
 
+    /**
+     * Add participants to the group
+     */
+    const addParticipants = useCallback(async (identifiers: string[], tiers: string[] = []) => {
+        if (!chatId) return false;
+
+        setIsUpdating(true);
+        setError(null);
+
+        try {
+            const response = await apiClient.post<{ success: boolean; message?: string }>(
+                `/api/admin/chats/${chatId}/participants/bulk`,
+                {
+                    identifiers,
+                    tiers,
+                    reason: 'Add participants from chat settings'
+                }
+            );
+
+            if (response.success) {
+                await fetchSettings();
+                return true;
+            } else {
+                setError(response.message || 'Failed to add participants');
+                return false;
+            }
+        } catch (err: any) {
+            console.error('[useChatSettings] Add participants error:', err);
+            setError(err.message || 'Failed to add participants');
+            return false;
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [chatId, fetchSettings]);
+
     // Fetch settings on mount
     useEffect(() => {
         fetchSettings();
@@ -226,5 +261,6 @@ export function useChatSettings(chatId: string) {
         kickUser,
         deleteGroup,
         leaveGroup,
+        addParticipants,
     };
 }

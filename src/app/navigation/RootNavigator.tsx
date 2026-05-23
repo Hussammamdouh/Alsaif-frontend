@@ -47,7 +47,7 @@ import { TermsScreen } from '../../features/legal/TermsScreen';
 import { AboutScreen } from '../../features/about';
 import { NotificationsScreen } from '../../features/notifications';
 import { RootStackParamList, AuthStackParamList, MainStackParamList } from './types';
-import { useAuth } from '../auth';
+import { useAuth, UserRole } from '../auth';
 import { AdminGuard, SuperadminGuard } from './AdminGuard';
 import { BottomTabNavigator } from './BottomTabNavigator';
 
@@ -252,7 +252,7 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
       {/* Admin Screens - Protected by AdminGuard */}
       <MainStack.Screen name="AdminDashboard">
         {() => (
-          <AdminGuard>
+          <AdminGuard requiredRole={[UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.MODERATOR]}>
             <AdminDashboardScreen />
           </AdminGuard>
         )}
@@ -303,7 +303,7 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
       </MainStack.Screen>
       <MainStack.Screen name="AdminModeration">
         {() => (
-          <AdminGuard>
+          <AdminGuard requiredRole={[UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.MODERATOR]}>
             <AdminModerationScreen />
           </AdminGuard>
         )}
@@ -324,7 +324,7 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
       </MainStack.Screen>
       <MainStack.Screen name="AdminBanners">
         {() => (
-          <AdminGuard>
+          <AdminGuard requiredRole={[UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.MODERATOR]}>
             <AdminBannersScreen />
           </AdminGuard>
         )}

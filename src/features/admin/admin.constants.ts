@@ -22,6 +22,7 @@ export const USER_ROLES: Record<string, UserRole> = {
   USER: 'user',
   ADMIN: 'admin',
   SUPERADMIN: 'superadmin',
+  MODERATOR: 'moderator',
 };
 
 export const USER_STATUSES: Record<string, UserStatus> = {
@@ -125,6 +126,7 @@ export const ROLE_COLORS = {
   user: '#007aff',
   admin: '#ff9500',
   superadmin: '#ff3b30',
+  moderator: '#34c759',
 } as const;
 
 export const TIER_COLORS = {
@@ -152,6 +154,7 @@ export const ROLE_ICONS = {
   user: 'person',
   admin: 'shield',
   superadmin: 'shield-checkmark',
+  moderator: 'shield-outline',
 } as const;
 
 export const INSIGHT_ICONS = {

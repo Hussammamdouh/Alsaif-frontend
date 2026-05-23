@@ -101,6 +101,7 @@ export const AdminUsersScreen: React.FC = () => {
     { label: 'All Users', value: '', labelKey: 'admin.allUsers' },
     { label: 'Users Only', value: 'user', labelKey: 'admin.usersOnly' },
     { label: 'Admins', value: 'admin', labelKey: 'admin.admins' },
+    { label: 'Moderators', value: 'moderator', labelKey: 'role.moderator' },
   ];
 
 
@@ -375,7 +376,7 @@ export const AdminUsersScreen: React.FC = () => {
         {item.role && (
           <View style={[localStyles.badge, { backgroundColor: ROLE_COLORS[item.role] + '20' }]}>
             <Ionicons
-              name={item.role === 'admin' ? 'shield' : 'person'}
+              name={item.role === 'user' ? 'person' : 'shield'}
               size={12}
               color={ROLE_COLORS[item.role]}
             />
@@ -494,7 +495,7 @@ export const AdminUsersScreen: React.FC = () => {
         options={FILTER_OPTIONS.map(opt => ({
           label: t(opt.labelKey),
           value: opt.value,
-          icon: opt.value === 'admin' ? 'shield-outline' : 'people-outline'
+          icon: opt.value === 'admin' || opt.value === 'moderator' ? 'shield-outline' : 'people-outline'
         }))}
         selectedValue={selectedFilter}
         onSelect={handleFilterChange}
@@ -772,6 +773,7 @@ export const AdminUsersScreen: React.FC = () => {
                   <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', flexWrap: 'wrap', marginTop: 8 }}>
                     {renderRoleOption('user', t('role.user'))}
                     {renderRoleOption('admin', t('role.admin'))}
+                    {renderRoleOption('moderator', t('role.moderator'))}
                   </View>
                 </View>
 
@@ -880,6 +882,7 @@ export const AdminUsersScreen: React.FC = () => {
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
                     {renderRoleOption('user', t('role.user'))}
                     {renderRoleOption('admin', t('role.admin'))}
+                    {renderRoleOption('moderator', t('role.moderator'))}
                   </View>
                 </View>
 

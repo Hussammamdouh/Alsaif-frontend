@@ -30,8 +30,8 @@ export const DesktopTopNav: React.FC = () => {
     const { t, language, toggleLanguage, isRTL } = useLocalization();
     const { width } = useWindowDimensions();
     const navigation = useNavigation<any>();
-    const isAdmin = useIsAdmin();
     const user = useUser();
+    const isAdmin = useIsAdmin() || user?.role === 'moderator';
     const isAuthenticated = useIsAuthenticated();
 
     // Responsive design tokens

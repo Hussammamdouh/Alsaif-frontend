@@ -276,6 +276,13 @@ const translations = {
     'chat.settings.deleteChat': 'Delete Chat',
     'chat.settings.deleteChatTitle': 'Delete Chat',
     'chat.settings.deleteChatConfirm': 'Are you sure you want to delete this chat?',
+    'chat.settings.addMembers': 'Add Members',
+    'chat.settings.addMembersDescription': 'Add users to this group by entering their Email, Phone Number, or Name (separated by commas or newlines).',
+    'chat.settings.add': 'Add',
+    'chat.settings.adding': 'Adding...',
+    'chat.settings.addSuccess': 'Successfully added participants',
+    'chat.settings.addFailed': 'Failed to add participants',
+    'chat.settings.enterIdentifiers': 'Enter email, phone, or name',
 
     // Common
     'common.appName': 'Alsaif Analysis',
@@ -1053,6 +1060,7 @@ const translations = {
     'role.user': 'User',
     'role.admin': 'Admin',
     'role.superadmin': 'Superadmin',
+    'role.moderator': 'Moderator',
 
     // User Tiers
     'tier.basic': 'Basic',
@@ -1577,6 +1585,13 @@ const translations = {
     'chat.settings.deleteChat': 'حذف المحادثة',
     'chat.settings.deleteChatTitle': 'حذف المحادثة',
     'chat.settings.deleteChatConfirm': 'هل أنت متأكد أنك تريد حذف هذه المحادثة؟',
+    'chat.settings.addMembers': 'إضافة أعضاء',
+    'chat.settings.addMembersDescription': 'أضف مستخدمين إلى هذه المجموعة عن طريق إدخال البريد الإلكتروني، أو رقم الهاتف، أو الاسم (مفصولة بفاصلة أو سطر جديد).',
+    'chat.settings.add': 'إضافة',
+    'chat.settings.adding': 'جاري الإضافة...',
+    'chat.settings.addSuccess': 'تم إضافة الأعضاء بنجاح',
+    'chat.settings.addFailed': 'فشل في إضافة الأعضاء',
+    'chat.settings.enterIdentifiers': 'أدخل البريد الإلكتروني أو الهاتف أو الاسم',
 
     // Common
     'common.appName': 'السيف للتحليلات',
@@ -2369,6 +2384,7 @@ const translations = {
     'role.user': 'مستخدم',
     'role.admin': 'مسؤول',
     'role.superadmin': 'مسؤول رئيسي',
+    'role.moderator': 'مشرف',
 
     // User Tiers
     'tier.basic': 'أساسي',

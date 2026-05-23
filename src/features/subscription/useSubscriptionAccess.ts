@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { useSubscription } from './subscription.hooks';
 import { SubscriptionTier } from './subscription.types';
-import { useIsAdmin } from '../../app/auth/auth.hooks';
+import { useIsAdmin, useUser } from '../../app/auth/auth.hooks';
 
 /**
  * Tier hierarchy for access control
@@ -27,6 +27,9 @@ const TIER_HIERARCHY: Record<SubscriptionTier, number> = {
 export const useSubscriptionAccess = () => {
   const { subscription, loading } = useSubscription();
   const isAdmin = useIsAdmin();
+  const user = useUser();
+  const isModerator = user?.role === 'moderator';
+  const hasBypass = isAdmin || isModerator;
 
   /**
    * Check if user has access to a specific tier level
@@ -35,8 +38,8 @@ export const useSubscriptionAccess = () => {
    */
   const hasTierAccess = useMemo(() => {
     return (requiredTier: SubscriptionTier): boolean => {
-      // Admins have access to everything
-      if (isAdmin) return true;
+      // Admins and moderators have access to everything
+      if (hasBypass) return true;
 
       // If no subscription or expired, user has free tier
       if (!subscription || subscription.status !== 'active') {
@@ -48,7 +51,7 @@ export const useSubscriptionAccess = () => {
 
       return userTierLevel >= requiredTierLevel;
     };
-  }, [subscription]);
+  }, [subscription, hasBypass]);
 
   /**
    * Check if user has an active (paid) subscription
@@ -134,7 +137,7 @@ export const useSubscriptionAccess = () => {
    * @param insightType - 'free' or 'premium'
    */
   const canAccessInsight = (insightType: 'free' | 'premium'): boolean => {
-    if (isAdmin) return true;
+    if (hasBypass) return true;
     if (insightType === 'free') return true;
     return hasPremiumAccess;
   };

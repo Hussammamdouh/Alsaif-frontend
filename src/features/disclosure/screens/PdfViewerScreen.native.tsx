@@ -108,7 +108,15 @@ export const PdfViewerScreen: React.FC = () => {
                 ) : (
                     <Pdf
                         trustAllCerts={false}
-                        source={typeof url === 'string' ? { uri: url, cache: true } : url}
+                        source={typeof url === 'string' ? {
+                            uri: url,
+                            cache: true,
+                            fileType: 'pdf',
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+                                'Accept': 'application/pdf, */*',
+                            }
+                        } : url}
                         style={[styles.pdf, { backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5' }]}
                         onLoadComplete={(numberOfPages) => {
                             setLoading(false);

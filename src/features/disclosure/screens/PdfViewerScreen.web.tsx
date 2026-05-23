@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { spacing } from '../../../core/theme/spacing';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ResponsiveContainer } from '../../../shared/components/ResponsiveContainer';
+import { getApiBaseUrl } from '../../../core/config/env';
 
 type PdfViewerRouteProp = RouteProp<MainStackParamList, 'PdfViewer'>;
 
@@ -51,20 +52,30 @@ export const PdfViewerScreen: React.FC = () => {
         url.includes('0.0.0.0')
     );
 
+    // Detect if the URL is from Abu Dhabi Securities Exchange (ADX)
+    const isAdxUrl = typeof url === 'string' && url.includes('adx.ae');
+
+    // For ADX URLs, route through our backend PDF proxy to bypass WAF, User-Agent, and frame embedding blocks
+    const apiBaseUrl = getApiBaseUrl();
+    const proxyUrl = isAdxUrl
+        ? `${apiBaseUrl}/api/disclosures/pdf-proxy?url=${encodeURIComponent(url)}`
+        : url;
+
     // Initial viewer mode: 
-    // - Use 'direct' for local addresses or same-origin (safe and bypasses Google issues)
+    // - Use 'direct' for local addresses, same-origin, or proxied ADX URLs (safe and bypasses Google issues)
     // - Use 'google' for truly remote URLs (helps bypass X-Frame-Options on other sites)
     const initialIsRemote = typeof url === 'string' &&
         url.startsWith('http') &&
         !isSameOrigin &&
-        !isLocalAddress;
+        !isLocalAddress &&
+        !isAdxUrl;
 
     const [viewerMode, setViewerMode] = useState<'google' | 'direct'>(initialIsRemote ? 'google' : 'direct');
 
     // Use Google Docs viewer to proxy the PDF (bypasses X-Frame-Options) for remote URLs
     const viewerUrl = viewerMode === 'google'
         ? `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(url)}`
-        : url;
+        : proxyUrl;
 
     const handleShare = async () => {
         if (typeof navigator !== 'undefined' && navigator.clipboard) {

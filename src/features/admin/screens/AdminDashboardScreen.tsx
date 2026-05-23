@@ -40,6 +40,14 @@ export const AdminDashboardScreen: React.FC = () => {
   const isDesktop = width > 768;
   const user = useUser();
   const isSuper = user?.role === 'superadmin';
+  const isModerator = user?.role === 'moderator';
+
+  const allowedSections = useMemo(() => {
+    if (isModerator) {
+      return DASHBOARD_SECTIONS.filter(section => section.id === 'moderation' || section.id === 'banners');
+    }
+    return DASHBOARD_SECTIONS.filter(section => !(section as any).superadminOnly || isSuper);
+  }, [isModerator, isSuper]);
 
   const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
 
@@ -186,43 +194,45 @@ export const AdminDashboardScreen: React.FC = () => {
       }
     >
       {/* Overview Stats */}
-      <View style={[styles.dashboardGrid, isDesktop && { gap: 24 }]}>
-        {renderStatCard(
-          t('admin.totalUsers'),
-          formatNumber(stats?.users?.total || 0),
-          'people',
-          CHART_COLORS.PRIMARY,
-          `${stats?.users?.active || 0} ${t('admin.active')}`,
-          isDesktop
-        )}
-        {renderStatCard(
-          t('admin.premiumSubscribers'),
-          formatNumber(stats?.users?.premium || 0),
-          'star',
-          CHART_COLORS.INFO,
-          `${stats?.subscriptions?.active || 0} ${t('admin.activeSubs')}`,
-          isDesktop
-        )}
-        {renderStatCard(
-          t('admin.totalInsights'),
-          formatNumber(stats?.insights?.total || 0),
-          'document-text',
-          CHART_COLORS.SUCCESS,
-          `${stats?.insights?.published || 0} ${t('admin.published')}`,
-          isDesktop
-        )}
-        {renderStatCard(
-          t('admin.subscriptionRevenue'),
-          formatCurrency(stats?.subscriptions?.revenue || 0),
-          'cash',
-          CHART_COLORS.WARNING,
-          `${stats?.subscriptions?.total || 0} ${t('admin.subscriptions')}`,
-          isDesktop
-        )}
-      </View>
+      {!isModerator && (
+        <View style={[styles.dashboardGrid, isDesktop && { gap: 24 }]}>
+          {renderStatCard(
+            t('admin.totalUsers'),
+            formatNumber(stats?.users?.total || 0),
+            'people',
+            CHART_COLORS.PRIMARY,
+            `${stats?.users?.active || 0} ${t('admin.active')}`,
+            isDesktop
+          )}
+          {renderStatCard(
+            t('admin.premiumSubscribers'),
+            formatNumber(stats?.users?.premium || 0),
+            'star',
+            CHART_COLORS.INFO,
+            `${stats?.subscriptions?.active || 0} ${t('admin.activeSubs')}`,
+            isDesktop
+          )}
+          {renderStatCard(
+            t('admin.totalInsights'),
+            formatNumber(stats?.insights?.total || 0),
+            'document-text',
+            CHART_COLORS.SUCCESS,
+            `${stats?.insights?.published || 0} ${t('admin.published')}`,
+            isDesktop
+          )}
+          {renderStatCard(
+            t('admin.subscriptionRevenue'),
+            formatCurrency(stats?.subscriptions?.revenue || 0),
+            'cash',
+            CHART_COLORS.WARNING,
+            `${stats?.subscriptions?.total || 0} ${t('admin.subscriptions')}`,
+            isDesktop
+          )}
+        </View>
+      )}
 
       {/* System Settings Controls */}
-      {(stats as any)?.role === 'superadmin' && (
+      {!isModerator && (stats as any)?.role === 'superadmin' && (
         <>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('admin.systemSettings')}</Text>
@@ -274,47 +284,53 @@ export const AdminDashboardScreen: React.FC = () => {
       )}
 
       {/* Quick Actions */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{t('admin.quickActions')}</Text>
-      </View>
-      <View style={styles.quickActionsGrid}>
-        {renderQuickAction(
-          t('admin.createInsight'),
-          'add-circle',
-          CHART_COLORS.SUCCESS,
-          () => navigation.navigate('AdminInsights' as never),
-          isDesktop
-        )}
-        {renderQuickAction(
-          t('admin.manageUsers'),
-          'people',
-          CHART_COLORS.PRIMARY,
-          () => navigation.navigate('AdminUsers' as never),
-          isDesktop
-        )}
-        {renderQuickAction(
-          t('admin.sendBroadcast'),
-          'megaphone',
-          CHART_COLORS.WARNING,
-          () => navigation.navigate('AdminBroadcast' as never),
-          isDesktop
-        )}
-        {renderQuickAction(
-          t('admin.viewAnalytics'),
-          'bar-chart',
-          CHART_COLORS.INFO,
-          () => navigation.navigate('AdminAnalytics' as never),
-          isDesktop
-        )}
-      </View>
-
-      {/* All Sections */}
-      {!isDesktop && (
+      {!isModerator && (
         <>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('admin.allSections')}</Text>
+            <Text style={styles.sectionTitle}>{t('admin.quickActions')}</Text>
           </View>
-          {DASHBOARD_SECTIONS.filter(section => !(section as any).superadminOnly || isSuper).map(renderSectionCard)}
+          <View style={styles.quickActionsGrid}>
+            {renderQuickAction(
+              t('admin.createInsight'),
+              'add-circle',
+              CHART_COLORS.SUCCESS,
+              () => navigation.navigate('AdminInsights' as never),
+              isDesktop
+            )}
+            {renderQuickAction(
+              t('admin.manageUsers'),
+              'people',
+              CHART_COLORS.PRIMARY,
+              () => navigation.navigate('AdminUsers' as never),
+              isDesktop
+            )}
+            {renderQuickAction(
+              t('admin.sendBroadcast'),
+              'megaphone',
+              CHART_COLORS.WARNING,
+              () => navigation.navigate('AdminBroadcast' as never),
+              isDesktop
+            )}
+            {renderQuickAction(
+              t('admin.viewAnalytics'),
+              'bar-chart',
+              CHART_COLORS.INFO,
+              () => navigation.navigate('AdminAnalytics' as never),
+              isDesktop
+            )}
+          </View>
+        </>
+      )}
+
+      {/* Sections */}
+      {(!isDesktop || isModerator) && (
+        <>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {isModerator ? (t('admin.moderatorSections') || 'Moderator Sections') : t('admin.allSections')}
+            </Text>
+          </View>
+          {allowedSections.map(renderSectionCard)}
         </>
       )}
     </ScrollView>
@@ -331,9 +347,11 @@ export const AdminDashboardScreen: React.FC = () => {
             <View style={[styles.header, { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.dashboardOverview')}</Text>
               <View style={styles.headerRight}>
-                <TouchableOpacity style={styles.addButton} activeOpacity={0.8} onPress={() => navigation.navigate('AdminInsights' as never)}>
-                  <Ionicons name="add" size={26} color="#FFFFFF" />
-                </TouchableOpacity>
+                {!isModerator && (
+                  <TouchableOpacity style={styles.addButton} activeOpacity={0.8} onPress={() => navigation.navigate('AdminInsights' as never)}>
+                    <Ionicons name="add" size={26} color="#FFFFFF" />
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
             {renderDashboardContent()}

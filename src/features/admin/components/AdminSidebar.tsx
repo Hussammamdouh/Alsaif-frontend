@@ -15,6 +15,14 @@ export const AdminSidebar: React.FC = () => {
     const styles = createAdminStyles(theme, isRTL);
     const user = useUser();
     const isSuper = user?.role === 'superadmin';
+    const isModerator = user?.role === 'moderator';
+
+    const allowedSections = React.useMemo(() => {
+        if (isModerator) {
+            return DASHBOARD_SECTIONS.filter(section => section.id === 'moderation' || section.id === 'banners');
+        }
+        return DASHBOARD_SECTIONS.filter(section => !(section as any).superadminOnly || isSuper);
+    }, [isModerator, isSuper]);
 
     return (
         <View style={styles.desktopSidebar}>
@@ -23,7 +31,7 @@ export const AdminSidebar: React.FC = () => {
                 <Text style={[styles.cardSubtitle, { color: theme.primary.main, fontWeight: '700' }]}>ADMIN PANEL</Text>
             </View>
 
-            {DASHBOARD_SECTIONS.filter(section => !(section as any).superadminOnly || isSuper).map((section) => {
+            {allowedSections.map((section) => {
                 const translations = DASHBOARD_SECTION_TRANSLATIONS[section.id as keyof typeof DASHBOARD_SECTION_TRANSLATIONS];
                 const isActive = route.name === section.route;
 

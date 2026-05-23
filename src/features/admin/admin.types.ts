@@ -4,7 +4,7 @@
  */
 
 // User Management Types
-export type UserRole = 'user' | 'admin' | 'superadmin';
+export type UserRole = 'user' | 'admin' | 'superadmin' | 'moderator';
 export type UserStatus = 'active' | 'suspended' | 'pending';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'pending' | 'none' | 'trial';
 export type SubscriptionTier = 'free' | 'premium';

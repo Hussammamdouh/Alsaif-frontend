@@ -367,11 +367,6 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
               onPress: () => setShowActionSheet(false),
             },
             {
-              label: t('common.duplicate'),
-              icon: 'copy-outline',
-              onPress: () => setShowActionSheet(false),
-            },
-            {
               label: t('common.delete'),
               icon: 'trash-outline',
               onPress: () => {

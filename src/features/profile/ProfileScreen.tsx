@@ -65,7 +65,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
   const isDesktop = width >= 1024;
   const navigation = useNavigation<any>();
 
-  const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';
+  const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin' || authState.session?.user?.role === 'moderator';
 
   // Force refetch when screen comes into focus
   useFocusEffect(
