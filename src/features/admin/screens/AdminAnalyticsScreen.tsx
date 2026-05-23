@@ -15,8 +15,12 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
-  useWindowDimensions
+  useWindowDimensions,
+  Alert,
+  Linking
 } from 'react-native';
+import { loadAuthSession } from '../../../app/auth/auth.storage';
+import { getApiBaseUrl } from '../../../core/config/env';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -35,6 +39,7 @@ import {
   formatPieChartData,
   generateChartColors,
   AdminSidebar,
+  ActionSheet,
 } from '../components';
 import { CHART_COLORS } from '../admin.constants';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -59,6 +64,7 @@ export const AdminAnalyticsScreen: React.FC = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('day');
   const [activeTab, setActiveTab] = useState<'overview' | 'audience' | 'engagement' | 'revenue' | 'plans'>('overview');
+  const [showExportSheet, setShowExportSheet] = useState(false);
 
   const {
     userGrowth,
@@ -116,47 +122,28 @@ export const AdminAnalyticsScreen: React.FC = () => {
     }).format(amount || 0);
   };
 
-  const handleExport = async () => {
+  const triggerExport = async (format: 'xlsx' | 'pdf') => {
     try {
-      const data = await exportFullReport();
+      const baseUrl = getApiBaseUrl();
+      const session = await loadAuthSession();
+      if (!session) throw new Error('No session available');
+
+      const startIso = startDate.toISOString();
+      const endIso = endDate.toISOString();
+
+      const url = `${baseUrl}/api/admin/analytics/export/file?format=${format}&token=${session.tokens.accessToken}&startDate=${encodeURIComponent(startIso)}&endDate=${encodeURIComponent(endIso)}`;
 
       if (Platform.OS === 'web') {
-        // Handle binary xlsx data (ArrayBuffer)
-        const blobData = data instanceof ArrayBuffer
-          ? new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-          : new Blob([data as string], { type: 'text/csv' });
-
-        const ext = data instanceof ArrayBuffer ? 'xlsx' : 'csv';
-        const url = URL.createObjectURL(blobData);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Alsaif_Analytics_${new Date().toISOString().split('T')[0]}.${ext}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        return;
+        window.open(url, '_blank');
+      } else {
+        await Linking.openURL(url);
       }
-
-      throw new Error('Full export not supported on this platform');
-    } catch (err) {
-      console.error('Full export failed:', err);
-      // Fallback to basic export if full fails
-      const exportData = [
-        { Metric: 'Total Users', Value: engagementMetrics?.totalUsers || 0 },
-        { Metric: 'Active Users', Value: engagementMetrics?.activeUsers || 0 },
-        { Metric: 'New Users', Value: engagementMetrics?.newUsers || 0 },
-        { Metric: 'MRR', Value: formatCurrency(revenueOverview?.mrr) },
-        { Metric: 'ARPU', Value: formatCurrency(revenueOverview?.arpu) },
-      ];
-
-      if (revenueOverview?.revenueByTier) {
-        Object.entries(revenueOverview.revenueByTier).forEach(([tier, value]) => {
-          exportData.push({ Metric: `Revenue (${tier})`, Value: formatCurrency(value as number) });
-        });
+    } catch (error: any) {
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to export analytics');
+      } else {
+        Alert.alert(t('common.error') || 'Error', error.message || 'Failed to export analytics');
       }
-
-      exportToExcel(exportData, `Analytics_Summary_${new Date().toISOString().split('T')[0]}`);
     }
   };
 
@@ -179,7 +166,7 @@ export const AdminAnalyticsScreen: React.FC = () => {
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.analyticsOverview') : t('admin.analytics')}</Text>
       </View>
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}>
-        <TouchableOpacity onPress={handleExport} style={localStyles.iconBtn}>
+        <TouchableOpacity onPress={() => setShowExportSheet(true)} style={localStyles.iconBtn}>
           <Ionicons name="download-outline" size={22} color={theme.primary.main} />
         </TouchableOpacity>
         <TouchableOpacity onPress={refresh} style={localStyles.iconBtn}>
@@ -676,6 +663,31 @@ export const AdminAnalyticsScreen: React.FC = () => {
             {renderMainContent()}
           </ResponsiveContainer>
         )}
+        
+        {/* Export Options Action Sheet */}
+        <ActionSheet
+          visible={showExportSheet}
+          onClose={() => setShowExportSheet(false)}
+          title={t('admin.exportData') || 'Export Data'}
+          options={[
+            {
+              label: t('admin.exportAsExcel') || 'Export as Excel (XLSX)',
+              icon: 'document-text-outline',
+              onPress: () => {
+                setShowExportSheet(false);
+                triggerExport('xlsx');
+              },
+            },
+            {
+              label: t('admin.exportAsPDF') || 'Export as PDF',
+              icon: 'document-outline',
+              onPress: () => {
+                setShowExportSheet(false);
+                triggerExport('pdf');
+              },
+            },
+          ]}
+        />
       </View>
     </SafeAreaView>
   );

@@ -17,6 +17,7 @@ import {
   RefreshControl,
   Modal,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -85,6 +86,7 @@ export const AdminUsersScreen: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [showExportSheet, setShowExportSheet] = useState(false);
 
   // Form states for create/edit
   const [formName, setFormName] = useState('');
@@ -440,21 +442,27 @@ export const AdminUsersScreen: React.FC = () => {
     );
   };
 
-  const handleExport = () => {
-    if (!users || users.length === 0) return;
+  const triggerExport = async (format: 'xlsx' | 'pdf') => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const session = await loadAuthSession();
+      if (!session) throw new Error('No session available');
 
-    const exportData = users.map(user => ({
-      ID: (user as any).id || (user as any)._id,
-      Name: user.name,
-      Email: user.email,
-      Phone: user.phoneNumber || 'N/A',
-      Nationality: user.nationality || 'N/A',
-      Role: user.role,
-      Status: user.status,
-      CreatedAt: new Date(user.createdAt).toLocaleDateString()
-    }));
+      const path = format === 'pdf' ? '/api/export/users/pdf' : '/api/export/users/xlsx';
+      const url = `${baseUrl}${path}?token=${session.tokens.accessToken}`;
 
-    exportToExcel(exportData, `Users_${new Date().toISOString().split('T')[0]}`);
+      if (Platform.OS === 'web') {
+        window.open(url, '_blank');
+      } else {
+        await Linking.openURL(url);
+      }
+    } catch (error: any) {
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to export users');
+      } else {
+        Alert.alert(t('common.error') || 'Error', error.message || 'Failed to export users');
+      }
+    }
   };
 
   const renderHeader = () => (
@@ -466,7 +474,7 @@ export const AdminUsersScreen: React.FC = () => {
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.users')}</Text>
       </View>
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
-        <TouchableOpacity style={[localStyles.iconBtn, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]} onPress={handleExport}>
+        <TouchableOpacity style={[localStyles.iconBtn, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]} onPress={() => setShowExportSheet(true)}>
           <Ionicons name="download-outline" size={22} color={theme.primary.main} />
         </TouchableOpacity>
         <TouchableOpacity onPress={openCreateModal} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 16 }}>
@@ -571,6 +579,31 @@ export const AdminUsersScreen: React.FC = () => {
           </ResponsiveContainer>
         </SafeAreaView>
       )}
+
+      {/* Export Options Action Sheet */}
+      <ActionSheet
+        visible={showExportSheet}
+        onClose={() => setShowExportSheet(false)}
+        title={t('admin.exportData') || 'Export Data'}
+        options={[
+          {
+            label: t('admin.exportAsExcel') || 'Export as Excel (XLSX)',
+            icon: 'document-text-outline',
+            onPress: () => {
+              setShowExportSheet(false);
+              triggerExport('xlsx');
+            },
+          },
+          {
+            label: t('admin.exportAsPDF') || 'Export as PDF',
+            icon: 'document-outline',
+            onPress: () => {
+              setShowExportSheet(false);
+              triggerExport('pdf');
+            },
+          },
+        ]}
+      />
 
       {/* Status Filter Action Sheet */}
       <ActionSheet

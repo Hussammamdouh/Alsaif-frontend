@@ -648,6 +648,9 @@ const translations = {
     // Admin Dashboard
     'admin.dashboard': 'Admin Dashboard',
     'admin.dashboardOverview': 'Dashboard Overview',
+    'admin.exportData': 'Export Data',
+    'admin.exportAsExcel': 'Export as Excel (XLSX)',
+    'admin.exportAsPDF': 'Export as PDF',
     'admin.users': 'Users',
     'admin.insights': 'Insights',
     'admin.subscriptions': 'Subscriptions',
@@ -755,6 +758,7 @@ const translations = {
     // Admin Actions
     'admin.quickActions': 'Quick Actions',
     'admin.allSections': 'All Sections',
+    'admin.moderatorSections': 'Moderator Sections',
     'admin.createInsight': 'Create Insight',
     'admin.manageUsers': 'Manage Users',
     'admin.sendBroadcast': 'Send Broadcast',
@@ -1957,6 +1961,9 @@ const translations = {
     // Admin Dashboard
     'admin.dashboard': 'لوحة التحكم',
     'admin.dashboardOverview': 'نظرة عامة على لوحة التحكم',
+    'admin.exportData': 'تصدير البيانات',
+    'admin.exportAsExcel': 'تصدير كملف إكسل (XLSX)',
+    'admin.exportAsPDF': 'تصدير كملف PDF',
     'admin.users': 'المستخدمون',
     'admin.insights': 'التوصية',
     'admin.insightFormat': 'تنسيق التوصية',
@@ -2157,6 +2164,7 @@ const translations = {
     // Admin Actions
     'admin.quickActions': 'الإجراءات السريعة',
     'admin.allSections': 'جميع الأقسام',
+    'admin.moderatorSections': 'أقسام الإشراف',
     'admin.createInsight': 'إنشاء توصية',
     'admin.manageUsers': 'إدارة المستخدمين',
     'admin.sendBroadcast': 'إرسال بث',

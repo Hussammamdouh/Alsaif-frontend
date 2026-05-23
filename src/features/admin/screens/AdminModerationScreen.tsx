@@ -287,41 +287,74 @@ export const AdminModerationScreen: React.FC = () => {
 
   const renderMainContent = () => (
     <>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={localStyles.statsScroll}
-        contentContainerStyle={[localStyles.statsContainer, isDesktop && { paddingHorizontal: 24, paddingVertical: 16 }]}
-      >
-        <StatCard
-          title={t('admin.pendingReview')}
-          value={stats?.queue?.pending || 0}
-          icon="time-outline"
-          color={theme.primary.main}
-          style={!isDesktop && localStyles.statCardMobile}
-        />
-        <StatCard
-          title={t('admin.flaggedItems')}
-          value={stats?.flagged?.pending || 0}
-          icon="flag-outline"
-          color={theme.error.main}
-          style={!isDesktop && localStyles.statCardMobile}
-        />
-        <StatCard
-          title={t('admin.criticalFlags')}
-          value={stats?.flagged?.critical || 0}
-          icon="alert-circle-outline"
-          color={theme.error.dark}
-          style={!isDesktop && localStyles.statCardMobile}
-        />
-        <StatCard
-          title={t('admin.resolvedToday')}
-          value={stats?.resolvedToday || 0}
-          icon="checkmark-done-outline"
-          color={theme.success.main}
-          style={!isDesktop && localStyles.statCardMobile}
-        />
-      </ScrollView>
+      {isDesktop ? (
+        <View style={localStyles.statsGridDesktop}>
+          <StatCard
+            title={t('admin.pendingReview')}
+            value={stats?.queue?.pending || 0}
+            icon="time-outline"
+            color={theme.primary.main}
+            style={localStyles.statCardDesktop}
+          />
+          <StatCard
+            title={t('admin.flaggedItems')}
+            value={stats?.flagged?.pending || 0}
+            icon="flag-outline"
+            color={theme.error.main}
+            style={localStyles.statCardDesktop}
+          />
+          <StatCard
+            title={t('admin.criticalFlags')}
+            value={stats?.flagged?.critical || 0}
+            icon="alert-circle-outline"
+            color={theme.error.dark}
+            style={localStyles.statCardDesktop}
+          />
+          <StatCard
+            title={t('admin.resolvedToday')}
+            value={stats?.resolvedToday || 0}
+            icon="checkmark-done-outline"
+            color={theme.success.main}
+            style={localStyles.statCardDesktop}
+          />
+        </View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={localStyles.statsScroll}
+          contentContainerStyle={localStyles.statsContainer}
+        >
+          <StatCard
+            title={t('admin.pendingReview')}
+            value={stats?.queue?.pending || 0}
+            icon="time-outline"
+            color={theme.primary.main}
+            style={localStyles.statCardMobile}
+          />
+          <StatCard
+            title={t('admin.flaggedItems')}
+            value={stats?.flagged?.pending || 0}
+            icon="flag-outline"
+            color={theme.error.main}
+            style={localStyles.statCardMobile}
+          />
+          <StatCard
+            title={t('admin.criticalFlags')}
+            value={stats?.flagged?.critical || 0}
+            icon="alert-circle-outline"
+            color={theme.error.dark}
+            style={localStyles.statCardMobile}
+          />
+          <StatCard
+            title={t('admin.resolvedToday')}
+            value={stats?.resolvedToday || 0}
+            icon="checkmark-done-outline"
+            color={theme.success.main}
+            style={localStyles.statCardMobile}
+          />
+        </ScrollView>
+      )}
 
       <View style={[localStyles.tabsContainer, isDesktop && { paddingHorizontal: 24 }]}>
         {TABS.map((tab) => (
@@ -492,9 +525,22 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
   },
+  statsGridDesktop: {
+    flexDirection: isRTL ? 'row-reverse' : 'row',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    gap: 16,
+    flexWrap: 'wrap',
+    width: '100%',
+  },
   statCardMobile: {
     flex: 0,
     minWidth: 160,
+  },
+  statCardDesktop: {
+    flex: 1,
+    minWidth: 200,
+    maxWidth: 280,
   },
   tabsContainer: {
     flexDirection: isRTL ? 'row-reverse' : 'row',
