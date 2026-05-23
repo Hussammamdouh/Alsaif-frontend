@@ -24,7 +24,7 @@ const INITIAL_STATE: ProfileState = {
  */
 export const useProfile = () => {
   const [state, setState] = useState<ProfileState>(INITIAL_STATE);
-  const { state: authState } = useAuth();
+  const { state: authState, updateUser } = useAuth();
   const { isAuthenticated, session } = authState;
   const userId = session?.user?.id;
 
@@ -60,6 +60,12 @@ export const useProfile = () => {
 
       console.log('[useProfile] Data fetched successfully', { profileId: profile.id, subTier: subscription.tier });
 
+      // Sync user profile updates to global auth state
+      updateUser({
+        name: profile.name,
+        avatar: profile.avatar || undefined
+      });
+
       setState(prev => ({
         ...prev,
         profile,
@@ -77,7 +83,7 @@ export const useProfile = () => {
         error: errorMessage
       }));
     }
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, userId, updateUser]);
 
   /**
    * Update profile
@@ -87,6 +93,12 @@ export const useProfile = () => {
       setState(prev => ({ ...prev, isUpdating: true, error: null }));
 
       const updatedProfile = await updateProfileApi(data);
+
+      // Sync user profile updates to global auth state
+      updateUser({
+        name: updatedProfile.name,
+        avatar: updatedProfile.avatar || undefined
+      });
 
       setState(prev => ({
         ...prev,
@@ -105,7 +117,7 @@ export const useProfile = () => {
       }));
       return { success: false, error: errorMessage };
     }
-  }, []);
+  }, [updateUser]);
 
   /**
    * Initial load & Auth state sync

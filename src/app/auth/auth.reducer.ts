@@ -175,6 +175,12 @@ export const authReducer = (
         session: {
           ...state.session,
           ...action.payload,
+          user: action.payload.user
+            ? {
+                ...state.session.user,
+                ...action.payload.user,
+              }
+            : state.session.user,
         },
       };
 

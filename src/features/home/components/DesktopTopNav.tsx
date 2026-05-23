@@ -187,9 +187,16 @@ export const DesktopTopNav: React.FC = () => {
                 onPress={() => navigation.navigate('MainTabs', { screen: 'ProfileTab' })}
             >
                 {isAuthenticated ? (
-                    <View style={[styles.avatarCircle, { backgroundColor: theme.primary.main }]}>
-                        <Text style={styles.initialsText}>{getInitials()}</Text>
-                    </View>
+                    user?.avatar ? (
+                        <Image
+                            source={{ uri: user.avatar }}
+                            style={styles.avatarImage}
+                        />
+                    ) : (
+                        <View style={[styles.avatarCircle, { backgroundColor: theme.primary.main }]}>
+                            <Text style={styles.initialsText}>{getInitials()}</Text>
+                        </View>
+                    )
                 ) : (
                     <View style={[styles.avatarCircle, { backgroundColor: theme.background.tertiary }]}>
                         <Ionicons name="person-circle-outline" size={24} color={theme.text.tertiary} />
@@ -384,6 +391,11 @@ const styles = StyleSheet.create({
     },
     profileAvatar: {
         marginLeft: spacing.xs,
+    },
+    avatarImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
     },
     avatarCircle: {
         width: 40,

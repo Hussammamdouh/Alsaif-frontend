@@ -192,6 +192,7 @@ export interface AuthContextValue {
   ) => Promise<User>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<void>;
+  updateUser: (userUpdates: Partial<User>) => Promise<void>;
 
   // Biometric
   enableBiometric: () => Promise<void>;

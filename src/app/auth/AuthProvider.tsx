@@ -196,6 +196,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [state.session]);
 
   /**
+   * Update User details globally and persist to SecureStore
+   */
+  const updateUser = useCallback(async (userUpdates: Partial<User>) => {
+    dispatch({
+      type: require('./auth.types').AuthActionType.UPDATE_SESSION,
+      payload: {
+        user: userUpdates
+      } as any
+    });
+
+    try {
+      const { bootstrapApp, saveAuthSession } = require('./auth.actions');
+      const result = await bootstrapApp();
+      if (result.session) {
+        const updatedSession = {
+          ...result.session,
+          user: {
+            ...result.session.user,
+            ...userUpdates
+          }
+        };
+        await saveAuthSession(updatedSession, state.biometricEnabled);
+      }
+    } catch (e) {
+      console.error('[AuthProvider] Failed to persist user updates to storage:', e);
+    }
+  }, [state.biometricEnabled]);
+
+  /**
    * Enable Biometric
    */
   const enableBiometric = useCallback(async () => {
@@ -248,6 +277,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       register,
       logout,
       refreshTokens,
+      updateUser,
       enableBiometric,
       disableBiometric,
       loginWithBiometric,
@@ -261,6 +291,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       register,
       logout,
       refreshTokens,
+      updateUser,
       enableBiometric,
       disableBiometric,
       loginWithBiometric,
