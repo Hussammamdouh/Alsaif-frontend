@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme, useLocalization } from '../../../app/providers';
@@ -26,37 +26,41 @@ export const AdminSidebar: React.FC = () => {
 
     return (
         <View style={styles.desktopSidebar}>
-            <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+            <View style={{ paddingHorizontal: 24, marginBottom: 20 }}>
                 <Text style={[styles.headerTitle, { fontSize: 28 }]}>AlSaif</Text>
                 <Text style={[styles.cardSubtitle, { color: theme.primary.main, fontWeight: '700' }]}>ADMIN PANEL</Text>
             </View>
 
-            {allowedSections.map((section) => {
-                const translations = DASHBOARD_SECTION_TRANSLATIONS[section.id as keyof typeof DASHBOARD_SECTION_TRANSLATIONS];
-                const isActive = route.name === section.route;
+            <ScrollView 
+                style={{ flex: 1 }} 
+                contentContainerStyle={{ paddingVertical: 10 }}
+                showsVerticalScrollIndicator={true}
+            >
+                {allowedSections.map((section) => {
+                    const translations = DASHBOARD_SECTION_TRANSLATIONS[section.id as keyof typeof DASHBOARD_SECTION_TRANSLATIONS];
+                    const isActive = route.name === section.route;
 
-                return (
-                    <TouchableOpacity
-                        key={section.id}
-                        style={[styles.sidebarItem, isActive && styles.sidebarItemActive]}
-                        onPress={() => navigation.navigate(section.route as never)}
-                    >
-                        <Ionicons
-                            name={section.icon as any}
-                            size={22}
-                            color={isActive ? theme.primary.main : theme.text.tertiary}
-                        />
-                        <Text style={[styles.sidebarItemLabel, isActive && styles.sidebarItemLabelActive]}>
-                            {t(translations.titleKey)}
-                        </Text>
-                    </TouchableOpacity>
-                );
-            })}
-
-            <View style={{ flex: 1 }} />
+                    return (
+                        <TouchableOpacity
+                            key={section.id}
+                            style={[styles.sidebarItem, isActive && styles.sidebarItemActive]}
+                            onPress={() => navigation.navigate(section.route as never)}
+                        >
+                            <Ionicons
+                                name={section.icon as any}
+                                size={22}
+                                color={isActive ? theme.primary.main : theme.text.tertiary}
+                            />
+                            <Text style={[styles.sidebarItemLabel, isActive && styles.sidebarItemLabelActive]}>
+                                {t(translations.titleKey)}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </ScrollView>
 
             <TouchableOpacity
-                style={[styles.sidebarItem, { marginBottom: 32 }]}
+                style={[styles.sidebarItem, { marginBottom: 32, marginTop: 16 }]}
                 onPress={() => navigation.navigate('MainTabs' as never)}
             >
                 <Ionicons name="exit-outline" size={22} color={theme.error.main} />

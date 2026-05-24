@@ -4,7 +4,7 @@
  * Now with theme and language support
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import {
   Alert,
   StatusBar,
   useWindowDimensions,
+  Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +31,9 @@ import { useUser } from '../../../app/auth';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ResponsiveContainer } from '../../../shared/components';
 import { AdminSidebar } from '../components/AdminSidebar';
+import { ActionSheet } from '../components';
+import { loadAuthSession } from '../../../app/auth/auth.storage';
+import { getApiBaseUrl } from '../../../core/config/env';
 
 export const AdminDashboardScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -41,6 +46,30 @@ export const AdminDashboardScreen: React.FC = () => {
   const user = useUser();
   const isSuper = user?.role === 'superadmin';
   const isModerator = user?.role === 'moderator';
+
+  const [showExportSheet, setShowExportSheet] = useState(false);
+
+  const triggerExport = async (format: 'xlsx' | 'pdf') => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const session = await loadAuthSession();
+      if (!session) throw new Error('No session available');
+
+      const url = `${baseUrl}/api/export/all?format=${format}&token=${session.tokens.accessToken}`;
+
+      if (Platform.OS === 'web') {
+        window.open(url, '_blank');
+      } else {
+        await Linking.openURL(url);
+      }
+    } catch (error: any) {
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to export report');
+      } else {
+        Alert.alert(t('common.error') || 'Error', error.message || 'Failed to export report');
+      }
+    }
+  };
 
   const allowedSections = useMemo(() => {
     if (isModerator) {
@@ -346,11 +375,25 @@ export const AdminDashboardScreen: React.FC = () => {
           <View style={styles.desktopMainContent}>
             <View style={[styles.header, { backgroundColor: theme.background.secondary, borderBottomColor: theme.ui.border, height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.dashboardOverview')}</Text>
-              <View style={styles.headerRight}>
+              <View style={[styles.headerRight, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }]}>
                 {!isModerator && (
-                  <TouchableOpacity style={styles.addButton} activeOpacity={0.8} onPress={() => navigation.navigate('AdminInsights' as never)}>
-                    <Ionicons name="add" size={26} color="#FFFFFF" />
-                  </TouchableOpacity>
+                  <>
+                    <TouchableOpacity
+                      style={{
+                        padding: 8,
+                        borderRadius: 12,
+                        backgroundColor: theme.primary.main + '10',
+                        [isRTL ? 'marginLeft' : 'marginRight']: 8
+                      }}
+                      onPress={() => setShowExportSheet(true)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="download-outline" size={22} color={theme.primary.main} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.addButton} activeOpacity={0.8} onPress={() => navigation.navigate('AdminInsights' as never)}>
+                      <Ionicons name="add" size={26} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             </View>
@@ -363,7 +406,21 @@ export const AdminDashboardScreen: React.FC = () => {
             <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.dashboard')}</Text>
             </View>
-            <View style={[styles.headerRight, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.headerRight, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }]}>
+              {!isModerator && (
+                <TouchableOpacity
+                  style={{
+                    padding: 8,
+                    borderRadius: 12,
+                    backgroundColor: theme.primary.main + '10',
+                    [isRTL ? 'marginLeft' : 'marginRight']: 8
+                  }}
+                  onPress={() => setShowExportSheet(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="download-outline" size={22} color={theme.primary.main} />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 style={styles.filterButton}
                 onPress={refresh}
@@ -379,6 +436,31 @@ export const AdminDashboardScreen: React.FC = () => {
           </ResponsiveContainer>
         </>
       )}
+
+      {/* Export Options Action Sheet */}
+      <ActionSheet
+        visible={showExportSheet}
+        onClose={() => setShowExportSheet(false)}
+        title={t('admin.exportData') || 'Export Data'}
+        options={[
+          {
+            label: t('admin.exportAsExcel') || 'Export as Excel (XLSX)',
+            icon: 'document-text-outline',
+            onPress: () => {
+              setShowExportSheet(false);
+              triggerExport('xlsx');
+            },
+          },
+          {
+            label: t('admin.exportAsPDF') || 'Export as PDF',
+            icon: 'document-outline',
+            onPress: () => {
+              setShowExportSheet(false);
+              triggerExport('pdf');
+            },
+          },
+        ]}
+      />
     </View>
   );
 };

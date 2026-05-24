@@ -1335,6 +1335,19 @@ const translations = {
     'disclosures.errorTitle': 'Sorry, an error occurred',
     'disclosures.retry': 'Try Again',
     'disclosures.filterAll': 'All',
+
+    // Technical Support Form
+    'support.title': 'Technical Support',
+    'support.subject': 'Subject',
+    'support.message': 'Message',
+    'support.submit': 'Submit Ticket',
+    'support.sending': 'Sending...',
+    'support.success': 'Your support ticket was sent successfully. We will open WhatsApp to complete your request.',
+    'support.error': 'Failed to send support request. Please try again.',
+    'support.subjectPlaceholder': 'What do you need help with?',
+    'support.messagePlaceholder': 'Describe your issue in detail...',
+    'support.subjectRequired': 'Subject is required',
+    'support.messageRequired': 'Message is required',
   },
   ar: {
     // Splash Screen
@@ -2650,6 +2663,19 @@ const translations = {
     'subscription.terms.disclaimer': 'باستخدامك للتطبيق، فإنك تقر بتحملك الكامل للمخاطر، وتُخلي إدارة التطبيق من أي مسؤولية قانونية أو مطالبات مالية ناتجة عن استخدامك للخدمة.',
     'subscription.terms.accept': 'لقد قرأت وأوافق على شروط الاشتراك',
     'subscription.terms.continue': 'المتابعة للدفع',
+
+    // Technical Support Form
+    'support.title': 'الدعم الفني',
+    'support.subject': 'الموضوع',
+    'support.message': 'الرسالة',
+    'support.submit': 'إرسال الطلب',
+    'support.sending': 'جاري الإرسال...',
+    'support.success': 'تم إرسال طلب الدعم بنجاح. سنقوم بفتح واتساب لإكمال طلبك.',
+    'support.error': 'فشل إرسال طلب الدعم. يرجى المحاولة مرة أخرى.',
+    'support.subjectPlaceholder': 'ما الذي تحتاج إلى مساعدة فيه؟',
+    'support.messagePlaceholder': 'صف مشكلتك بالتفصيل...',
+    'support.subjectRequired': 'الموضوع مطلوب',
+    'support.messageRequired': 'الرسالة مطلوبة',
   },
 };
 

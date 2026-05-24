@@ -27,7 +27,6 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { createAdminStyles } from '../admin.styles';
 import { useAnalytics } from '../hooks';
-import { exportToExcel } from '../../../shared/utils/exportUtils';
 import {
   StatCard,
   DateRangePicker,
@@ -39,7 +38,6 @@ import {
   formatPieChartData,
   generateChartColors,
   AdminSidebar,
-  ActionSheet,
 } from '../components';
 import { CHART_COLORS } from '../admin.constants';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -64,7 +62,6 @@ export const AdminAnalyticsScreen: React.FC = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('day');
   const [activeTab, setActiveTab] = useState<'overview' | 'audience' | 'engagement' | 'revenue' | 'plans'>('overview');
-  const [showExportSheet, setShowExportSheet] = useState(false);
 
   const {
     userGrowth,
@@ -91,7 +88,6 @@ export const AdminAnalyticsScreen: React.FC = () => {
     loading,
     error,
     refresh,
-    exportFullReport,
   } = useAnalytics({
     startDate,
     endDate,
@@ -122,31 +118,6 @@ export const AdminAnalyticsScreen: React.FC = () => {
     }).format(amount || 0);
   };
 
-  const triggerExport = async (format: 'xlsx' | 'pdf') => {
-    try {
-      const baseUrl = getApiBaseUrl();
-      const session = await loadAuthSession();
-      if (!session) throw new Error('No session available');
-
-      const startIso = startDate.toISOString();
-      const endIso = endDate.toISOString();
-
-      const url = `${baseUrl}/api/admin/analytics/export/file?format=${format}&token=${session.tokens.accessToken}&startDate=${encodeURIComponent(startIso)}&endDate=${encodeURIComponent(endIso)}`;
-
-      if (Platform.OS === 'web') {
-        window.open(url, '_blank');
-      } else {
-        await Linking.openURL(url);
-      }
-    } catch (error: any) {
-      if (Platform.OS === 'web') {
-        alert(error.message || 'Failed to export analytics');
-      } else {
-        Alert.alert(t('common.error') || 'Error', error.message || 'Failed to export analytics');
-      }
-    }
-  };
-
   const calculateDelta = (current: number, previous: number) => {
     if (!previous || previous === 0) return undefined;
     const delta = ((current - previous) / previous) * 100;
@@ -166,9 +137,6 @@ export const AdminAnalyticsScreen: React.FC = () => {
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isDesktop ? t('admin.analyticsOverview') : t('admin.analytics')}</Text>
       </View>
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}>
-        <TouchableOpacity onPress={() => setShowExportSheet(true)} style={localStyles.iconBtn}>
-          <Ionicons name="download-outline" size={22} color={theme.primary.main} />
-        </TouchableOpacity>
         <TouchableOpacity onPress={refresh} style={localStyles.iconBtn}>
           <Ionicons name="refresh" size={22} color={theme.primary.main} />
         </TouchableOpacity>
@@ -663,31 +631,6 @@ export const AdminAnalyticsScreen: React.FC = () => {
             {renderMainContent()}
           </ResponsiveContainer>
         )}
-        
-        {/* Export Options Action Sheet */}
-        <ActionSheet
-          visible={showExportSheet}
-          onClose={() => setShowExportSheet(false)}
-          title={t('admin.exportData') || 'Export Data'}
-          options={[
-            {
-              label: t('admin.exportAsExcel') || 'Export as Excel (XLSX)',
-              icon: 'document-text-outline',
-              onPress: () => {
-                setShowExportSheet(false);
-                triggerExport('xlsx');
-              },
-            },
-            {
-              label: t('admin.exportAsPDF') || 'Export as PDF',
-              icon: 'document-outline',
-              onPress: () => {
-                setShowExportSheet(false);
-                triggerExport('pdf');
-              },
-            },
-          ]}
-        />
       </View>
     </SafeAreaView>
   );

@@ -197,3 +197,21 @@ export const exportUserData = async (): Promise<any> => {
 
   return response.data;
 };
+
+/**
+ * Submit support ticket
+ */
+export const submitSupportTicket = async (data: {
+  subject: string;
+  message: string;
+}): Promise<void> => {
+  const response = await apiClient.post<{ success: boolean; message?: string }>(
+    '/api/support/ticket',
+    data
+  );
+
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to submit support ticket');
+  }
+};
+

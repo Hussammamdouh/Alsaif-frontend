@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useLocalization, useTheme } from '../../app/providers';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
 import { ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
-import { subscriptionStyles as styles } from './subscription.styles';
+import { createSubscriptionStyles } from './subscription.styles';
 import {
   useSubscription,
   useSubscriptionPlans,
@@ -42,6 +42,8 @@ export const SubscriptionScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const isDesktop = width >= 1024;
   const { logout: authLogout } = useAuth();
+
+  const styles = React.useMemo(() => createSubscriptionStyles(theme, isRTL), [theme, isRTL]);
 
   const { subscription, loading: subLoading, refetch, cancelSubscription } = useSubscription();
   const { plans, loading: plansLoading } = useSubscriptionPlans();
@@ -133,9 +135,11 @@ export const SubscriptionScreen: React.FC = () => {
                 </Text>
               </View>
               <View style={styles.planDetailRow}>
-                <Text style={styles.planDetailLabel}>{t('admin.daysRemaining')}</Text>
-                <Text style={[styles.planDetailValue, { color: subscription.isExpiringSoon ? '#ff9500' : '#000' }]}>
-                  {subscription.daysRemaining} {t('time.daysAgo').replace(' ago', '').replace('منذ ', '')}
+                <Text style={styles.planDetailLabel}>
+                  {t('admin.daysRemaining', { count: subscription.daysRemaining })}
+                </Text>
+                <Text style={[styles.planDetailValue, { color: subscription.isExpiringSoon ? theme.warning.main : theme.text.primary }]}>
+                  {subscription.daysRemaining}
                 </Text>
               </View>
               <View style={styles.planDetailRow}>
@@ -306,14 +310,14 @@ export const SubscriptionScreen: React.FC = () => {
                 <Ionicons
                   name="close-circle"
                   size={24}
-                  color="#ff3b30"
+                  color={theme.error.main}
                   style={styles.actionButtonIcon}
                 />
                 <Text style={[styles.actionButtonText, styles.actionButtonTextDestructive]}>
-                  Cancel Subscription
+                  {t('settings.cancelSubscription') || 'Cancel Subscription'}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#ff3b30" />
+              <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={20} color={theme.error.main} />
             </View>
           </TouchableOpacity>
         )}
@@ -339,8 +343,16 @@ export const SubscriptionScreen: React.FC = () => {
           } : null}>
             {/* Header (Desktop) */}
             {isDesktop && (
-              <View style={[styles.header, { marginBottom: 32, alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <Text style={[styles.headerTitle, { fontSize: 28 }]}>{t('profile.subscription')}</Text>
+              <View style={[styles.header, { marginBottom: 32 }]}>
+                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <TouchableOpacity 
+                    onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('MainTabs' as never)}
+                    style={styles.backButton}
+                  >
+                    <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+                  </TouchableOpacity>
+                  <Text style={[styles.headerTitle, { fontSize: 28 }]}>{t('profile.subscription')}</Text>
+                </View>
                 <Text style={styles.headerSubtitle}>
                   {t('profile.manageSubscription')}
                 </Text>
@@ -432,7 +444,15 @@ export const SubscriptionScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t('profile.subscription')}</Text>
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 8 }}>
+            <TouchableOpacity 
+              onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('MainTabs' as never)}
+              style={styles.backButton}
+            >
+              <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={theme.text.primary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t('profile.subscription')}</Text>
+          </View>
           <Text style={styles.headerSubtitle}>
             {t('profile.manageSubscription')}
           </Text>

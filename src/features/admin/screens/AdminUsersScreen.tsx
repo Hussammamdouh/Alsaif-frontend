@@ -25,7 +25,6 @@ import { useNavigation } from '@react-navigation/native';
 import { createAdminStyles } from '../admin.styles';
 import { AdminSidebar } from '../components/AdminSidebar';
 import { useAdminUsers } from '../hooks';
-import { exportToExcel } from '../../../shared/utils/exportUtils';
 import {
   STATUS_COLORS,
   ROLE_COLORS,
@@ -46,7 +45,6 @@ import {
   createUser as createUserAPI,
   updateUser as updateUserAPI,
   deleteUser as deleteUserAPI,
-  exportUsers as exportUsersAPI,
 } from '../../../core/services/admin/adminService';
 import { Alert, Linking } from 'react-native';
 import { loadAuthSession } from '../../../app/auth/auth.storage';
@@ -86,7 +84,6 @@ export const AdminUsersScreen: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  const [showExportSheet, setShowExportSheet] = useState(false);
 
   // Form states for create/edit
   const [formName, setFormName] = useState('');
@@ -180,36 +177,6 @@ export const AdminUsersScreen: React.FC = () => {
     }
   };
 
-  const handleExportUsers = async () => {
-    try {
-      const baseUrl = getApiBaseUrl();
-      const session = await loadAuthSession();
-      if (!session) throw new Error('No session available');
-
-      const url = `${baseUrl}/api/export/users?token=${session.tokens.accessToken}`;
-
-      Alert.alert(
-        'Export Users',
-        'Your user list is being prepared. Would you like to download it?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Download',
-            onPress: async () => {
-              const supported = await Linking.canOpenURL(url);
-              if (supported) {
-                await Linking.openURL(url);
-              } else {
-                Alert.alert('Error', 'Cannot open download link');
-              }
-            }
-          }
-        ]
-      );
-    } catch (error: any) {
-      Alert.alert('Export Failed', error.message || 'Failed to export users');
-    }
-  };
 
   const openCreateModal = () => {
     setFormName('');
@@ -442,29 +409,6 @@ export const AdminUsersScreen: React.FC = () => {
     );
   };
 
-  const triggerExport = async (format: 'xlsx' | 'pdf') => {
-    try {
-      const baseUrl = getApiBaseUrl();
-      const session = await loadAuthSession();
-      if (!session) throw new Error('No session available');
-
-      const path = format === 'pdf' ? '/api/export/users/pdf' : '/api/export/users/xlsx';
-      const url = `${baseUrl}${path}?token=${session.tokens.accessToken}`;
-
-      if (Platform.OS === 'web') {
-        window.open(url, '_blank');
-      } else {
-        await Linking.openURL(url);
-      }
-    } catch (error: any) {
-      if (Platform.OS === 'web') {
-        alert(error.message || 'Failed to export users');
-      } else {
-        Alert.alert(t('common.error') || 'Error', error.message || 'Failed to export users');
-      }
-    }
-  };
-
   const renderHeader = () => (
     <View style={[styles.header, isDesktop && { height: 80, paddingTop: 0, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
       <View style={[styles.headerLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -474,9 +418,6 @@ export const AdminUsersScreen: React.FC = () => {
         <Text style={[styles.headerTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.users')}</Text>
       </View>
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
-        <TouchableOpacity style={[localStyles.iconBtn, { [isRTL ? 'marginLeft' : 'marginRight']: 8 }]} onPress={() => setShowExportSheet(true)}>
-          <Ionicons name="download-outline" size={22} color={theme.primary.main} />
-        </TouchableOpacity>
         <TouchableOpacity onPress={openCreateModal} style={{ [isRTL ? 'marginLeft' : 'marginRight']: 16 }}>
           <Ionicons name="person-add" size={24} color={theme.primary.main} />
         </TouchableOpacity>
@@ -579,31 +520,6 @@ export const AdminUsersScreen: React.FC = () => {
           </ResponsiveContainer>
         </SafeAreaView>
       )}
-
-      {/* Export Options Action Sheet */}
-      <ActionSheet
-        visible={showExportSheet}
-        onClose={() => setShowExportSheet(false)}
-        title={t('admin.exportData') || 'Export Data'}
-        options={[
-          {
-            label: t('admin.exportAsExcel') || 'Export as Excel (XLSX)',
-            icon: 'document-text-outline',
-            onPress: () => {
-              setShowExportSheet(false);
-              triggerExport('xlsx');
-            },
-          },
-          {
-            label: t('admin.exportAsPDF') || 'Export as PDF',
-            icon: 'document-outline',
-            onPress: () => {
-              setShowExportSheet(false);
-              triggerExport('pdf');
-            },
-          },
-        ]}
-      />
 
       {/* Status Filter Action Sheet */}
       <ActionSheet

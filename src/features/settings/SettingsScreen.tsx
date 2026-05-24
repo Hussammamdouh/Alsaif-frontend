@@ -28,6 +28,7 @@ import { styles } from './settings.styles';
 import { useNavigation } from '@react-navigation/native';
 import { ResponsiveContainer } from '../../shared/components';
 import { SettingsLayout, SettingsTab } from './SettingsLayout';
+import { SupportModal } from './components/SupportModal';
 import { useSettings, useDeviceManagement, useNotificationSettings, useSubscriptionCancellation } from './settings.hooks';
 import { useProfile } from '../profile/profile.hooks';
 import { useTheme } from '../../app/providers/ThemeProvider';
@@ -116,6 +117,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
     const [showNotificationPreferencesModal, setShowNotificationPreferencesModal] = useState(false);
     const [showLogoutAllDevicesModal, setShowLogoutAllDevicesModal] = useState(false);
     const [showCancelSubscriptionModal, setShowCancelSubscriptionModal] = useState(false);
+    const [showSupportModal, setShowSupportModal] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -1185,7 +1187,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     <Icon name="chevron-forward" size={20} color={theme.text.tertiary} />
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
+                  <TouchableOpacity
+                    style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
+                    onPress={() => setShowSupportModal(true)}
+                  >
                     <View style={styles.settingLeft}>
                       <Icon name="help-circle-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
                       <Text style={[styles.settingLabel, { color: theme.text.primary }]}>{t('settings.helpSupport')}</Text>
@@ -1929,6 +1934,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
             </View>
           </View>
         </Modal>
+
+        <SupportModal
+          visible={showSupportModal}
+          onClose={() => setShowSupportModal(false)}
+        />
       </>
     );
   }
