@@ -27,7 +27,7 @@ import { useAdminDashboard } from '../hooks';
 import { useSystemSettings } from '../../subscription/subscription.hooks';
 import { DASHBOARD_SECTIONS, DASHBOARD_SECTION_TRANSLATIONS, CHART_COLORS } from '../admin.constants';
 import { useTheme, useLocalization } from '../../../app/providers';
-import { useUser } from '../../../app/auth';
+import { useUser, UserRole } from '../../../app/auth';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ResponsiveContainer } from '../../../shared/components';
 import { AdminSidebar } from '../components/AdminSidebar';
@@ -44,8 +44,8 @@ export const AdminDashboardScreen: React.FC = () => {
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
   const user = useUser();
-  const isSuper = user?.role === 'superadmin';
-  const isModerator = user?.role === 'moderator';
+  const isSuper = user?.role === UserRole.SUPERADMIN;
+  const isModerator = user?.role === UserRole.MODERATOR;
 
   const [showExportSheet, setShowExportSheet] = useState(false);
 
@@ -261,7 +261,7 @@ export const AdminDashboardScreen: React.FC = () => {
       )}
 
       {/* System Settings Controls */}
-      {!isModerator && (stats as any)?.role === 'superadmin' && (
+      {!isModerator && isSuper && (
         <>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('admin.systemSettings')}</Text>

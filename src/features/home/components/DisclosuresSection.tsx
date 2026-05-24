@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Platform, useWindowDimensions } from 'react-native';
 import { useDisclosures } from '../../disclosure/disclosure.hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
@@ -11,23 +11,20 @@ import { spacing } from '../../../core/theme/spacing';
 import { useIsAuthenticated } from '../../../app/auth/auth.hooks';
 
 const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }) => {
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
     const { t, language, isRTL } = useLocalization();
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
-    const { disclosures, loading, hasMore, loadMore } = useDisclosures(4, exchange);
+    
+    // Manage local filter state (only used if exchange prop is not provided)
+    const [selectedExchange, setSelectedExchange] = useState<'ADX' | 'DFM' | undefined>(undefined);
+    
+    const currentExchange = exchange || selectedExchange;
+    const { disclosures, loading, hasMore, loadMore } = useDisclosures(4, currentExchange || 'ALL');
     const { width } = useWindowDimensions();
     const isAuthenticated = useIsAuthenticated();
 
     const isSmallLaptop = width >= 1024 && width < 1280;
     const shouldReduceTitle = !isAuthenticated && isSmallLaptop;
-
-    if (loading && disclosures.length === 0) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={theme.primary.main} />
-            </View>
-        );
-    }
 
     return (
         <View style={styles.container}>
@@ -39,6 +36,58 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
                     <Text style={[styles.viewAll, { color: theme.primary.main }]}>{t('common.viewAll')}</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Filter Pills (only show if exchange prop is not provided, i.e., in the authenticated Desktop Home tab) */}
+            {!exchange && (
+                <View style={[
+                    styles.filterContainer,
+                    {
+                        flexDirection: isRTL ? 'row-reverse' : 'row',
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+                    }
+                ]}>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterTab,
+                            !selectedExchange && { backgroundColor: theme.primary.main }
+                        ]}
+                        onPress={() => setSelectedExchange(undefined)}
+                    >
+                        <Text style={[styles.filterTabText, { color: !selectedExchange ? '#FFF' : theme.text.secondary }]}>
+                            {language === 'ar' ? 'الكل' : 'All'}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterTab,
+                            selectedExchange === 'ADX' && { backgroundColor: '#EAB308' }
+                        ]}
+                        onPress={() => setSelectedExchange('ADX')}
+                    >
+                        <Text style={[styles.filterTabText, { color: selectedExchange === 'ADX' ? '#FFF' : theme.text.secondary }]}>
+                            {t('market.adxTitle')}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterTab,
+                            selectedExchange === 'DFM' && { backgroundColor: '#3B82F6' }
+                        ]}
+                        onPress={() => setSelectedExchange('DFM')}
+                    >
+                        <Text style={[styles.filterTabText, { color: selectedExchange === 'DFM' ? '#FFF' : theme.text.secondary }]}>
+                            {t('market.dfmTitle')}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {loading && disclosures.length === 0 ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={theme.primary.main} />
+                </View>
+            ) : (
+                <>
 
             {disclosures.map((item) => {
                 const isADX = item.exchange === 'ADX';
@@ -89,6 +138,8 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
                     )}
                 </TouchableOpacity>
             )}
+            </>
+            )}
         </View>
     );
 };
@@ -96,6 +147,25 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        marginBottom: spacing.md,
+        borderRadius: 8,
+        padding: 4,
+        alignSelf: 'flex-start',
+    },
+    filterTab: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: 6,
+        borderRadius: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 4,
+    },
+    filterTabText: {
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     loadingContainer: {
         paddingVertical: 80,

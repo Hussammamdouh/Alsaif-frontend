@@ -76,35 +76,61 @@ export const SupportModal: React.FC<SupportModalProps> = ({ visible, onClose }) 
         message: message.trim()
       });
 
-      // 2. Format prefilled WhatsApp message
+      // 2. Format prefilled message
       const appName = 'AlSaif Analysis';
       const userName = profile?.name || 'Guest';
       const userEmail = profile?.email || 'N/A';
-      const whatsappText = `*Support Request - ${appName}*
+      const formattedText = `*Support Request - ${appName}*
 ====================
 *Subject:* ${subject.trim()}
 *User:* ${userName} (${userEmail})
 *Message:* ${message.trim()}`;
-
-      const whatsappUrl = `https://wa.me/971501414516?text=${encodeURIComponent(whatsappText)}`;
 
       // Close the modal and reset fields immediately
       onClose();
       setSubject('');
       setMessage('');
 
-      // Open WhatsApp linking immediately and automatically
-      try {
-        await Linking.openURL(whatsappUrl);
-      } catch (linkError) {
-        console.error('Failed to open WhatsApp URL', linkError);
-        // Fallback: Open in web browser via api.whatsapp.com
-        try {
-          await Linking.openURL(`https://api.whatsapp.com/send?phone=971501414516&text=${encodeURIComponent(whatsappText)}`);
-        } catch (fallbackError) {
-          console.error('Failed to open fallback WhatsApp URL', fallbackError);
-        }
-      }
+      // 3. Prompt user to choose direct follow-up channel
+      Alert.alert(
+        isRTL ? 'تم تقديم الطلب' : 'Ticket Submitted',
+        isRTL
+          ? 'تم إرسال طلبك بنجاح. هل ترغب في المتابعة ومحادثة الدعم الفني مباشرة؟'
+          : 'Your ticket has been emailed to support. Would you like to also open a live chat to follow up?',
+        [
+          {
+            text: 'WhatsApp',
+            onPress: async () => {
+              const whatsappUrl = `https://wa.me/971501414516?text=${encodeURIComponent(formattedText)}`;
+              try {
+                await Linking.openURL(whatsappUrl);
+              } catch (linkError) {
+                console.error('Failed to open WhatsApp URL', linkError);
+                try {
+                  await Linking.openURL(`https://api.whatsapp.com/send?phone=971501414516&text=${encodeURIComponent(formattedText)}`);
+                } catch (fallbackError) {
+                  console.error('Failed to open fallback WhatsApp URL', fallbackError);
+                }
+              }
+            }
+          },
+          {
+            text: 'Telegram',
+            onPress: async () => {
+              const telegramUrl = `https://t.me/alsaif_analysis?text=${encodeURIComponent(formattedText)}`;
+              try {
+                await Linking.openURL(telegramUrl);
+              } catch (linkError) {
+                console.error('Failed to open Telegram URL', linkError);
+              }
+            }
+          },
+          {
+            text: isRTL ? 'إغلاق' : 'Close',
+            style: 'cancel'
+          }
+        ]
+      );
 
     } catch (error) {
       console.error('Failed to submit support ticket', error);
@@ -230,12 +256,15 @@ export const SupportModal: React.FC<SupportModalProps> = ({ visible, onClose }) 
               </View>
 
               {/* Notice */}
-              <View style={[styles.noticeContainer, { backgroundColor: isDark ? 'rgba(67, 135, 48, 0.1)' : '#f4fcf3', borderColor: theme.primary.light }]}>
-                <Icon name="logo-whatsapp" size={20} color="#438730" style={styles.noticeIcon} />
+              <View style={[styles.noticeContainer, { backgroundColor: isDark ? 'rgba(0, 122, 255, 0.05)' : '#f4f9ff', borderColor: theme.primary.light }]}>
+                <View style={{ flexDirection: 'row', gap: 6, [isRTL ? 'marginLeft' : 'marginRight']: 10, alignItems: 'center' }}>
+                  <Icon name="logo-whatsapp" size={20} color="#25D366" />
+                  <Icon name="paper-plane" size={18} color="#0088cc" />
+                </View>
                 <Text style={[styles.noticeText, { color: theme.text.secondary, textAlign: textDirection }]}>
                   {isRTL
-                    ? 'سيتم إرسال المشكلة عبر البريد الإلكتروني وفتح تطبيق واتساب لمتابعة طلبك مباشرة مع الدعم الفني.'
-                    : 'Your ticket will be emailed to support, and WhatsApp will open to follow up on your request directly.'}
+                    ? 'سيتم إرسال طلبك عبر البريد الإلكتروني. بعد الإرسال، يمكنك اختيار المتابعة عبر واتساب أو تليجرام.'
+                    : 'Your ticket will be emailed to support. After submitting, you can choose to follow up directly via WhatsApp or Telegram.'}
                 </Text>
               </View>
 

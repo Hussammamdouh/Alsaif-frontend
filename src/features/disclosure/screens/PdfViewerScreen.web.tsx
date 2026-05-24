@@ -61,20 +61,26 @@ export const PdfViewerScreen: React.FC = () => {
         ? `${apiBaseUrl}/api/disclosures/pdf-proxy?url=${encodeURIComponent(url)}`
         : url;
 
+    // Detect if the browser is running on a mobile OS (iOS, Android, etc.)
+    // Mobile browsers cannot render PDFs directly in iframes, so they require Google Docs Viewer.
+    const isMobileBrowser = typeof navigator !== 'undefined' && 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     // Initial viewer mode: 
-    // - Use 'direct' for local addresses, same-origin, or proxied ADX URLs (safe and bypasses Google issues)
-    // - Use 'google' for truly remote URLs (helps bypass X-Frame-Options on other sites)
+    // - Use 'direct' for local addresses, same-origin, or ADX URLs on desktop (safe and bypasses Google issues)
+    // - Use 'google' for truly remote URLs or ADX URLs on mobile browsers
     const initialIsRemote = typeof url === 'string' &&
         url.startsWith('http') &&
         !isSameOrigin &&
         !isLocalAddress &&
-        !isAdxUrl;
+        (!isAdxUrl || isMobileBrowser);
 
     const [viewerMode, setViewerMode] = useState<'google' | 'direct'>(initialIsRemote ? 'google' : 'direct');
 
     // Use Google Docs viewer to proxy the PDF (bypasses X-Frame-Options) for remote URLs
+    // Route remote ADX through proxyUrl so Google can fetch it successfully
     const viewerUrl = viewerMode === 'google'
-        ? `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(url)}`
+        ? `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(proxyUrl)}`
         : proxyUrl;
 
     const handleShare = async () => {

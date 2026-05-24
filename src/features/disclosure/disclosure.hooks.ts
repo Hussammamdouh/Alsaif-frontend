@@ -51,6 +51,13 @@ export const useDisclosures = (limit: number = 5, initialExchange?: ExchangeFilt
         }
     }, [filter, limit]);
 
+    // Sync state if initialExchange prop changes from the outside
+    useEffect(() => {
+        if (initialExchange) {
+            setFilter(initialExchange);
+        }
+    }, [initialExchange]);
+
     useEffect(() => {
         loadDisclosures(true);
     }, [filter, loadDisclosures]);
