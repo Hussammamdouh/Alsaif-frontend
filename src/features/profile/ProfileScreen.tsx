@@ -534,6 +534,24 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
                 <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />
               </TouchableOpacity>
 
+              <View style={[styles.divider, { backgroundColor: theme.border.main }]} />
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('https://t.me/alsaif_analysis')}
+              >
+                <View style={styles.menuItemLeft}>
+                  <View style={[styles.menuIconContainer, { backgroundColor: '#0088cc10' }]}>
+                    <Ionicons name="paper-plane" size={22} color="#0088cc" />
+                  </View>
+                  <Text style={[styles.menuLabel, { color: theme.text.primary }]}>
+                    {t('profile.telegram')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.text.tertiary} />
+              </TouchableOpacity>
+
             </View>
           </View>
 
