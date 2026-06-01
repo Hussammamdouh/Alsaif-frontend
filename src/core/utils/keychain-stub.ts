@@ -1,85 +1,90 @@
 /**
- * React Native Keychain Stub
- * For Expo Go compatibility - keychain doesn't work in Expo Go
- * This stub prevents crashes and logs warnings
+ * Smart Keychain Wrapper / Stub
+ * Connects to the real react-native-keychain library on standalone builds
+ * Falls back to stub behaviour on Expo Go or Web to prevent crashes
  */
 
-export enum SECURITY_LEVEL {
-  ANY = 'ANY',
-  SECURE_SOFTWARE = 'SECURE_SOFTWARE',
-  SECURE_HARDWARE = 'SECURE_HARDWARE',
-}
+import * as Keychain from 'react-native-keychain';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-export enum ACCESSIBLE {
-  WHEN_UNLOCKED = 'AccessibleWhenUnlocked',
-  AFTER_FIRST_UNLOCK = 'AccessibleAfterFirstUnlock',
-  ALWAYS = 'AccessibleAlways',
-  WHEN_PASSCODE_SET_THIS_DEVICE_ONLY = 'AccessibleWhenPasscodeSetThisDeviceOnly',
-  WHEN_UNLOCKED_THIS_DEVICE_ONLY = 'AccessibleWhenUnlockedThisDeviceOnly',
-  AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY = 'AccessibleAfterFirstUnlockThisDeviceOnly',
-  ALWAYS_THIS_DEVICE_ONLY = 'AccessibleAlwaysThisDeviceOnly',
-}
-
-export enum ACCESS_CONTROL {
-  USER_PRESENCE = 'UserPresence',
-  BIOMETRY_ANY = 'BiometryAny',
-  BIOMETRY_CURRENT_SET = 'BiometryCurrentSet',
-  DEVICE_PASSCODE = 'DevicePasscode',
-  APPLICATION_PASSWORD = 'ApplicationPassword',
-  BIOMETRY_ANY_OR_DEVICE_PASSCODE = 'BiometryAnyOrDevicePasscode',
-  BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE = 'BiometryCurrentSetOrDevicePasscode',
-}
-
-export enum AUTHENTICATION_TYPE {
-  DEVICE_PASSCODE_OR_BIOMETRICS = 'AuthenticationWithBiometricsDevicePasscode',
-  BIOMETRICS = 'AuthenticationWithBiometrics',
-}
-
-export enum BIOMETRY_TYPE {
-  TOUCH_ID = 'TouchID',
-  FACE_ID = 'FaceID',
-  FINGERPRINT = 'Fingerprint',
-  FACE = 'Face',
-  IRIS = 'Iris',
-}
-
-export interface SetOptions {
-  service?: string;
-  accessible?: ACCESSIBLE;
-  securityLevel?: SECURITY_LEVEL;
-  accessControl?: ACCESS_CONTROL;
-}
-
-export interface GetOptions {
-  service?: string;
-  authenticationPrompt?: {
-    title?: string;
-    cancel?: string;
-  };
-  accessControl?: ACCESS_CONTROL;
-}
+// Determine if we should use the stub (only in Expo Go or Web)
+const isExpoGo = Constants.appOwnership === 'expo';
+const isWeb = Platform.OS === 'web';
+const useStub = isExpoGo || isWeb;
 
 const logWarning = (method: string) => {
-  console.warn(`[Keychain Stub] ${method} called - not available in Expo Go. Build with EAS to enable.`);
+  console.warn(`[Keychain] ${method} falling back to stub (running in Expo Go or Web).`);
 };
+
+// Re-export enums from the real library or fall back to stub definitions
+export const SECURITY_LEVEL = Keychain.SECURITY_LEVEL || {
+  ANY: 'ANY',
+  SECURE_SOFTWARE: 'SECURE_SOFTWARE',
+  SECURE_HARDWARE: 'SECURE_HARDWARE',
+};
+
+export const ACCESSIBLE = Keychain.ACCESSIBLE || {
+  WHEN_UNLOCKED: 'AccessibleWhenUnlocked',
+  AFTER_FIRST_UNLOCK: 'AccessibleAfterFirstUnlock',
+  ALWAYS: 'AccessibleAlways',
+  WHEN_PASSCODE_SET_THIS_DEVICE_ONLY: 'AccessibleWhenPasscodeSetThisDeviceOnly',
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'AccessibleWhenUnlockedThisDeviceOnly',
+  AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 'AccessibleAfterFirstUnlockThisDeviceOnly',
+  ALWAYS_THIS_DEVICE_ONLY: 'AccessibleAlwaysThisDeviceOnly',
+};
+
+export const ACCESS_CONTROL = Keychain.ACCESS_CONTROL || {
+  USER_PRESENCE: 'UserPresence',
+  BIOMETRY_ANY: 'BiometryAny',
+  BIOMETRY_CURRENT_SET: 'BiometryCurrentSet',
+  DEVICE_PASSCODE: 'DevicePasscode',
+  APPLICATION_PASSWORD: 'ApplicationPassword',
+  BIOMETRY_ANY_OR_DEVICE_PASSCODE: 'BiometryAnyOrDevicePasscode',
+  BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE: 'BiometryCurrentSetOrDevicePasscode',
+};
+
+export const AUTHENTICATION_TYPE = Keychain.AUTHENTICATION_TYPE || {
+  DEVICE_PASSCODE_OR_BIOMETRICS: 'AuthenticationWithBiometricsDevicePasscode',
+  BIOMETRICS: 'AuthenticationWithBiometrics',
+};
+
+export const BIOMETRY_TYPE = Keychain.BIOMETRY_TYPE || {
+  TOUCH_ID: 'TouchID',
+  FACE_ID: 'FaceID',
+  FINGERPRINT: 'Fingerprint',
+  FACE: 'Face',
+  IRIS: 'Iris',
+};
+
+export type BIOMETRY_TYPE = Keychain.BIOMETRY_TYPE;
 
 export async function setGenericPassword(
   username: string,
   password: string,
   options?: any
-): Promise<false | { service: string; storage: string }> {
-  logWarning('setGenericPassword');
-  return false;
+): Promise<any> {
+  if (useStub) {
+    logWarning('setGenericPassword');
+    return false;
+  }
+  return Keychain.setGenericPassword(username, password, options);
 }
 
-export async function getGenericPassword(options?: any): Promise<false | { username: string; password: string; service: string; storage: string }> {
-  logWarning('getGenericPassword');
-  return false;
+export async function getGenericPassword(options?: any): Promise<any> {
+  if (useStub) {
+    logWarning('getGenericPassword');
+    return false;
+  }
+  return Keychain.getGenericPassword(options);
 }
 
 export async function resetGenericPassword(options?: any): Promise<boolean> {
-  logWarning('resetGenericPassword');
-  return true;
+  if (useStub) {
+    logWarning('resetGenericPassword');
+    return true;
+  }
+  return Keychain.resetGenericPassword(options);
 }
 
 export async function setInternetCredentials(
@@ -87,30 +92,52 @@ export async function setInternetCredentials(
   username: string,
   password: string,
   options?: any
-): Promise<void> {
-  logWarning('setInternetCredentials');
+): Promise<any> {
+  if (useStub) {
+    logWarning('setInternetCredentials');
+    return;
+  }
+  return Keychain.setInternetCredentials(server, username, password, options);
 }
 
 export async function getInternetCredentials(
   server: string,
   options?: any
-): Promise<false | { username: string; password: string }> {
-  logWarning('getInternetCredentials');
-  return false;
+): Promise<any> {
+  if (useStub) {
+    logWarning('getInternetCredentials');
+    return false;
+  }
+  return Keychain.getInternetCredentials(server, options);
 }
 
 export async function resetInternetCredentials(server: string, options?: any): Promise<void> {
-  logWarning('resetInternetCredentials');
+  if (useStub) {
+    logWarning('resetInternetCredentials');
+    return;
+  }
+  return Keychain.resetInternetCredentials(server, options);
 }
 
-export async function getSupportedBiometryType(): Promise<BIOMETRY_TYPE | null> {
-  logWarning('getSupportedBiometryType');
-  return null;
+export async function getSupportedBiometryType(): Promise<any> {
+  if (useStub) {
+    logWarning('getSupportedBiometryType');
+    return null;
+  }
+  try {
+    return await Keychain.getSupportedBiometryType();
+  } catch (err) {
+    console.error('[Keychain] Error getting supported biometry type:', err);
+    return null;
+  }
 }
 
 export async function canImplyAuthentication(options?: any): Promise<boolean> {
-  logWarning('canImplyAuthentication');
-  return false;
+  if (useStub) {
+    logWarning('canImplyAuthentication');
+    return false;
+  }
+  return Keychain.canImplyAuthentication(options);
 }
 
 export default {

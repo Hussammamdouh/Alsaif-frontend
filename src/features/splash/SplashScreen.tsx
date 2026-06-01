@@ -160,6 +160,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
   useEffect(() => {
     let isMounted = true;
     let pollTimer: NodeJS.Timeout;
+    let retries = 0;
+    const maxRetries = 3;
 
     const checkHealth = async () => {
       const controller = new AbortController();
@@ -173,17 +175,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
         if (response.ok) {
           if (isMounted) setHealthChecked(true);
         } else {
-          if (isMounted) pollTimer = setTimeout(checkHealth, 2000);
+          console.warn(`[SplashScreen] Health check returned status ${response.status}`);
+          if (isMounted) {
+            retries++;
+            if (retries >= maxRetries) {
+              console.warn('[SplashScreen] Max retries reached. Proceeding to app.');
+              setHealthChecked(true);
+            } else {
+              pollTimer = setTimeout(checkHealth, 2000);
+            }
+          }
         }
       } catch (error) {
         clearTimeout(timeoutId);
         console.warn('[SplashScreen] Health check failed or timed out:', error);
-        // Fallback: If we can't reach the backend after 5 seconds, 
-        // we might be in an environment where health check is blocked but app is usable
-        // or we just want to let the user see the login screen to diagnose further
         if (isMounted) {
-          // Instead of retrying forever, let's allow proceeding after a few retires
-          // Or just set healthChecked to true if it's a timeout to unblock UI
           setHealthChecked(true);
         }
       }

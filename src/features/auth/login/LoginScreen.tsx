@@ -26,6 +26,7 @@ import { styles } from './login.styles';
 import { useLoginForm } from './login.hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { useAuth, useBiometricStatus } from '../../../app/auth';
+import { hasCredentialsSaved } from '../../../app/auth/auth.storage';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -58,6 +59,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
     const { loginWithBiometric, enableBiometric, clearError } = useAuth();
     const { enabled: biometricEnabled, type: biometricType } = useBiometricStatus();
     const biometricAvailable = biometricType !== null;
+    const [hasSavedSession, setHasSavedSession] = React.useState(false);
+    const hasAutoPrompted = React.useRef(false);
+
+    React.useEffect(() => {
+      const checkSession = async () => {
+        try {
+          const saved = await hasCredentialsSaved();
+          setHasSavedSession(saved);
+        } catch (e) {
+          setHasSavedSession(false);
+        }
+      };
+      checkSession();
+    }, []);
 
     const { width } = useWindowDimensions();
     const isDesktop = width > 768;
@@ -234,6 +249,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
         );
       }
     }, [biometricEnabled, loginWithBiometric, onLoginSuccess]);
+
+    // Auto-trigger biometric authentication if enabled and we have a saved session
+    useEffect(() => {
+      if (biometricEnabled && hasSavedSession && !hasAutoPrompted.current) {
+        hasAutoPrompted.current = true;
+        const timer = setTimeout(() => {
+          handleBiometricAuth();
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }, [biometricEnabled, hasSavedSession, handleBiometricAuth]);
 
     /**
      * Handle login submission
@@ -433,7 +459,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
                       </View>
 
                       {/* Biometric Auth */}
-                      {biometricEnabled && (
+                      {biometricEnabled && hasSavedSession && (
                         <TouchableOpacity
                           style={styles.biometricContainer}
                           onPress={handleBiometricAuth}

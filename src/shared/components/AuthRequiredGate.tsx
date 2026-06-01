@@ -58,7 +58,7 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
         if (navigation.canGoBack()) {
             navigation.goBack();
         } else {
-            navigation.navigate('Home' as any);
+            navigation.navigate('MainTabs' as any);
         }
     };
 

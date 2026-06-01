@@ -3,7 +3,7 @@
  * Handles app initialization and session restoration
  */
 
-import { AuthSession } from './auth.types';
+import { AuthSession, BiometricType } from './auth.types';
 import {
   loadAuthSession,
   loadBiometricPreference,
@@ -20,6 +20,7 @@ export interface BootstrapResult {
   session: AuthSession | null;
   biometricEnabled: boolean;
   biometricAvailable: boolean;
+  biometricType: BiometricType | null;
 }
 
 /**
@@ -45,8 +46,9 @@ export const bootstrapApp = async (): Promise<BootstrapResult> => {
     if (!session) {
       return {
         session: null,
-        biometricEnabled: false,
+        biometricEnabled: biometricEnabled && biometricAvailability.available,
         biometricAvailable: biometricAvailability.available,
+        biometricType: biometricAvailability.biometryType,
       };
     }
 
@@ -62,6 +64,7 @@ export const bootstrapApp = async (): Promise<BootstrapResult> => {
         biometricEnabled:
           biometricEnabled && biometricAvailability.available,
         biometricAvailable: biometricAvailability.available,
+        biometricType: biometricAvailability.biometryType,
       };
     }
 
@@ -70,6 +73,7 @@ export const bootstrapApp = async (): Promise<BootstrapResult> => {
       session,
       biometricEnabled: biometricEnabled && biometricAvailability.available,
       biometricAvailable: biometricAvailability.available,
+      biometricType: biometricAvailability.biometryType,
     };
   } catch (error) {
     console.error('[Bootstrap] Failed to bootstrap app:', error);
@@ -81,6 +85,7 @@ export const bootstrapApp = async (): Promise<BootstrapResult> => {
       session: null,
       biometricEnabled: false,
       biometricAvailable: false,
+      biometricType: null,
     };
   }
 };

@@ -153,7 +153,14 @@ export enum AuthActionType {
  */
 export type AuthAction =
   | { type: AuthActionType.BOOTSTRAP_START }
-  | { type: AuthActionType.BOOTSTRAP_SUCCESS; payload: AuthSession | null }
+  | {
+      type: AuthActionType.BOOTSTRAP_SUCCESS;
+      payload: {
+        session: AuthSession | null;
+        biometricEnabled: boolean;
+        biometricType: BiometricType | null;
+      };
+    }
   | { type: AuthActionType.BOOTSTRAP_ERROR; payload: string }
   | { type: AuthActionType.LOGIN_START }
   | { type: AuthActionType.LOGIN_SUCCESS; payload: AuthSession }

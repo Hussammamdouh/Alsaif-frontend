@@ -19,13 +19,19 @@ import {
   clearAllAuthData,
   isSessionValid,
   saveBiometricPreference,
+  saveCredentials,
+  loadCredentials,
+  deleteCredentials,
+  hasCredentialsSaved,
 } from './auth.storage';
 import {
   checkBiometricAvailability,
   validateBiometricSecurity,
   handleBiometricError,
+  getBiometricPromptMessage,
 } from './auth.biometric';
 import { bootstrapApp, bootstrapWithBiometric } from './auth.bootstrap';
+import * as Keychain from '../../core/utils/keychain-stub';
 
 // Import auth services
 import { login as loginApi, logout as logoutApi, refreshToken as refreshTokenApi, verify as verifyApi, resendVerificationCode as resendApi } from '../../core/services/auth/authService';
@@ -48,7 +54,7 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
   dispatch({ type: AuthActionType.BOOTSTRAP_START });
 
   try {
-    const result = await bootstrapApp();
+    let result = await bootstrapApp();
 
     // Check if we should attempt token refresh
     if (result.session && !isSessionValid(result.session)) {
@@ -56,24 +62,45 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
       try {
         await refreshTokens(dispatch, result.session.tokens.refreshToken);
         // Refresh succeeded - load the new session
-        const updatedResult = await bootstrapApp();
-        dispatch({
-          type: AuthActionType.BOOTSTRAP_SUCCESS,
-          payload: updatedResult.session,
-        });
-        return;
+        result = await bootstrapApp();
       } catch {
         // Refresh failed - clear session
         await deleteAuthSession();
-        dispatch({ type: AuthActionType.BOOTSTRAP_SUCCESS, payload: null });
+        dispatch({
+          type: AuthActionType.BOOTSTRAP_SUCCESS,
+          payload: {
+            session: null,
+            biometricEnabled: result.biometricEnabled,
+            biometricType: result.biometricType,
+          },
+        });
         return;
       }
     }
 
-    dispatch({
-      type: AuthActionType.BOOTSTRAP_SUCCESS,
-      payload: result.session,
-    });
+    const credentialsSaved = await hasCredentialsSaved();
+
+    // If biometric is enabled and we have saved credentials, DO NOT automatically log in
+    // Force user to authenticate on the login screen
+    if (result.biometricEnabled && credentialsSaved) {
+      dispatch({
+        type: AuthActionType.BOOTSTRAP_SUCCESS,
+        payload: {
+          session: null, // Keep session null to show login screen
+          biometricEnabled: true,
+          biometricType: result.biometricType,
+        },
+      });
+    } else {
+      dispatch({
+        type: AuthActionType.BOOTSTRAP_SUCCESS,
+        payload: {
+          session: result.session,
+          biometricEnabled: result.biometricEnabled,
+          biometricType: result.biometricType,
+        },
+      });
+    }
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Bootstrap failed';
@@ -112,6 +139,9 @@ export const login = async (
 
     // Save to secure storage
     await saveAuthSession(session, false);
+
+    // Save credentials silently for future biometric login
+    await saveCredentials(identifier, password);
 
     dispatch({ type: AuthActionType.LOGIN_SUCCESS, payload: session });
   } catch (error) {
@@ -312,12 +342,6 @@ export const enableBiometric = async (dispatch: Dispatch<AuthAction>) => {
     // Save preference
     await saveBiometricPreference(true);
 
-    // Re-save session with biometric protection
-    const result = await bootstrapApp();
-    if (result.session) {
-      await saveAuthSession(result.session, true);
-    }
-
     dispatch({
       type: AuthActionType.ENABLE_BIOMETRIC,
       payload: availability.biometryType!,
@@ -337,11 +361,8 @@ export const disableBiometric = async (dispatch: Dispatch<AuthAction>) => {
     // Clear biometric preference
     await saveBiometricPreference(false);
 
-    // Re-save session without biometric protection
-    const result = await bootstrapApp();
-    if (result.session) {
-      await saveAuthSession(result.session, false);
-    }
+    // Delete saved credentials
+    await deleteCredentials();
 
     dispatch({ type: AuthActionType.DISABLE_BIOMETRIC });
   } catch (error) {
@@ -358,22 +379,38 @@ export const loginWithBiometric = async (dispatch: Dispatch<AuthAction>) => {
   dispatch({ type: AuthActionType.LOGIN_START });
 
   try {
-    const session = await bootstrapWithBiometric();
+    const credentials = await loadCredentials();
 
-    if (!session) {
-      throw new Error('Biometric authentication failed');
+    if (!credentials) {
+      throw new Error('Biometric authentication failed or cancelled');
     }
 
-    // Validate session
-    if (!isSessionValid(session)) {
-      // Try to refresh
-      await refreshTokens(dispatch, session.tokens.refreshToken);
-      return;
-    }
+    // Call login API in the background using stored credentials
+    const response = await loginApi({
+      identifier: credentials.email,
+      password: credentials.password,
+    });
+
+    // Create session
+    const now = Date.now();
+    const session: AuthSession = {
+      user: {
+        id: response.user.id,
+        email: response.user.email,
+        name: response.user.name,
+        role: response.user.role as UserRole,
+      },
+      tokens: response.tokens,
+      issuedAt: now,
+      expiresAt: now + response.tokens.expiresIn * 1000,
+    };
+
+    // Save session silently
+    await saveAuthSession(session, false);
 
     dispatch({ type: AuthActionType.LOGIN_SUCCESS, payload: session });
   } catch (error) {
-    const message = handleBiometricError(error);
+    const message = mapAuthError(error, 'Biometric login failed. Please use your password.');
     dispatch({ type: AuthActionType.LOGIN_ERROR, payload: message });
     throw error;
   }

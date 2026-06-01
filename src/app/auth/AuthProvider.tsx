@@ -40,6 +40,12 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
 
+  // Keep a ref of the session to avoid dependency loops in callbacks (like updateUser)
+  const sessionRef = React.useRef(state.session);
+  useEffect(() => {
+    sessionRef.current = state.session;
+  }, [state.session]);
+
   /**
    * Bootstrap app on mount
    */
@@ -207,22 +213,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     try {
-      const { bootstrapApp, saveAuthSession } = require('./auth.actions');
-      const result = await bootstrapApp();
-      if (result.session) {
+      const currentSession = sessionRef.current;
+      if (currentSession) {
+        const { saveAuthSession } = require('./auth.storage');
         const updatedSession = {
-          ...result.session,
+          ...currentSession,
           user: {
-            ...result.session.user,
+            ...currentSession.user,
             ...userUpdates
           }
         };
-        await saveAuthSession(updatedSession, state.biometricEnabled);
+        await saveAuthSession(updatedSession, false); // Always save silently
       }
     } catch (e) {
       console.error('[AuthProvider] Failed to persist user updates to storage:', e);
     }
-  }, [state.biometricEnabled]);
+  }, []);
 
   /**
    * Enable Biometric

@@ -71,7 +71,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
     const { cancelSubscription, isCancelling } = useSubscriptionCancellation();
     const { theme, themeMode, toggleTheme, setThemeMode } = useTheme();
     const { t, language, setLanguage } = useLocalization();
-    const { logout: authLogout, state: authState } = useAuth();
+    const { logout: authLogout, state: authState, enableBiometric, disableBiometric } = useAuth();
     const { width } = useWindowDimensions();
     const isDesktop = width >= 1024;
     const navigation = useNavigation<any>();
@@ -376,21 +376,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                 text: 'Enable',
                 onPress: async () => {
                   try {
-                    // Authenticate with biometric to verify it works
-                    const promptMessage = getBiometricPromptMessage(availability.biometryType);
-                    const credentials = await Keychain.getGenericPassword({
-                      authenticationPrompt: {
-                        title: promptMessage,
-                      },
-                      authenticationType: Keychain.AUTHENTICATION_TYPE.BIOMETRICS,
-                    });
+                    // Enable biometric locally on device (saves preference and protects session)
+                    await enableBiometric();
 
-                    if (credentials) {
-                      // Biometric auth successful, enable in settings
-                      const result = await updateSettings({ biometricEnabled: true });
-                      if (result.success) {
-                        Alert.alert('Success', 'Biometric login enabled successfully');
-                      }
+                    // Save setting on backend
+                    const result = await updateSettings({ biometricEnabled: true });
+                    
+                    // Reload profile to update UI switch
+                    await loadProfile();
+
+                    if (result.success) {
+                      Alert.alert('Success', 'Biometric login enabled successfully');
                     }
                   } catch (error) {
                     const errorMessage = handleBiometricError(error);
@@ -417,7 +413,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     const availability = await checkBiometricAvailability();
                     if (availability.available) {
                       const promptMessage = getBiometricPromptMessage(availability.biometryType);
+                      // Query the biometric-protected session service specifically
                       await Keychain.getGenericPassword({
+                        service: 'com.elsaifanalysis.auth',
                         authenticationPrompt: {
                           title: promptMessage,
                         },
@@ -425,8 +423,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                       });
                     }
 
-                    // Authentication successful, disable
+                    // Disable biometric locally on device
+                    await disableBiometric();
+
+                    // Save setting on backend
                     const result = await updateSettings({ biometricEnabled: false });
+                    
+                    // Reload profile to update UI switch
+                    await loadProfile();
+
                     if (result.success) {
                       Alert.alert('Success', 'Biometric login disabled');
                     }
@@ -440,7 +445,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
           );
         }
       },
-      [updateSettings]
+      [enableBiometric, disableBiometric, updateSettings, loadProfile]
     );
 
     /**

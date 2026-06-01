@@ -50,10 +50,12 @@ export const authReducer = (
     case AuthActionType.BOOTSTRAP_SUCCESS:
       return {
         ...state,
-        session: action.payload,
-        isAuthenticated: action.payload !== null,
+        session: action.payload.session,
+        isAuthenticated: action.payload.session !== null,
         bootstrapState: BootstrapState.READY,
         bootstrapError: null,
+        biometricEnabled: action.payload.biometricEnabled,
+        biometricType: action.payload.biometricType,
       };
 
     case AuthActionType.BOOTSTRAP_ERROR:
@@ -149,8 +151,7 @@ export const authReducer = (
         session: null,
         isAuthenticated: false,
         error: action.payload,
-        biometricEnabled: false,
-        biometricType: null,
+        biometricType: state.biometricType,
       };
 
     // ==================== LOGOUT ====================
@@ -160,6 +161,8 @@ export const authReducer = (
       const newState = {
         ...initialAuthState,
         bootstrapState: BootstrapState.READY, // Keep bootstrap ready
+        biometricEnabled: state.biometricEnabled,
+        biometricType: state.biometricType,
       };
       console.log('[Auth Reducer] New state isAuthenticated:', newState.isAuthenticated);
       return newState;

@@ -6,6 +6,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Linking from 'expo-linking';
 
 import { SplashScreen } from '../../features/splash/SplashScreen';
 import { LoginScreen } from '../../features/auth/login';
@@ -48,12 +49,82 @@ import { AboutScreen } from '../../features/about';
 import { NotificationsScreen } from '../../features/notifications';
 import { RootStackParamList, AuthStackParamList, MainStackParamList } from './types';
 import { useAuth, UserRole } from '../auth';
+import { useLocalization } from '../providers/LocalizationProvider';
 import { AdminGuard, SuperadminGuard } from './AdminGuard';
 import { BottomTabNavigator } from './BottomTabNavigator';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const MainStack = createNativeStackNavigator<MainStackParamList>();
+
+const linking = {
+  prefixes: [
+    Linking.createURL('/'),
+    'alsaif-analysis://',
+    'https://alsaifanalysis.com',
+    'https://*.alsaifanalysis.com',
+  ],
+  config: {
+    screens: {
+      Main: {
+        path: '',
+        screens: {
+          MainTabs: {
+            path: '',
+            screens: {
+              HomeTab: 'home',
+              MarketTab: 'market',
+              ChatTab: 'chat',
+              ProfileTab: 'profile',
+              AdminTab: 'admin',
+              DisclosuresTab: 'disclosures',
+              InsightsTab: 'insights',
+            },
+          },
+          ChatRoom: 'chat/:conversationId',
+          InsightDetail: 'insight/:insightId',
+          PdfViewer: 'pdf-viewer',
+          DisclosureDetails: 'disclosure/:disclosureId',
+          NewsDetail: 'news/:newsId',
+          NewsList: 'news',
+          InsightRequests: 'requests',
+          Notifications: 'notifications',
+          Settings: 'settings',
+          Security: 'settings/security',
+          Subscription: 'subscription',
+          Paywall: 'paywall',
+          SubscriptionPlans: 'subscription-plans',
+          PaymentSuccess: 'payment-success',
+          Terms: 'terms',
+          About: 'about',
+          AdminDashboard: 'admin/dashboard',
+          AdminUsers: 'admin/users',
+          AdminInsights: 'admin/insights',
+          AdminSubscriptions: 'admin/subscriptions',
+          AdminBroadcast: 'admin/broadcast',
+          AdminAuditLogs: 'admin/audit-logs',
+          AdminAnalytics: 'admin/analytics',
+          AdminModeration: 'admin/moderation',
+          AdminSubscriptionPlans: 'admin/subscription-plans',
+          AdminDiscountCodes: 'admin/discount-codes',
+          AdminBanners: 'admin/banners',
+          AdminGroupChat: 'admin/group-chat',
+          AdminSystemControl: 'admin/system-control',
+        },
+      },
+      Auth: {
+        path: 'auth',
+        screens: {
+          Login: 'login',
+          Register: 'register',
+          Verification: 'verify/:userId/:email',
+          ForgotPassword: 'forgot-password',
+          ResetPassword: 'reset-password/:email',
+        },
+      },
+    },
+  },
+};
 
 /**
  * Root Navigator Component
@@ -67,7 +138,41 @@ const MainStack = createNativeStackNavigator<MainStackParamList>();
  */
 export const RootNavigator: React.FC = () => {
   const { state: authState } = useAuth();
+  const { t } = useLocalization();
   const [showSplash, setShowSplash] = useState(true);
+
+  // Helper to map route names to localized titles
+  const getPageTitle = (routeName: string) => {
+    switch (routeName) {
+      case 'HomeTab':
+        return t('tabs.home') || 'Home';
+      case 'MarketTab':
+        return t('tabs.market') || 'Market';
+      case 'ChatTab':
+        return t('tabs.chat') || 'Chat';
+      case 'ProfileTab':
+        return t('tabs.profile') || 'Profile';
+      case 'AdminTab':
+      case 'AdminDashboard':
+        return t('tabs.admin') || 'Admin';
+      case 'DisclosuresTab':
+      case 'DisclosureDetails':
+        return t('tabs.disclosures') || 'Disclosures';
+      case 'InsightsTab':
+      case 'InsightDetail':
+        return t('tabs.insights') || 'Insights';
+      case 'Settings':
+        return t('profile.settings') || 'Settings';
+      case 'Security':
+        return t('profile.security') || 'Security';
+      case 'Login':
+        return t('login.title') || 'Login';
+      case 'Register':
+        return t('login.signUp') || 'Register';
+      default:
+        return routeName;
+    }
+  };
 
   // Log auth state changes
   useEffect(() => {
@@ -98,7 +203,17 @@ export const RootNavigator: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      linking={linking}
+      documentTitle={{
+        enabled: true,
+        formatter: (options, route) => {
+          const appName = t('common.appName') || 'AlSaif Analysis';
+          const pageTitle = getPageTitle(route?.name || '');
+          return `${appName} | ${pageTitle}`;
+        }
+      }}
+    >
       <RootStack.Navigator
         screenOptions={{
           headerShown: false,

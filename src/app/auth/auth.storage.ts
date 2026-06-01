@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as KeychainStub from '../../core/utils/keychain-stub';
 import { AuthSession, SecureStorageKey } from './auth.types';
+import { checkBiometricAvailability, getBiometricPromptMessage } from './auth.biometric';
 
 // Real keychain will be loaded dynamically if available
 let Keychain: any = KeychainStub;
@@ -89,7 +90,8 @@ export const saveAuthSession = async (
     }
 
     // Use Keychain for native
-    const options = useBiometric ? { ...BIOMETRIC_OPTIONS } : { ...KEYCHAIN_OPTIONS };
+    // We always save the session standardly (without biometric lock) to avoid background prompts on Android
+    const options = { ...KEYCHAIN_OPTIONS };
     await Keychain.setGenericPassword(
       SecureStorageKey.AUTH_SESSION,
       sessionData,
@@ -123,16 +125,7 @@ export const loadAuthSession = async (
     }
 
     // Use Keychain for native
-    // We pass a new object literal to avoid "frozen object" errors if the library tries to modify it
-    const options = requireBiometric
-      ? {
-        service: KEYCHAIN_OPTIONS.service,
-        accessControl: Keychain.ACCESS_CONTROL?.BIOMETRY_CURRENT_SET || 'BiometryCurrentSet',
-        authenticationPrompt: {
-          title: 'Authenticate to access your account',
-        },
-      }
-      : { ...KEYCHAIN_OPTIONS };
+    const options = { ...KEYCHAIN_OPTIONS };
 
     const credentials = await Keychain.getGenericPassword(options);
 
@@ -148,12 +141,6 @@ export const loadAuthSession = async (
     const session = JSON.parse(credentials.password) as AuthSession;
     return session;
   } catch (error) {
-    // Biometric failure or cancellation
-    if (requireBiometric && isKeychainError(error)) {
-      console.warn('[AuthStorage] Biometric authentication failed');
-      return null;
-    }
-
     console.error('[AuthStorage] Failed to load session:', error);
     return null;
   }
@@ -204,7 +191,10 @@ export const saveBiometricPreference = async (
       await Keychain.setGenericPassword(
         SecureStorageKey.BIOMETRIC_ENABLED,
         'true',
-        KEYCHAIN_OPTIONS
+        {
+          ...KEYCHAIN_OPTIONS,
+          service: SecureStorageKey.BIOMETRIC_ENABLED,
+        }
       );
     } else {
       // Delete the preference
@@ -255,21 +245,12 @@ export const clearAllAuthData = async (): Promise<void> => {
   try {
     // Use AsyncStorage for web/Expo Go
     if (shouldUseAsyncStorage()) {
-      await Promise.all([
-        AsyncStorage.removeItem(SecureStorageKey.AUTH_SESSION),
-        AsyncStorage.removeItem(SecureStorageKey.BIOMETRIC_ENABLED),
-      ]);
+      await AsyncStorage.removeItem(SecureStorageKey.AUTH_SESSION);
       return;
     }
 
     // Use Keychain for native
-    await Promise.all([
-      deleteAuthSession(),
-      Keychain.resetGenericPassword({
-        ...KEYCHAIN_OPTIONS,
-        service: SecureStorageKey.BIOMETRIC_ENABLED,
-      }),
-    ]);
+    await deleteAuthSession();
   } catch (error) {
     console.error('[AuthStorage] Failed to clear auth data:', error);
     // Best effort - don't throw
@@ -296,4 +277,109 @@ export const isSessionValid = (session: AuthSession): boolean => {
  */
 const isKeychainError = (error: unknown): error is Error => {
   return error instanceof Error;
+};
+
+/**
+ * Save User Credentials
+ * Saves email and password silently for biometric login
+ */
+export const saveCredentials = async (
+  email: string,
+  password: string
+): Promise<void> => {
+  try {
+    if (shouldUseAsyncStorage()) {
+      await AsyncStorage.setItem('com.elsaifanalysis.credentials', JSON.stringify({ email, password }));
+      return;
+    }
+
+    await Keychain.setGenericPassword(
+      email,
+      password,
+      {
+        ...KEYCHAIN_OPTIONS,
+        service: 'com.elsaifanalysis.credentials',
+      }
+    );
+  } catch (error) {
+    console.error('[AuthStorage] Failed to save credentials:', error);
+  }
+};
+
+/**
+ * Load User Credentials
+ * Prompts user for biometrics and loads email and password
+ */
+export const loadCredentials = async (): Promise<{ email: string; password: string } | null> => {
+  try {
+    if (shouldUseAsyncStorage()) {
+      const data = await AsyncStorage.getItem('com.elsaifanalysis.credentials');
+      if (!data) return null;
+      return JSON.parse(data);
+    }
+
+    const availability = await checkBiometricAvailability();
+    const promptMessage = availability.available 
+      ? getBiometricPromptMessage(availability.biometryType)
+      : 'Authenticate to access your account';
+
+    const credentials = await Keychain.getGenericPassword({
+      service: 'com.elsaifanalysis.credentials',
+      authenticationPrompt: {
+        title: promptMessage,
+      },
+      authenticationType: Keychain.AUTHENTICATION_TYPE.BIOMETRICS,
+    });
+
+    if (!credentials) {
+      return null;
+    }
+
+    return {
+      email: credentials.username,
+      password: credentials.password,
+    };
+  } catch (error) {
+    console.error('[AuthStorage] Failed to load credentials:', error);
+    return null;
+  }
+};
+
+/**
+ * Delete User Credentials
+ */
+export const deleteCredentials = async (): Promise<void> => {
+  try {
+    if (shouldUseAsyncStorage()) {
+      await AsyncStorage.removeItem('com.elsaifanalysis.credentials');
+      return;
+    }
+
+    await Keychain.resetGenericPassword({
+      ...KEYCHAIN_OPTIONS,
+      service: 'com.elsaifanalysis.credentials',
+    });
+  } catch (error) {
+    console.error('[AuthStorage] Failed to delete credentials:', error);
+  }
+};
+
+/**
+ * Check if Credentials Exist
+ * Checks silently if credentials exist in storage
+ */
+export const hasCredentialsSaved = async (): Promise<boolean> => {
+  try {
+    if (shouldUseAsyncStorage()) {
+      const data = await AsyncStorage.getItem('com.elsaifanalysis.credentials');
+      return data !== null;
+    }
+    const credentials = await Keychain.getGenericPassword({
+      ...KEYCHAIN_OPTIONS,
+      service: 'com.elsaifanalysis.credentials',
+    });
+    return credentials !== false;
+  } catch {
+    return false;
+  }
 };
