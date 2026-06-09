@@ -543,6 +543,58 @@ export const getSystemSettings = async (): Promise<any> => {
   return response.data;
 };
 
+export const uploadLicense = async (formData: FormData): Promise<any> => {
+  const response = await apiClient.post<ApiResponse<any>>(
+    '/api/superadmin/system/license',
+    formData
+  );
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to upload license PDF');
+  }
+  return response.data;
+};
+
+export const deleteLicense = async (): Promise<any> => {
+  const response = await apiClient.delete<ApiResponse<any>>(
+    '/api/superadmin/system/license'
+  );
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to remove license PDF');
+  }
+  return response.data;
+};
+
+export const getSupportEmails = async (): Promise<string[]> => {
+  const response = await apiClient.get<ApiResponse<string[]>>(
+    '/api/superadmin/system/support-emails'
+  );
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to fetch support emails');
+  }
+  return response.data;
+};
+
+export const addSupportEmail = async (email: string): Promise<string[]> => {
+  const response = await apiClient.post<ApiResponse<string[]>>(
+    '/api/superadmin/system/support-emails',
+    { email }
+  );
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to add support email');
+  }
+  return response.data;
+};
+
+export const deleteSupportEmail = async (email: string): Promise<string[]> => {
+  const response = await apiClient.delete<ApiResponse<string[]>>(
+    `/api/superadmin/system/support-emails/${encodeURIComponent(email)}`
+  );
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to delete support email');
+  }
+  return response.data;
+};
+
 export default {
   // Dashboard
   getDashboardStats,
@@ -581,4 +633,9 @@ export default {
   retryFailedJobs,
   resetPerformanceMetrics,
   getSystemSettings,
+  uploadLicense,
+  deleteLicense,
+  getSupportEmails,
+  addSupportEmail,
+  deleteSupportEmail,
 };

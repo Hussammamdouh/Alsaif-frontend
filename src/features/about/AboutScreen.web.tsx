@@ -17,11 +17,14 @@ import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
 import { Dimensions } from 'react-native';
 import { useAuth } from '../../app/auth';
 import { useProfile } from '../profile/profile.hooks';
+import { useSystemSettings } from '../subscription/subscription.hooks';
+import { getApiBaseUrl } from '../../core/config/env';
 
 export const AboutScreen = () => {
     const { theme } = useTheme();
     const { t } = useLocalization();
-    const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+    const navigation = useNavigation<any>();
+    const { settings } = useSystemSettings();
     const { width } = Dimensions.get('window');
     const isDesktop = width >= 1024;
     const { state: authState } = useAuth();
@@ -58,12 +61,19 @@ export const AboutScreen = () => {
         // Use require to get the asset handle, then resolve its URI
         const asset = Asset.fromModule(require('../../../assets/financial_license.pdf'));
 
-        // On web, asset.uri is the URL to the bundled file
-        const url = asset.uri;
+        // Resolve dynamic URL if uploaded by superadmin
+        let url = asset.uri;
+        if (settings?.financialLicenseUrl) {
+            const apiBase = getApiBaseUrl();
+            url = settings.financialLicenseUrl.startsWith('http')
+                ? settings.financialLicenseUrl
+                : `${apiBase}${settings.financialLicenseUrl}`;
+        }
 
         navigation.navigate('PdfViewer', {
             url: url,
-            title: t('about.license')
+            title: t('about.license'),
+            hideDownload: true
         });
     };
 

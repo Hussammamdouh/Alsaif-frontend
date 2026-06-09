@@ -51,6 +51,9 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
 
     useEffect(() => {
         options.forEach((opt) => {
+            if (!scaleAnims[opt.key]) {
+                scaleAnims[opt.key] = new Animated.Value(opt.key === selected ? 1 : 0);
+            }
             Animated.spring(scaleAnims[opt.key], {
                 toValue: opt.key === selected ? 1 : 0,
                 friction: 8,
@@ -75,6 +78,9 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
             >
                 {options.map((option) => {
                     const isSelected = option.key === selected;
+                    if (!scaleAnims[option.key]) {
+                        scaleAnims[option.key] = new Animated.Value(isSelected ? 1 : 0);
+                    }
                     const backgroundColor = scaleAnims[option.key].interpolate({
                         inputRange: [0, 1],
                         outputRange: [

@@ -71,7 +71,7 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
     }, []);
 
     return (
-        <Animated.View style={{ opacity, transform: [{ translateY }], flex: isDesktop ? 0.5 : 1 }}>
+        <Animated.View style={{ opacity, transform: [{ translateY }], flex: 1 }}>
             <TouchableOpacity
                 style={[styles.premiumCard, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
                 onPress={() => onPress(item)}
@@ -448,6 +448,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                 {renderHeader()}
 
                 <FlatList
+                    style={{ flex: 1 }}
                     key={`list-${numColumns}`}
                     data={filteredDisclosures}
                     renderItem={renderItem}

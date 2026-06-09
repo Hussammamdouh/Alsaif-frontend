@@ -53,7 +53,7 @@ export type MainStackParamList = {
   InsightDetail: { insightId: string; title?: string };
   InsightRequests: undefined;
   Notifications: { category?: string };
-  PdfViewer: { url: string | any; title: string };
+  PdfViewer: { url: string | any; title: string; hideDownload?: boolean };
   DisclosureDetails: { disclosureId: string; disclosure?: any };
   NewsDetail: { newsId: string; title: string };
   NewsList: undefined;

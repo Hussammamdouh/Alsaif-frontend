@@ -18,6 +18,7 @@ import {
   StatusBar,
   Dimensions,
   StyleSheet,
+  Modal,
 } from 'react-native';
 import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -124,6 +125,7 @@ const NotificationsScreen: React.FC = () => {
   const initialCategory = route.params?.category || 'all';
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // Update selected category if route params change
   React.useEffect(() => {
@@ -170,6 +172,34 @@ const NotificationsScreen: React.FC = () => {
       }
     },
     [markAsRead, trackClick, navigation, t]
+  );
+
+  /**
+   * Handle image preview press
+   */
+  const handleImagePreview = useCallback(
+    async (notification: Notification) => {
+      if (notification.richContent?.imageUrl) {
+        setPreviewImageUrl(notification.richContent.imageUrl);
+
+        // Mark as read and track click if it is unread
+        try {
+          if (isNotificationUnread(notification)) {
+            const targetId = notification.id || (notification as any)._id;
+            if (targetId) {
+              await markAsRead(targetId);
+            }
+          }
+          const targetId = notification.id || (notification as any)._id;
+          if (targetId) {
+            await trackClick(targetId);
+          }
+        } catch (error) {
+          console.error('[NotificationsScreen] Image preview interaction tracking failed:', error);
+        }
+      }
+    },
+    [markAsRead, trackClick]
   );
 
   /**
@@ -301,11 +331,17 @@ const NotificationsScreen: React.FC = () => {
 
               {/* Rich Content - Image */}
               {notification.richContent?.imageUrl && (
-                <Image
-                  source={{ uri: notification.richContent.imageUrl }}
-                  style={[styles.notificationImage, isDesktop && { width: 400, height: 220 }]}
-                  resizeMode="cover"
-                />
+                <TouchableOpacity
+                  onPress={() => handleImagePreview(notification)}
+                  activeOpacity={0.9}
+                  style={{ width: '100%' }}
+                >
+                  <Image
+                    source={{ uri: notification.richContent.imageUrl }}
+                    style={[styles.notificationImage, isDesktop && { width: 400, height: 220 }]}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
               )}
 
               {/* Rich Content - CTA Buttons */}
@@ -632,6 +668,38 @@ const NotificationsScreen: React.FC = () => {
             />
           )}
         </View>
+
+        {/* Fullscreen Image Preview Modal */}
+        <Modal
+          visible={!!previewImageUrl}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setPreviewImageUrl(null)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setPreviewImageUrl(null)}
+          >
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setPreviewImageUrl(null)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            >
+              <Icon name="close" size={30} color="#FFFFFF" />
+            </TouchableOpacity>
+            {previewImageUrl && (
+              <TouchableOpacity activeOpacity={1} style={styles.modalImageContainer}>
+                <Image
+                  source={{ uri: previewImageUrl }}
+                  style={styles.fullscreenImage}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+        </Modal>
       </AuthRequiredGate>
     </SafeAreaView>
   );

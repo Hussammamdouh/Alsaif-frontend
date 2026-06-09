@@ -32,7 +32,7 @@ export const PdfViewerScreen: React.FC = () => {
     const [pageCount, setPageCount] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const { url, title } = route.params;
+    const { url, title, hideDownload } = route.params;
 
     const handleShare = async () => {
         try {
@@ -70,12 +70,14 @@ export const PdfViewerScreen: React.FC = () => {
                     )}
                 </View>
                 <View style={styles.headerActions}>
-                    <TouchableOpacity
-                        onPress={handleShare}
-                        style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
-                    >
-                        <Ionicons name="share-outline" size={22} color={theme.primary.main} />
-                    </TouchableOpacity>
+                    {!hideDownload && (
+                        <TouchableOpacity
+                            onPress={handleShare}
+                            style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                        >
+                            <Ionicons name="share-outline" size={22} color={theme.primary.main} />
+                        </TouchableOpacity>
+                    )}
                 </View>
             </View>
 
@@ -96,14 +98,16 @@ export const PdfViewerScreen: React.FC = () => {
                         <Text style={[styles.errorText, { color: theme.text.secondary }]}>
                             {language === 'ar' ? 'تعذر تحميل المستند' : 'Could not load document'}
                         </Text>
-                        <TouchableOpacity
-                            style={[styles.retryButton, { backgroundColor: theme.primary.main }]}
-                            onPress={handleOpenExternal}
-                        >
-                            <Text style={styles.retryText}>
-                                {language === 'ar' ? 'فتح في المتصفح' : 'Open in browser'}
-                            </Text>
-                        </TouchableOpacity>
+                        {!hideDownload && (
+                            <TouchableOpacity
+                                style={[styles.retryButton, { backgroundColor: theme.primary.main }]}
+                                onPress={handleOpenExternal}
+                            >
+                                <Text style={styles.retryText}>
+                                    {language === 'ar' ? 'فتح في المتصفح' : 'Open in browser'}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 ) : (
                     <Pdf

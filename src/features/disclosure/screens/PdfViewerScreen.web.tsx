@@ -34,7 +34,7 @@ export const PdfViewerScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
-    const { url, title } = route.params;
+    const { url, title, hideDownload } = route.params;
 
     // Detect if the URL is on the same origin as the app
     const isSameOrigin = typeof url === 'string' && (
@@ -79,9 +79,13 @@ export const PdfViewerScreen: React.FC = () => {
 
     // Use Google Docs viewer to proxy the PDF (bypasses X-Frame-Options) for remote URLs
     // Route remote ADX through proxyUrl so Google can fetch it successfully
-    const viewerUrl = viewerMode === 'google'
+    let viewerUrl = viewerMode === 'google'
         ? `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(proxyUrl)}`
         : proxyUrl;
+
+    if (viewerMode === 'direct' && hideDownload && typeof viewerUrl === 'string') {
+        viewerUrl = `${viewerUrl}#toolbar=0`;
+    }
 
     const handleShare = async () => {
         if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -152,7 +156,7 @@ export const PdfViewerScreen: React.FC = () => {
                             </Text>
                         </View>
                         <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
-                            {(initialIsRemote || isLocalAddress) && (
+                            {(initialIsRemote || isLocalAddress) && !hideDownload && (
                                 <TouchableOpacity
                                     onPress={toggleViewerMode}
                                     style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
@@ -164,18 +168,22 @@ export const PdfViewerScreen: React.FC = () => {
                                     />
                                 </TouchableOpacity>
                             )}
-                            <TouchableOpacity
-                                onPress={handleDownload}
-                                style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
-                            >
-                                <Ionicons name="download-outline" size={22} color={theme.primary.main} />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleShare}
-                                style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
-                            >
-                                <Ionicons name="copy-outline" size={22} color={theme.text.primary} />
-                            </TouchableOpacity>
+                            {!hideDownload && (
+                                <TouchableOpacity
+                                    onPress={handleDownload}
+                                    style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                                >
+                                    <Ionicons name="download-outline" size={22} color={theme.primary.main} />
+                                </TouchableOpacity>
+                            )}
+                            {!hideDownload && (
+                                <TouchableOpacity
+                                    onPress={handleShare}
+                                    style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
+                                >
+                                    <Ionicons name="copy-outline" size={22} color={theme.text.primary} />
+                                </TouchableOpacity>
+                            )}
                         </div>
                     </View>
                 </ResponsiveContainer>
@@ -242,30 +250,32 @@ export const PdfViewerScreen: React.FC = () => {
                             />
 
                             {/* Quick action bar at bottom */}
-                            <View style={[styles.bottomBar, {
-                                backgroundColor: theme.background.secondary,
-                                borderBottomLeftRadius: isDesktop ? 16 : 0,
-                                borderBottomRightRadius: isDesktop ? 16 : 0
-                            }]}>
-                                <TouchableOpacity
-                                    style={[styles.bottomButton, { backgroundColor: theme.primary.main }]}
-                                    onPress={handleOpenExternal}
-                                >
-                                    <Ionicons name="open-outline" size={18} color="#fff" />
-                                    <Text style={styles.bottomButtonText}>
-                                        {language === 'ar' ? 'فتح في نافذة جديدة' : 'Open in new window'}
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.bottomButton, { backgroundColor: theme.background.tertiary }]}
-                                    onPress={handleDownload}
-                                >
-                                    <Ionicons name="download-outline" size={18} color={theme.text.primary} />
-                                    <Text style={[styles.bottomButtonText, { color: theme.text.primary }]}>
-                                        {language === 'ar' ? 'تحميل' : 'Download'}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
+                            {!hideDownload && (
+                                <View style={[styles.bottomBar, {
+                                    backgroundColor: theme.background.secondary,
+                                    borderBottomLeftRadius: isDesktop ? 16 : 0,
+                                    borderBottomRightRadius: isDesktop ? 16 : 0
+                                }]}>
+                                    <TouchableOpacity
+                                        style={[styles.bottomButton, { backgroundColor: theme.primary.main }]}
+                                        onPress={handleOpenExternal}
+                                    >
+                                        <Ionicons name="open-outline" size={18} color="#fff" />
+                                        <Text style={styles.bottomButtonText}>
+                                            {language === 'ar' ? 'فتح في نافذة جديدة' : 'Open in new window'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.bottomButton, { backgroundColor: theme.background.tertiary }]}
+                                        onPress={handleDownload}
+                                    >
+                                        <Ionicons name="download-outline" size={18} color={theme.text.primary} />
+                                        <Text style={[styles.bottomButtonText, { color: theme.text.primary }]}>
+                                            {language === 'ar' ? 'تحميل' : 'Download'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                         </View>
                     )}
                 </ResponsiveContainer>

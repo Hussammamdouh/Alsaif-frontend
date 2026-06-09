@@ -19,6 +19,11 @@ export const useAdminSystemControl = () => {
   const [isJobsLoading, setIsJobsLoading] = useState(false);
   const [isMetricsLoading, setIsMetricsLoading] = useState(false);
 
+  // States for Certificate and Support Emails CRUD
+  const [supportEmails, setSupportEmails] = useState<string[]>([]);
+  const [isLicenseUploading, setIsLicenseUploading] = useState(false);
+  const [isEmailsLoading, setIsEmailsLoading] = useState(false);
+
   // Integrate subscription settings toggles from existing hook
   const {
     settings,
@@ -32,23 +37,27 @@ export const useAdminSystemControl = () => {
   const fetchControlData = useCallback(async (silent = false) => {
     if (!silent) {
       setIsLoading(true);
+      setIsEmailsLoading(true);
     }
     setError(null);
 
     try {
-      const [stats, analysis] = await Promise.all([
+      const [stats, analysis, emails] = await Promise.all([
         adminService.getSystemStats(),
         adminService.getCollectionAnalysis(),
+        adminService.getSupportEmails(),
         refetchSettings(),
       ]);
 
       setSystemStats(stats);
       setDbAnalysis(analysis);
+      setSupportEmails(emails);
     } catch (err: any) {
       console.error('[useAdminSystemControl] Error fetching controls data:', err);
       setError(err.message || 'Failed to fetch system control data');
     } finally {
       setIsLoading(false);
+      setIsEmailsLoading(false);
     }
   }, [refetchSettings]);
 
@@ -131,6 +140,66 @@ export const useAdminSystemControl = () => {
     }
   }, [baseToggleNewSubscriptions, fetchControlData]);
 
+  const uploadLicensePdf = useCallback(async (formData: FormData) => {
+    setIsLicenseUploading(true);
+    try {
+      await adminService.uploadLicense(formData);
+      Alert.alert('Success', 'Certificate uploaded successfully.');
+      await refetchSettings(); // reload settings to get new URL
+      return true;
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to upload certificate.');
+      return false;
+    } finally {
+      setIsLicenseUploading(false);
+    }
+  }, [refetchSettings]);
+
+  const deleteLicensePdf = useCallback(async () => {
+    setIsLicenseUploading(true);
+    try {
+      await adminService.deleteLicense();
+      Alert.alert('Success', 'Certificate removed successfully, reverted to default.');
+      await refetchSettings(); // reload settings to get new URL
+      return true;
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to remove certificate.');
+      return false;
+    } finally {
+      setIsLicenseUploading(false);
+    }
+  }, [refetchSettings]);
+
+  const handleAddSupportEmail = useCallback(async (email: string) => {
+    setIsEmailsLoading(true);
+    try {
+      const updated = await adminService.addSupportEmail(email);
+      setSupportEmails(updated);
+      Alert.alert('Success', 'Support email added successfully.');
+      return true;
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to add support email.');
+      return false;
+    } finally {
+      setIsEmailsLoading(false);
+    }
+  }, []);
+
+  const handleDeleteSupportEmail = useCallback(async (email: string) => {
+    setIsEmailsLoading(true);
+    try {
+      const updated = await adminService.deleteSupportEmail(email);
+      setSupportEmails(updated);
+      Alert.alert('Success', 'Support email removed successfully.');
+      return true;
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to delete support email.');
+      return false;
+    } finally {
+      setIsEmailsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchControlData();
   }, [fetchControlData]);
@@ -139,17 +208,24 @@ export const useAdminSystemControl = () => {
     systemStats,
     dbAnalysis,
     settings,
+    supportEmails,
+    isLicenseUploading,
+    isEmailsLoading,
     isLoading: isLoading || isSettingsLoading,
     error: error || settingsError,
     refresh: () => fetchControlData(false),
-    isMaintenanceLoading,
-    isJobsLoading,
-    isMetricsLoading,
     runDatabaseMaintenance,
     clearFailedJobs: handleClearFailedJobs,
     retryFailedJobs: handleRetryFailedJobs,
     resetPerformanceMetrics: handleResetMetrics,
     toggleSubscriptionPause,
     toggleNewSubscriptions,
+    uploadLicensePdf,
+    deleteLicensePdf,
+    addSupportEmail: handleAddSupportEmail,
+    deleteSupportEmail: handleDeleteSupportEmail,
+    isMaintenanceLoading,
+    isJobsLoading,
+    isMetricsLoading,
   };
 };

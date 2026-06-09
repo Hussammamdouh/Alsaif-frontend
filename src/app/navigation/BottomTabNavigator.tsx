@@ -253,29 +253,25 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
             component={AdminDashboardScreen}
           />
         )}
-        {/* Disclosures Tab (Desktop Only Link) */}
-        {isDesktop && (
-          <Tab.Screen
-            name="DisclosuresTab"
-            options={{
-              tabBarButton: () => null, // Hide from mobile tab bar
-              tabBarLabel: t('tabs.disclosures'),
-            }}
-            component={DisclosureListScreen}
-          />
-        )}
+        {/* Disclosures Tab */}
+        <Tab.Screen
+          name="DisclosuresTab"
+          options={{
+            tabBarButton: () => null, // Hide from mobile tab bar
+            tabBarLabel: t('tabs.disclosures'),
+          }}
+          component={DisclosureListScreen}
+        />
 
-        {/* Insights Tab (Desktop Only Link) */}
-        {isDesktop && (
-          <Tab.Screen
-            name="InsightsTab"
-            options={{
-              tabBarButton: () => null, // Hide from mobile tab bar
-              tabBarLabel: t('tabs.insights'),
-            }}
-            component={InsightsListScreen}
-          />
-        )}
+        {/* Insights Tab */}
+        <Tab.Screen
+          name="InsightsTab"
+          options={{
+            tabBarButton: () => null, // Hide from mobile tab bar
+            tabBarLabel: t('tabs.insights'),
+          }}
+          component={InsightsListScreen}
+        />
       </Tab.Navigator>
     </View>
   );

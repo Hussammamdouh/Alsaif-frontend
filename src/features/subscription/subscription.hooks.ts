@@ -381,6 +381,8 @@ export const useSystemSettings = () => {
     isSubscriptionsPaused: boolean;
     isNewSubscriptionsEnabled: boolean;
     subscriptionDisabledMessage: string;
+    financialLicenseUrl?: string;
+    supportEmails?: string[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

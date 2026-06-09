@@ -14,19 +14,30 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../app/navigation/types';
 import Pdf from 'react-native-pdf';
 import { Asset } from 'expo-asset';
+import { useSystemSettings } from '../subscription/subscription.hooks';
+import { getApiBaseUrl } from '../../core/config/env';
 
 export const AboutScreen = () => {
     const { theme } = useTheme();
     const { t } = useLocalization();
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
-
-    // PDF path - using require for local asset
-    const pdfSource = require('../../../assets/financial_license.pdf');
+    const { settings } = useSystemSettings();
 
     const openPDF = () => {
+        const localSource = require('../../../assets/financial_license.pdf');
+        let pdfSource = localSource;
+
+        if (settings?.financialLicenseUrl) {
+            const apiBase = getApiBaseUrl();
+            pdfSource = settings.financialLicenseUrl.startsWith('http')
+                ? settings.financialLicenseUrl
+                : `${apiBase}${settings.financialLicenseUrl}`;
+        }
+
         navigation.navigate('PdfViewer', {
             url: pdfSource,
-            title: t('about.license')
+            title: t('about.license'),
+            hideDownload: true
         });
     };
 

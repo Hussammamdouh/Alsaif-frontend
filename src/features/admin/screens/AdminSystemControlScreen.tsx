@@ -17,7 +17,11 @@ import {
   StatusBar,
   I18nManager,
   Alert,
+  Platform,
+  Linking,
 } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import { getApiBaseUrl } from '../../../core/config/env';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -55,12 +59,77 @@ export const AdminSystemControlScreen: React.FC = () => {
     resetPerformanceMetrics,
     toggleSubscriptionPause,
     toggleNewSubscriptions,
+    supportEmails,
+    isLicenseUploading,
+    isEmailsLoading,
+    uploadLicensePdf,
+    deleteLicensePdf,
+    addSupportEmail,
+    deleteSupportEmail,
   } = useAdminSystemControl();
 
   const [activeTab, setActiveTab] = useState<TabType>('system');
 
   // Input for custom lockout message
   const [lockoutMsg, setLockoutMsg] = useState('');
+
+  // Support email input state
+  const [newEmail, setNewEmail] = useState('');
+
+  const handleAddEmail = async () => {
+    if (!newEmail.trim()) return;
+    const success = await addSupportEmail(newEmail.trim());
+    if (success) {
+      setNewEmail('');
+    }
+  };
+
+  const handleDeleteSupportEmailConfirm = (email: string) => {
+    setEmailToRemove(email);
+  };
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) return;
+      
+      const asset = result.assets[0];
+      const formData = new FormData();
+      
+      if (Platform.OS === 'web') {
+        if (asset.file) {
+          formData.append('pdf', asset.file);
+        } else {
+          const response = await fetch(asset.uri);
+          const blob = await response.blob();
+          formData.append('pdf', blob, asset.name || 'license.pdf');
+        }
+      } else {
+        formData.append('pdf', {
+          uri: asset.uri,
+          name: asset.name || 'license.pdf',
+          type: 'application/pdf',
+        } as any);
+      }
+
+      setPendingUploadData(formData);
+      setPendingUploadName(asset.name || 'license.pdf');
+    } catch (err: any) {
+      if (Platform.OS === 'web') {
+        window.alert(err.message || 'Failed to select PDF document');
+      } else {
+        Alert.alert('Error', err.message || 'Failed to select PDF document');
+      }
+    }
+  };
+
+  const handleRemoveLicense = () => {
+    setIsRemoveCertModalVisible(true);
+  };
 
   // Confirmation Modals visibility states
   const [isMaintenanceModalVisible, setIsMaintenanceModalVisible] = useState(false);
@@ -69,6 +138,12 @@ export const AdminSystemControlScreen: React.FC = () => {
   const [isClearJobsModalVisible, setIsClearJobsModalVisible] = useState(false);
   const [isPauseSubsModalVisible, setIsPauseSubsModalVisible] = useState(false);
   const [isToggleNewSubsModalVisible, setIsToggleNewSubsModalVisible] = useState(false);
+
+  // New Confirmation states for settings actions
+  const [emailToRemove, setEmailToRemove] = useState<string | null>(null);
+  const [isRemoveCertModalVisible, setIsRemoveCertModalVisible] = useState(false);
+  const [pendingUploadData, setPendingUploadData] = useState<FormData | null>(null);
+  const [pendingUploadName, setPendingUploadName] = useState<string | null>(null);
 
   // Sync lockout message from settings once loaded
   useEffect(() => {
@@ -521,6 +596,129 @@ export const AdminSystemControlScreen: React.FC = () => {
             )}
           </View>
         </View>
+
+        {/* Official Government Certificate PDF Upload */}
+        <View style={[styles.card, { borderColor: theme.ui.border }]}>
+          <View style={styles.cardInner}>
+            <Text style={[styles.cardTitle, getTextAlignStyle(), { marginBottom: 8 }]}>Official Government Certificate</Text>
+            <Text style={[styles.cardSubtitle, getTextAlignStyle(), { marginBottom: 16 }]}>
+              This official certificate is displayed in the About screen. You can upload a renewed PDF here.
+            </Text>
+
+            {settings?.financialLicenseUrl && (
+              <View style={[localStyles.currentFileRow, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border, flexDirection: isManualRTL ? 'row-reverse' : 'row' }]}>
+                <Ionicons name="document-text-outline" size={24} color={theme.primary.main} />
+                <Text style={[localStyles.currentFileText, { color: theme.text.primary, flex: 1, marginHorizontal: 8 }]} numberOfLines={1}>
+                  {settings.financialLicenseUrl.split('/').pop()}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const licenseUrl = settings?.financialLicenseUrl;
+                      if (!licenseUrl) return;
+                      const baseUrl = getApiBaseUrl();
+                      const fullUrl = licenseUrl.startsWith('http')
+                        ? licenseUrl
+                        : `${baseUrl}${licenseUrl}`;
+                      Linking.openURL(fullUrl);
+                    }}
+                  >
+                    <Text style={{ color: theme.primary.main, fontWeight: '700' }}>View Current</Text>
+                  </TouchableOpacity>
+                  {settings.financialLicenseUrl !== '/uploads/documents/default_financial_license.pdf' && (
+                    <TouchableOpacity
+                      onPress={handleRemoveLicense}
+                      disabled={isLicenseUploading}
+                    >
+                      <Text style={{ color: theme.error.main, fontWeight: '700' }}>Remove</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[styles.button, styles.buttonPrimary, { marginTop: 12, height: 48, justifyContent: 'center' }]}
+              onPress={handlePickDocument}
+              disabled={isLicenseUploading}
+            >
+              {isLicenseUploading ? (
+                <ActivityIndicator color={theme.primary.contrast} size="small" />
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <Ionicons name="cloud-upload-outline" size={20} color={theme.primary.contrast} />
+                  <Text style={[styles.buttonText, styles.buttonTextPrimary]}>Select & Upload New PDF</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Help & Support Recipient Emails CRUD */}
+        <View style={[styles.card, { borderColor: theme.ui.border }]}>
+          <View style={styles.cardInner}>
+            <Text style={[styles.cardTitle, getTextAlignStyle(), { marginBottom: 8 }]}>Support Ticket Recipients</Text>
+            <Text style={[styles.cardSubtitle, getTextAlignStyle(), { marginBottom: 16 }]}>
+              Manage the list of emails that receive technical support tickets submitted by users.
+            </Text>
+
+            {isEmailsLoading && supportEmails.length === 0 ? (
+              <ActivityIndicator size="small" color={theme.primary.main} style={{ marginVertical: 12 }} />
+            ) : (
+              <View style={{ gap: 10, marginBottom: 16 }}>
+                {supportEmails.map((email) => {
+                  const isPermanent = email === 'hussam.mamdouh@aiesec.net';
+                  return (
+                    <View key={email} style={[localStyles.emailRow, { borderColor: theme.ui.border, flexDirection: isManualRTL ? 'row-reverse' : 'row' }]}>
+                      <Text style={[localStyles.emailText, { color: theme.text.primary, flex: 1, textAlign: isRTL ? 'right' : 'left' }]}>{email}</Text>
+                      {isPermanent ? (
+                        <View style={[localStyles.badge, { backgroundColor: theme.primary.main + '15' }]}>
+                          <Text style={[localStyles.badgeText, { color: theme.primary.main }]}>System Default</Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={() => handleDeleteSupportEmailConfirm(email)}
+                          style={localStyles.deleteButton}
+                        >
+                          <Ionicons name="trash-outline" size={18} color={theme.error.main} />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+
+            {/* Add support email form */}
+            <View style={[localStyles.addEmailForm, { flexDirection: isManualRTL ? 'row-reverse' : 'row' }]}>
+              <TextInput
+                style={[localStyles.emailInput, {
+                  borderColor: theme.ui.border,
+                  color: theme.text.primary,
+                  backgroundColor: theme.background.secondary,
+                  textAlign: isRTL ? 'right' : 'left',
+                }]}
+                placeholder="Enter email address..."
+                placeholderTextColor={theme.text.tertiary}
+                value={newEmail}
+                onChangeText={setNewEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              <TouchableOpacity
+                style={[styles.button, styles.buttonPrimary, { height: 44, paddingHorizontal: 16, justifyContent: 'center' }]}
+                onPress={handleAddEmail}
+                disabled={isEmailsLoading}
+              >
+                {isEmailsLoading ? (
+                  <ActivityIndicator color={theme.primary.contrast} size="small" />
+                ) : (
+                  <Text style={[styles.buttonText, styles.buttonTextPrimary]}>Add Email</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </View>
     );
   };
@@ -684,6 +882,64 @@ export const AdminSystemControlScreen: React.FC = () => {
         icon="alert-circle-outline"
         iconColor={theme.error.main}
       />
+
+      {/* Remove Support Email Confirmation Modal */}
+      <ConfirmationModal
+        visible={!!emailToRemove}
+        onClose={() => setEmailToRemove(null)}
+        onConfirm={async () => {
+          if (emailToRemove) {
+            await deleteSupportEmail(emailToRemove);
+            setEmailToRemove(null);
+          }
+        }}
+        title="Remove Support Email"
+        message={`Are you sure you want to remove "${emailToRemove}" from the ticket recipient list?`}
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+        icon="trash-outline"
+        iconColor={theme.error.main}
+        destructive
+      />
+
+      {/* Remove Custom Certificate Confirmation Modal */}
+      <ConfirmationModal
+        visible={isRemoveCertModalVisible}
+        onClose={() => setIsRemoveCertModalVisible(false)}
+        onConfirm={async () => {
+          await deleteLicensePdf();
+          setIsRemoveCertModalVisible(false);
+        }}
+        title="Remove Custom Certificate"
+        message="Are you sure you want to remove the custom certificate and revert to the default certificate?"
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+        icon="document-text-outline"
+        iconColor={theme.error.main}
+        destructive
+      />
+
+      {/* Upload Certificate Confirmation Modal */}
+      <ConfirmationModal
+        visible={!!pendingUploadData}
+        onClose={() => {
+          setPendingUploadData(null);
+          setPendingUploadName(null);
+        }}
+        onConfirm={async () => {
+          if (pendingUploadData) {
+            await uploadLicensePdf(pendingUploadData);
+          }
+          setPendingUploadData(null);
+          setPendingUploadName(null);
+        }}
+        title="Confirm Certificate Upload"
+        message={`Do you want to set "${pendingUploadName}" as the new official financial license?`}
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+        icon="cloud-upload-outline"
+        iconColor={theme.primary.main}
+      />
     </View>
   );
 };
@@ -763,5 +1019,55 @@ const localStyles = StyleSheet.create({
     padding: 12,
     fontSize: 14,
     minHeight: 80,
+  },
+  currentFileRow: {
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 12,
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+  },
+  currentFileText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  emailRow: {
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  emailText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    padding: 4,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  addEmailForm: {
+    gap: 12,
+    alignItems: 'center',
+    marginTop: 16,
+    width: '100%',
+  },
+  emailInput: {
+    flex: 1,
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    fontSize: 14,
   },
 });

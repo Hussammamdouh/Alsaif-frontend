@@ -2,8 +2,7 @@ export default {
   expo: {
     name: "Alsaif Analysis",
     slug: "elsaif-analysis",
-    owner: "hussammamdouh47s-organization",
-    version: "1.0.0",
+    version: "1.0.1",
     orientation: "portrait",
     icon: "./assets/logo.png",
     userInterfaceStyle: "light",
@@ -26,6 +25,7 @@ export default {
       googleServicesFile: "./GoogleService-Info.plist"
     },
     android: {
+      versionCode: 11,
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
@@ -50,7 +50,7 @@ export default {
     ],
     extra: {
       eas: {
-        projectId: "494ba430-d42f-408f-a81d-6181f1ce6e0d"
+        projectId: "e6f53f3b-43d3-4d4b-bbba-cfc35c5cd92b"
       },
       apiBaseUrl: process.env.API_BASE_URL || "https://api.alsaifanalysis.com",
       apiTimeout: process.env.API_TIMEOUT || "30000",
