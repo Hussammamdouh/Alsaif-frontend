@@ -78,9 +78,18 @@ const PremiumInsightCard: React.FC<InsightCardProps> = ({
   }, []);
 
   return (
-    <Animated.View style={{ opacity, transform: [{ translateY }], flex: 1 }}>
+    <Animated.View style={{ 
+      opacity, 
+      transform: [{ translateY }], 
+      flex: isDesktop ? 1 : undefined,
+      width: isDesktop ? undefined : '100%'
+    }}>
       <TouchableOpacity
-        style={[styles.insightCard, { backgroundColor: theme.background.secondary, borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}
+        style={[
+          styles.insightCard, 
+          { backgroundColor: theme.background.secondary, borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
+          isDesktop && { flex: 1 }
+        ]}
         onPress={() => onPress(item)}
         activeOpacity={0.9}
       >

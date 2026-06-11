@@ -71,9 +71,18 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
     }, []);
 
     return (
-        <Animated.View style={{ opacity, transform: [{ translateY }], flex: 1 }}>
+        <Animated.View style={{ 
+            opacity, 
+            transform: [{ translateY }], 
+            flex: isDesktop ? 1 : undefined,
+            width: isDesktop ? undefined : '100%'
+        }}>
             <TouchableOpacity
-                style={[styles.premiumCard, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}
+                style={[
+                    styles.premiumCard, 
+                    { backgroundColor: theme.background.secondary, borderColor: theme.ui.border },
+                    isDesktop && { flex: 1 }
+                ]}
                 onPress={() => onPress(item)}
                 activeOpacity={0.9}
             >
@@ -612,7 +621,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         overflow: 'hidden',
         padding: 16,
-        flex: 1,
         minHeight: 140,
         elevation: 2,
         shadowColor: '#000',
