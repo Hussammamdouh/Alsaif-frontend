@@ -35,7 +35,9 @@ workflows:
       - name: Configure Podfile for Xcode 16 Compatibility
         script: |
           ruby -e "content = File.read('ios/Podfile'); File.write('ios/Podfile', \"use_modular_headers!\n\n\" + content)"
-          ruby -e "content = File.read('ios/Podfile'); content.gsub!('post_install do |installer|', \"post_install do |installer|\n    installer.pods_project.targets.each { |t| t.build_configurations.each { |c| c.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17' if t.name == 'fmt' } }\"); File.write('ios/Podfile', content)"
+          ruby -e "content = File.read('ios/Podfile'); content.gsub!(/post_install\s+do\s*\|\s*installer\s*\|/, \"post_install do |installer|\n    installer.pods_project.targets.each { |t| t.build_configurations.each { |c| c.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17' if t.name == 'fmt' } }\"); File.write('ios/Podfile', content)"
+          echo "=== CONFIGURED PODFILE ==="
+          cat ios/Podfile
       - name: Install CocoaPods dependencies
         script: |
           cd ios
