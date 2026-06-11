@@ -9,7 +9,7 @@ workflows:
     environment:
       node: latest
       xcode: latest
-      cocoapods: default
+      cocoapods: latest
       vars:
         XCODE_WORKSPACE: "AlsaifAnalysis.xcworkspace"
         XCODE_SCHEME: "AlsaifAnalysis"
@@ -34,7 +34,9 @@ workflows:
           npx expo prebuild --platform ios --no-install
       - name: Install CocoaPods dependencies
         script: |
-          cd ios && pod install
+          cd ios
+          pod repo update
+          pod install --repo-update
       - name: Build app for iOS Simulator
         script: |
           xcodebuild build \
