@@ -63,22 +63,25 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-            {/* Ambient background decoration for web-feel */}
-            {isDesktop && (
-                <View style={StyleSheet.absoluteFill}>
-                    <View style={[styles.glowCircle, {
-                        top: -100,
-                        right: -100,
-                        backgroundColor: theme.primary.main + '15'
-                    }]} />
-                    <View style={[styles.glowCircle, {
-                        bottom: -100,
-                        left: -100,
-                        backgroundColor: theme.primary.main + '10'
-                    }]} />
-                </View>
-            )}
+        <View style={styles.container}>
+            <LinearGradient
+                colors={isDark ? ['#0E0E0E', '#161616'] : ['#F8FAFC', '#F1F5F9']}
+                style={StyleSheet.absoluteFill}
+            />
+
+            {/* Ambient background decoration */}
+            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                <View style={[styles.glowCircle, {
+                    top: -150,
+                    right: -150,
+                    backgroundColor: theme.primary.main + (isDark ? '12' : '06'),
+                }]} />
+                <View style={[styles.glowCircle, {
+                    bottom: -150,
+                    left: -150,
+                    backgroundColor: theme.primary.main + (isDark ? '08' : '04'),
+                }]} />
+            </View>
 
             <ResponsiveContainer maxWidth={isDesktop ? 1000 : width}>
                 {isDesktop ? (
@@ -87,10 +90,12 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
                         <View style={[
                             styles.card,
                             {
-                                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.8)',
-                                borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+                                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : '#FFFFFF',
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
                                 shadowColor: '#000',
-                                shadowOpacity: isDark ? 0.3 : 0.1,
+                                shadowOpacity: isDark ? 0.35 : 0.06,
+                                shadowRadius: 16,
+                                shadowOffset: { width: 0, height: 8 },
                             },
                             styles.desktopCard
                         ]}>
@@ -137,8 +142,12 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
                         <View style={[
                             styles.mobileCard,
                             {
-                                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.8)',
-                                borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+                                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : '#FFFFFF',
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+                                shadowColor: '#000',
+                                shadowOpacity: isDark ? 0.35 : 0.06,
+                                shadowRadius: 16,
+                                shadowOffset: { width: 0, height: 8 },
                             }
                         ]}>
                             <TouchableOpacity

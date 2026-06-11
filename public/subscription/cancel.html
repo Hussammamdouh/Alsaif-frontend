@@ -99,7 +99,14 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const returnUrl = urlParams.get('return_url') || 'alsaif-analysis://payment-cancel';
+        let returnUrl = urlParams.get('return_url') || `${window.location.origin}/subscription-plans`;
+        
+        // Correct native scheme to point to a valid route
+        if (returnUrl === 'alsaif-analysis://payment-cancel') {
+            returnUrl = 'alsaif-analysis://subscription-plans';
+        }
+        
+        const isNativeScheme = returnUrl.startsWith('alsaif-analysis://');
 
         function performRedirect(url) {
             try {
@@ -125,12 +132,17 @@
         };
 
         const tryAgainBtn = document.getElementById('tryAgainBtn');
-        const tryAgainUrl = returnUrl.replace('cancel', 'retry');
+        const tryAgainUrl = returnUrl; // Both lead back to subscription plans/paywall screen to try again
         tryAgainBtn.href = tryAgainUrl;
         tryAgainBtn.onclick = (e) => {
             e.preventDefault();
             performRedirect(tryAgainUrl);
         };
+
+        // Try redirect immediately on load for native app
+        if (isNativeScheme) {
+            performRedirect(returnUrl);
+        }
     </script>
 </body>
 

@@ -151,7 +151,7 @@
                         planId: metadata.planId,
                         billingCycle: metadata.billingCycle,
                         successUrl: `${window.location.origin}/subscription/success?return_url=${encodeURIComponent(metadata.returnUrl || 'alsaif-analysis://payment-success')}`,
-                        cancelUrl: `${window.location.origin}/subscription/cancel?return_url=${encodeURIComponent(metadata.returnUrl || 'alsaif-analysis://payment-cancel')}`
+                        cancelUrl: `${window.location.origin}/subscription/cancel?return_url=${encodeURIComponent(metadata.returnUrl || 'alsaif-analysis://subscription-plans')}`
                     })
                 });
 

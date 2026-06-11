@@ -183,6 +183,7 @@ export const MarketScreen = () => {
                     setSelectedSymbol(item);
                     setSharesCount('');
                     setIsSimulatorMode(false);
+                    setTransactionType('buy');
                     setManualPrice(item.price.toFixed(3));
                 }}
                 activeOpacity={0.8}
@@ -441,7 +442,10 @@ export const MarketScreen = () => {
                                     <Text style={[styles.sectionTitle, { color: theme.text.primary, marginBottom: 0 }]}>{t('market.sharesCalculator')}</Text>
                                     <View style={{ flexDirection: 'row', backgroundColor: theme.background.primary, borderRadius: 20, padding: 4 }}>
                                         <TouchableOpacity
-                                            onPress={() => setIsSimulatorMode(false)}
+                                            onPress={() => {
+                                                setIsSimulatorMode(false);
+                                                setTransactionType('buy');
+                                            }}
                                             style={{
                                                 paddingHorizontal: 8,
                                                 paddingVertical: 4,
@@ -466,32 +470,34 @@ export const MarketScreen = () => {
                                 </View>
 
                                 {/* Buy/Sell Segmented Picker */}
-                                <View style={{ flexDirection: 'row', backgroundColor: theme.background.primary, borderRadius: 12, padding: 4, marginBottom: 24 }}>
-                                    <TouchableOpacity
-                                        onPress={() => setTransactionType('buy')}
-                                        style={{
-                                            flex: 1,
-                                            paddingVertical: 10,
-                                            borderRadius: 8,
-                                            backgroundColor: transactionType === 'buy' ? '#22c55e' : 'transparent',
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        <Text style={{ fontSize: 13, fontWeight: '800', color: transactionType === 'buy' ? '#FFF' : theme.text.secondary }}>{t('market.buy')}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => setTransactionType('sell')}
-                                        style={{
-                                            flex: 1,
-                                            paddingVertical: 10,
-                                            borderRadius: 8,
-                                            backgroundColor: transactionType === 'sell' ? '#ef4444' : 'transparent',
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        <Text style={{ fontSize: 13, fontWeight: '800', color: transactionType === 'sell' ? '#FFF' : theme.text.secondary }}>{t('market.sell')}</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                {isSimulatorMode && (
+                                    <View style={{ flexDirection: 'row', backgroundColor: theme.background.primary, borderRadius: 12, padding: 4, marginBottom: 24 }}>
+                                        <TouchableOpacity
+                                            onPress={() => setTransactionType('buy')}
+                                            style={{
+                                                flex: 1,
+                                                paddingVertical: 10,
+                                                borderRadius: 8,
+                                                backgroundColor: transactionType === 'buy' ? '#22c55e' : 'transparent',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 13, fontWeight: '800', color: transactionType === 'buy' ? '#FFF' : theme.text.secondary }}>{t('market.buy')}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={() => setTransactionType('sell')}
+                                            style={{
+                                                flex: 1,
+                                                paddingVertical: 10,
+                                                borderRadius: 8,
+                                                backgroundColor: transactionType === 'sell' ? '#ef4444' : 'transparent',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 13, fontWeight: '800', color: transactionType === 'sell' ? '#FFF' : theme.text.secondary }}>{t('market.sell')}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
 
                                 {isSimulatorMode && (
                                     <View style={[styles.inputRow, { marginBottom: 16 }]}>

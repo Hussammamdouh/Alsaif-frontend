@@ -356,13 +356,21 @@ export const DisclosureDetailsScreen: React.FC = () => {
                                     <View style={styles.pdfList}>
                                         {pdfUrls.map((url, index) => {
                                             const filename = decodeURIComponent(url.split('/').pop() || `Document ${index + 1}`);
-                                            const displayName = filename.replace(/\.pdf$/i, '').replace(/%20/g, ' ');
+                                            let displayName = filename.replace(/\.pdf$/i, '').replace(/%20/g, ' ');
+
+                                            if (pdfUrls.length > 1) {
+                                                if (index === 0) {
+                                                    displayName = language === 'ar' ? 'المستند باللغة الإنجليزية' : 'English Document';
+                                                } else if (index === 1) {
+                                                    displayName = language === 'ar' ? 'المستند باللغة العربية' : 'Arabic Document';
+                                                }
+                                            }
 
                                             return (
                                                 <TouchableOpacity
                                                     key={index}
                                                     style={[styles.pdfItem, { backgroundColor: theme.background.primary }]}
-                                                    onPress={() => navigation.navigate('PdfViewer', { url, title: `${currentTitle} (${index + 1})` })}
+                                                    onPress={() => navigation.navigate('PdfViewer', { url, title: `${currentTitle} (${index === 0 ? 'EN' : 'AR'})` })}
                                                 >
                                                     <View style={[styles.pdfIcon, { backgroundColor: theme.primary.main + '15' }]}>
                                                         <Ionicons name="document" size={20} color={theme.primary.main} />

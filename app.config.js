@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Alsaif Analysis",
     slug: "elsaif-analysis",
-    version: "1.0.1",
+    version: "1.0.3",
     orientation: "portrait",
     icon: "./assets/logo.png",
     userInterfaceStyle: "light",
@@ -25,9 +25,9 @@ export default {
       googleServicesFile: "./GoogleService-Info.plist"
     },
     android: {
-      versionCode: 11,
+      versionCode: 13,
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
+        foregroundImage: "./assets/logo.png",
         backgroundColor: "#ffffff"
       },
       package: "com.elsaifanalysis.app",

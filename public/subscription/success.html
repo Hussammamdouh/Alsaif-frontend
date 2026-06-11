@@ -157,10 +157,10 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const returnUrl = urlParams.get('return_url') || 'alsaif-analysis://payment-success';
+        const returnUrl = urlParams.get('return_url') || `${window.location.origin}/payment-success`;
+        const isNativeScheme = returnUrl.startsWith('alsaif-analysis://');
 
         function performRedirect() {
-            // Use multiple redirect methods for maximum device/browser compatibility
             try {
                 window.location.assign(returnUrl);
             } catch (e) {
@@ -186,18 +186,32 @@
             performRedirect();
         };
 
-        let seconds = 5;
-        const countdownEl = document.getElementById('countdown');
+        if (isNativeScheme) {
+            // Native redirection flow: try immediate redirect
+            performRedirect();
 
-        const interval = setInterval(() => {
-            seconds--;
-            if (seconds <= 0) {
-                clearInterval(interval);
+            const countdownEl = document.getElementById('countdown');
+            countdownEl.textContent = "If the app does not open automatically, please tap the button above.";
+
+            // Extra fallback attempt after 3 seconds
+            setTimeout(() => {
                 performRedirect();
-            } else {
-                countdownEl.textContent = `Redirecting in ${seconds} seconds...`;
-            }
-        }, 1000);
+            }, 3000);
+        } else {
+            // Web redirection flow: standard countdown
+            let seconds = 5;
+            const countdownEl = document.getElementById('countdown');
+
+            const interval = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    performRedirect();
+                } else {
+                    countdownEl.textContent = `Redirecting in ${seconds} seconds...`;
+                }
+            }, 1000);
+        }
     </script>
 </body>
 

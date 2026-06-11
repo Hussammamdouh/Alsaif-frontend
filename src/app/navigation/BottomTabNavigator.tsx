@@ -257,6 +257,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
         <Tab.Screen
           name="DisclosuresTab"
           options={{
+            tabBarItemStyle: { display: 'none' },
             tabBarButton: () => null, // Hide from mobile tab bar
             tabBarLabel: t('tabs.disclosures'),
           }}
@@ -267,6 +268,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
         <Tab.Screen
           name="InsightsTab"
           options={{
+            tabBarItemStyle: { display: 'none' },
             tabBarButton: () => null, // Hide from mobile tab bar
             tabBarLabel: t('tabs.insights'),
           }}
