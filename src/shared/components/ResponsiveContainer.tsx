@@ -32,7 +32,11 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         <View
             style={[
                 styles.container,
-                isDesktop && { maxWidth, alignSelf: 'center' as const },
+                isDesktop && { 
+                    maxWidth, 
+                    alignSelf: 'center' as const,
+                    width: width > maxWidth ? maxWidth : width
+                },
                 style,
             ]}
         >

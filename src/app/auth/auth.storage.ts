@@ -91,12 +91,17 @@ export const saveAuthSession = async (
 
     // Use Keychain for native
     // We always save the session standardly (without biometric lock) to avoid background prompts on Android
-    const options = { ...KEYCHAIN_OPTIONS };
-    await Keychain.setGenericPassword(
-      SecureStorageKey.AUTH_SESSION,
-      sessionData,
-      options
-    );
+    try {
+      const options = { ...KEYCHAIN_OPTIONS };
+      await Keychain.setGenericPassword(
+        SecureStorageKey.AUTH_SESSION,
+        sessionData,
+        options
+      );
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to save session, falling back to AsyncStorage:', keychainError);
+      await AsyncStorage.setItem(SecureStorageKey.AUTH_SESSION, sessionData);
+    }
   } catch (error) {
     console.error('[AuthStorage] Failed to save session:', error);
     throw new Error('Failed to save authentication session');
@@ -125,21 +130,29 @@ export const loadAuthSession = async (
     }
 
     // Use Keychain for native
-    const options = { ...KEYCHAIN_OPTIONS };
+    try {
+      const options = { ...KEYCHAIN_OPTIONS };
+      const credentials = await Keychain.getGenericPassword(options);
 
-    const credentials = await Keychain.getGenericPassword(options);
-
-    if (!credentials) {
-      return null;
+      if (credentials) {
+        // Verify it's our session key
+        if (credentials.username === SecureStorageKey.AUTH_SESSION) {
+          const session = JSON.parse(credentials.password) as AuthSession;
+          return session;
+        }
+      }
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to load session, checking AsyncStorage fallback:', keychainError);
     }
 
-    // Verify it's our session key
-    if (credentials.username !== SecureStorageKey.AUTH_SESSION) {
-      return null;
+    // Check if we have it saved in AsyncStorage fallback
+    const sessionData = await AsyncStorage.getItem(SecureStorageKey.AUTH_SESSION);
+    if (sessionData) {
+      const session = JSON.parse(sessionData) as AuthSession;
+      return session;
     }
 
-    const session = JSON.parse(credentials.password) as AuthSession;
-    return session;
+    return null;
   } catch (error) {
     console.error('[AuthStorage] Failed to load session:', error);
     return null;
@@ -159,7 +172,13 @@ export const deleteAuthSession = async (): Promise<void> => {
     }
 
     // Use Keychain for native
-    await Keychain.resetGenericPassword(KEYCHAIN_OPTIONS);
+    try {
+      await Keychain.resetGenericPassword(KEYCHAIN_OPTIONS);
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to delete session, cleaning AsyncStorage fallback:', keychainError);
+    }
+    // Always clean up AsyncStorage just in case fallback was used
+    await AsyncStorage.removeItem(SecureStorageKey.AUTH_SESSION);
   } catch (error) {
     console.error('[AuthStorage] Failed to delete session:', error);
     // Don't throw - best effort cleanup
@@ -187,21 +206,30 @@ export const saveBiometricPreference = async (
     }
 
     // Use Keychain for native
-    if (enabled) {
-      await Keychain.setGenericPassword(
-        SecureStorageKey.BIOMETRIC_ENABLED,
-        'true',
-        {
+    try {
+      if (enabled) {
+        await Keychain.setGenericPassword(
+          SecureStorageKey.BIOMETRIC_ENABLED,
+          'true',
+          {
+            ...KEYCHAIN_OPTIONS,
+            service: SecureStorageKey.BIOMETRIC_ENABLED,
+          }
+        );
+      } else {
+        // Delete the preference
+        await Keychain.resetGenericPassword({
           ...KEYCHAIN_OPTIONS,
           service: SecureStorageKey.BIOMETRIC_ENABLED,
-        }
-      );
-    } else {
-      // Delete the preference
-      await Keychain.resetGenericPassword({
-        ...KEYCHAIN_OPTIONS,
-        service: SecureStorageKey.BIOMETRIC_ENABLED,
-      });
+        });
+      }
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to save biometric preference, falling back to AsyncStorage:', keychainError);
+      if (enabled) {
+        await AsyncStorage.setItem(SecureStorageKey.BIOMETRIC_ENABLED, 'true');
+      } else {
+        await AsyncStorage.removeItem(SecureStorageKey.BIOMETRIC_ENABLED);
+      }
     }
   } catch (error) {
     console.error('[AuthStorage] Failed to save biometric preference:', error);
@@ -224,12 +252,21 @@ export const loadBiometricPreference = async (): Promise<boolean> => {
     }
 
     // Use Keychain for native
-    const credentials = await Keychain.getGenericPassword({
-      ...KEYCHAIN_OPTIONS,
-      service: SecureStorageKey.BIOMETRIC_ENABLED,
-    });
+    try {
+      const credentials = await Keychain.getGenericPassword({
+        ...KEYCHAIN_OPTIONS,
+        service: SecureStorageKey.BIOMETRIC_ENABLED,
+      });
 
-    return credentials !== false;
+      if (credentials !== false) {
+        return true;
+      }
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to load biometric preference, checking AsyncStorage fallback:', keychainError);
+    }
+
+    const value = await AsyncStorage.getItem(SecureStorageKey.BIOMETRIC_ENABLED);
+    return value === 'true';
   } catch (error) {
     console.error('[AuthStorage] Failed to load biometric preference:', error);
     return false;
@@ -293,14 +330,19 @@ export const saveCredentials = async (
       return;
     }
 
-    await Keychain.setGenericPassword(
-      email,
-      password,
-      {
-        ...KEYCHAIN_OPTIONS,
-        service: 'com.elsaifanalysis.credentials',
-      }
-    );
+    try {
+      await Keychain.setGenericPassword(
+        email,
+        password,
+        {
+          ...KEYCHAIN_OPTIONS,
+          service: 'com.elsaifanalysis.credentials',
+        }
+      );
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to save credentials, falling back to AsyncStorage:', keychainError);
+      await AsyncStorage.setItem('com.elsaifanalysis.credentials', JSON.stringify({ email, password }));
+    }
   } catch (error) {
     console.error('[AuthStorage] Failed to save credentials:', error);
   }
@@ -318,27 +360,33 @@ export const loadCredentials = async (): Promise<{ email: string; password: stri
       return JSON.parse(data);
     }
 
-    const availability = await checkBiometricAvailability();
-    const promptMessage = availability.available 
-      ? getBiometricPromptMessage(availability.biometryType)
-      : 'Authenticate to access your account';
+    try {
+      const availability = await checkBiometricAvailability();
+      const promptMessage = availability.available 
+        ? getBiometricPromptMessage(availability.biometryType)
+        : 'Authenticate to access your account';
 
-    const credentials = await Keychain.getGenericPassword({
-      service: 'com.elsaifanalysis.credentials',
-      authenticationPrompt: {
-        title: promptMessage,
-      },
-      authenticationType: Keychain.AUTHENTICATION_TYPE.BIOMETRICS,
-    });
+      const credentials = await Keychain.getGenericPassword({
+        service: 'com.elsaifanalysis.credentials',
+        authenticationPrompt: {
+          title: promptMessage,
+        },
+        authenticationType: Keychain.AUTHENTICATION_TYPE.BIOMETRICS,
+      });
 
-    if (!credentials) {
-      return null;
+      if (credentials) {
+        return {
+          email: credentials.username,
+          password: credentials.password,
+        };
+      }
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to load credentials, checking AsyncStorage fallback:', keychainError);
     }
 
-    return {
-      email: credentials.username,
-      password: credentials.password,
-    };
+    const data = await AsyncStorage.getItem('com.elsaifanalysis.credentials');
+    if (!data) return null;
+    return JSON.parse(data);
   } catch (error) {
     console.error('[AuthStorage] Failed to load credentials:', error);
     return null;
@@ -355,10 +403,15 @@ export const deleteCredentials = async (): Promise<void> => {
       return;
     }
 
-    await Keychain.resetGenericPassword({
-      ...KEYCHAIN_OPTIONS,
-      service: 'com.elsaifanalysis.credentials',
-    });
+    try {
+      await Keychain.resetGenericPassword({
+        ...KEYCHAIN_OPTIONS,
+        service: 'com.elsaifanalysis.credentials',
+      });
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to delete credentials, cleaning AsyncStorage fallback:', keychainError);
+    }
+    await AsyncStorage.removeItem('com.elsaifanalysis.credentials');
   } catch (error) {
     console.error('[AuthStorage] Failed to delete credentials:', error);
   }
@@ -374,11 +427,19 @@ export const hasCredentialsSaved = async (): Promise<boolean> => {
       const data = await AsyncStorage.getItem('com.elsaifanalysis.credentials');
       return data !== null;
     }
-    const credentials = await Keychain.getGenericPassword({
-      ...KEYCHAIN_OPTIONS,
-      service: 'com.elsaifanalysis.credentials',
-    });
-    return credentials !== false;
+    try {
+      const credentials = await Keychain.getGenericPassword({
+        ...KEYCHAIN_OPTIONS,
+        service: 'com.elsaifanalysis.credentials',
+      });
+      if (credentials !== false) {
+        return true;
+      }
+    } catch (keychainError) {
+      console.warn('[AuthStorage] Keychain failed to check saved credentials, checking AsyncStorage fallback:', keychainError);
+    }
+    const data = await AsyncStorage.getItem('com.elsaifanalysis.credentials');
+    return data !== null;
   } catch {
     return false;
   }

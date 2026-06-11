@@ -22,7 +22,12 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.elsaifanalysis.app",
-      googleServicesFile: "./GoogleService-Info.plist"
+      googleServicesFile: "./GoogleService-Info.plist",
+      entitlements: {
+        "keychain-access-groups": [
+          "$(AppIdentifierPrefix)com.elsaifanalysis.app"
+        ]
+      }
     },
     android: {
       versionCode: 13,
