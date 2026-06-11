@@ -613,6 +613,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         padding: 16,
         flex: 1,
+        minHeight: 140,
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },

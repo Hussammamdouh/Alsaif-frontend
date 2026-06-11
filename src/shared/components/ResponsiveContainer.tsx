@@ -27,15 +27,17 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 }) => {
     const { width } = useWindowDimensions();
     const isDesktop = width > DESKTOP_BREAKPOINT;
+    const activeMaxWidth = maxWidth || DEFAULT_MAX_WIDTH;
+    const shouldConstrain = isDesktop && width > activeMaxWidth;
 
     return (
         <View
             style={[
                 styles.container,
-                isDesktop && { 
-                    maxWidth, 
+                shouldConstrain && { 
+                    maxWidth: activeMaxWidth, 
                     alignSelf: 'center' as const,
-                    width: width > maxWidth ? maxWidth : width
+                    width: activeMaxWidth,
                 },
                 style,
             ]}
