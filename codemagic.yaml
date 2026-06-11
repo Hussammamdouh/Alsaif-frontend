@@ -32,6 +32,9 @@ workflows:
       - name: Run Expo Prebuild
         script: |
           npx expo prebuild --platform ios --no-install
+      - name: Enable Modular Headers in Podfile
+        script: |
+          ruby -e "content = File.read('ios/Podfile'); File.write('ios/Podfile', \"use_modular_headers!\n\n\" + content)"
       - name: Install CocoaPods dependencies
         script: |
           cd ios
