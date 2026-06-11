@@ -534,24 +534,37 @@ export const MarketScreen = () => {
 
                                             return (
                                                 <>
-                                                    <View style={styles.resultRow}>
-                                                        <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalValue')}</Text>
-                                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>{breakdown.tradeValue.toFixed(2)} AED</Text>
-                                                    </View>
+                                                    {isSimulatorMode ? (
+                                                        <>
+                                                            <View style={styles.resultRow}>
+                                                                <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalValue')}</Text>
+                                                                <Text style={[styles.resultValue, { color: theme.text.primary }]}>{breakdown.tradeValue.toFixed(2)} AED</Text>
+                                                            </View>
 
-                                                    <View style={styles.resultRow}>
-                                                        <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalCommission')}</Text>
-                                                        <Text style={[styles.resultValue, { color: theme.text.primary }]}>{breakdown.totalCommission.toFixed(2)} AED</Text>
-                                                    </View>
+                                                            <View style={styles.resultRow}>
+                                                                <Text style={[styles.resultLabel, { color: theme.text.secondary }]}>{t('market.totalCommission')}</Text>
+                                                                <Text style={[styles.resultValue, { color: theme.text.primary }]}>{breakdown.totalCommission.toFixed(2)} AED</Text>
+                                                            </View>
 
-                                                    <View style={[styles.resultRow, { borderTopWidth: 1, borderTopColor: theme.ui.border, marginTop: 4, paddingTop: 12 }]}>
-                                                        <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '900', fontSize: 16 }]}>
-                                                            {transactionType === 'buy' ? t('market.totalCost') : t('market.totalReceived')}
-                                                        </Text>
-                                                        <Text style={[styles.resultValue, { color: transactionType === 'buy' ? theme.primary.main : '#22c55e', fontSize: 18, fontWeight: '900' }]}>
-                                                            {breakdown.totalCost.toFixed(2)} AED
-                                                        </Text>
-                                                    </View>
+                                                            <View style={[styles.resultRow, { borderTopWidth: 1, borderTopColor: theme.ui.border, marginTop: 4, paddingTop: 12 }]}>
+                                                                <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '900', fontSize: 16 }]}>
+                                                                    {transactionType === 'buy' ? t('market.totalCost') : t('market.totalReceived')}
+                                                                </Text>
+                                                                <Text style={[styles.resultValue, { color: transactionType === 'buy' ? theme.primary.main : '#22c55e', fontSize: 18, fontWeight: '900' }]}>
+                                                                    {breakdown.totalCost.toFixed(2)} AED
+                                                                </Text>
+                                                            </View>
+                                                        </>
+                                                    ) : (
+                                                        <View style={[styles.resultRow, { borderTopWidth: 1, borderTopColor: theme.ui.border, marginTop: 4, paddingTop: 12 }]}>
+                                                            <Text style={[styles.resultLabel, { color: theme.text.primary, fontWeight: '900', fontSize: 16 }]}>
+                                                                {t('market.totalCost')}
+                                                            </Text>
+                                                            <Text style={[styles.resultValue, { color: theme.primary.main, fontSize: 18, fontWeight: '900' }]}>
+                                                                {breakdown.tradeValue.toFixed(2)} AED
+                                                            </Text>
+                                                        </View>
+                                                    )}
                                                 </>
                                             );
                                         })()}
