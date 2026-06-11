@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
+import { formatDateSafe } from '../../shared/utils/dateUtils';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../app/auth';
@@ -116,7 +117,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                     </Text>
                 </View>
                 <Text style={[styles.heroSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
-                    {t('settings.version')} 1.0.0 • {new Date().toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { month: 'long', year: 'numeric' })}
+                    {t('settings.version')} 1.0.0 • {formatDateSafe(new Date(), isRTL ? 'ar' : 'en', { month: 'long', year: 'numeric' })}
                 </Text>
             </View>
 

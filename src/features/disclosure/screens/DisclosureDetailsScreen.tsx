@@ -23,6 +23,7 @@ import { ResponsiveContainer } from '../../../shared/components';
 import { Disclosure, updateDisclosureNote, DisclosureComment, fetchDisclosureComments, createDisclosureComment } from '../disclosure.api';
 import { useDisclosures } from '../disclosure.hooks';
 import { useIsAdmin, useIsAuthenticated } from '../../../app/auth/auth.hooks';
+import { formatDateSafe } from '../../../shared/utils/dateUtils';
 
 type DisclosureDetailRouteParams = {
     DisclosureDetails: {
@@ -202,7 +203,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
                                 </Text>
                             </View>
                             <Text style={[styles.dateText, { color: theme.text.tertiary }]}>
-                                {new Date(disclosure.date).toLocaleDateString(language === 'ar' ? 'ar-AE' : 'en-US', {
+                                {formatDateSafe(disclosure.date, language, {
                                     month: 'long',
                                     day: 'numeric',
                                     year: 'numeric'
@@ -315,7 +316,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
                                                                 {comment.author?.name || (language === 'ar' ? 'مستخدم' : 'User')}
                                                             </Text>
                                                             <Text style={[styles.commentDate, { color: theme.text.tertiary }]}>
-                                                                {new Date(comment.createdAt).toLocaleDateString(language === 'ar' ? 'ar-AE' : 'en-US', {
+                                                                {formatDateSafe(comment.createdAt, language, {
                                                                     month: 'short',
                                                                     day: 'numeric',
                                                                     hour: '2-digit',

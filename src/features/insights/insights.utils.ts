@@ -5,6 +5,7 @@
 
 import { InsightCategory, InsightType, Insight, InsightListItem } from './insights.types';
 import { CATEGORY_CONFIG, THRESHOLDS } from './insights.constants';
+import { formatDateSafe } from '../../shared/utils/dateUtils';
 
 /**
  * Format time ago (e.g., "2h ago", "3 days ago")
@@ -26,8 +27,7 @@ export const formatTimeAgo = (dateString: string, t: (key: string, params?: any)
  * Format full date (e.g., "Jan 4, 2026")
  */
 export const formatFullDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
+  return formatDateSafe(dateString, 'en', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

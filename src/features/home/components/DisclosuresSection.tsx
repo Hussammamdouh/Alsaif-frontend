@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Platform, useWindowDimensions } from 'react-native';
 import { useDisclosures } from '../../disclosure/disclosure.hooks';
 import { useTheme, useLocalization } from '../../../app/providers';
+import { formatDateSafe } from '../../../shared/utils/dateUtils';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -105,7 +106,7 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
                                 <Text style={styles.exchangeText}>{isADX ? t('market.adxTitle') : t('market.dfmTitle')}</Text>
                             </View>
                             <Text style={[styles.dateText, { color: theme.text.tertiary }]}>
-                                {new Date(item.date).toLocaleDateString()}
+                                {formatDateSafe(item.date, language, { month: 'short', day: 'numeric', year: 'numeric' })}
                             </Text>
                         </View>
 

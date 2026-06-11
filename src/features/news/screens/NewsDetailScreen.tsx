@@ -15,6 +15,7 @@ import { useNews } from '../news.hooks';
 import { useTheme } from '../../../app/providers/ThemeProvider';
 import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { spacing } from '../../../core/theme/spacing';
+import { formatDateSafe } from '../../../shared/utils/dateUtils';
 
 type NewsDetailRouteProp = RouteProp<MainStackParamList, 'NewsDetail'>;
 
@@ -63,7 +64,7 @@ export const NewsDetailScreen: React.FC = () => {
                         <Text style={styles.badgeText}>{t('tabs.news').toUpperCase()}</Text>
                     </View>
                     <Text style={[styles.date, { color: theme.text.tertiary }]}>
-                        {new Date(article.publishedAt).toLocaleDateString(undefined, {
+                        {formatDateSafe(article.publishedAt, undefined, {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'

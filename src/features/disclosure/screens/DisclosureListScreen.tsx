@@ -27,6 +27,7 @@ import { ResponsiveContainer, FilterChips } from '../../../shared/components';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsAdmin } from '../../../app/auth/auth.hooks';
 import { Disclosure as DisclosureType } from '../disclosure.api';
+import { formatDateSafe } from '../../../shared/utils/dateUtils';
 
 interface DisclosureListScreenProps {
     hideHeader?: boolean;
@@ -97,11 +98,7 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
                         <View style={styles.cardMeta}>
                             <Ionicons name="calendar-outline" size={14} color={theme.text.tertiary} />
                             <Text style={[styles.dateText, { color: theme.text.tertiary }]}>
-                                {new Date(item.date).toLocaleDateString(language === 'ar' ? 'ar-AE' : 'en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                })}
+                                {formatDateSafe(item.date, language, { month: 'short', day: 'numeric', year: 'numeric' })}
                             </Text>
                         </View>
                     </View>

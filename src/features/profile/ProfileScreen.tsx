@@ -28,6 +28,7 @@ import { styles } from './profile.styles';
 import { useProfile } from './profile.hooks';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
+import { formatDateSafe } from '../../shared/utils/dateUtils';
 import { useAuth } from '../../app/auth';
 import { ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
@@ -213,7 +214,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
     if (!rawDate) return '';
     try {
       const date = new Date(rawDate);
-      return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
+      return formatDateSafe(date, language, {
         month: 'short',
         year: 'numeric',
       });

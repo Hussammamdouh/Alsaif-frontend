@@ -9,6 +9,7 @@ import {
   NOTIFICATION_COLORS,
   NOTIFICATION_TITLES,
 } from './notifications.constants';
+import { formatDateSafe } from '../../shared/utils/dateUtils';
 
 /**
  * Get icon for notification type
@@ -79,12 +80,10 @@ export const formatNotificationTime = (
   } else if (diffDays < 7) {
     return t('notifications.time.daysAgo', { count: diffDays });
   } else {
-    // Format as date
-    const options: Intl.DateTimeFormatOptions = {
+    return formatDateSafe(date, language, {
       month: 'short',
       day: 'numeric',
-    };
-    return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', options);
+    });
   }
 };
 
