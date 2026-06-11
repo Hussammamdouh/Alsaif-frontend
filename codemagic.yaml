@@ -9,7 +9,7 @@ workflows:
     environment:
       node: latest
       xcode: latest
-      cocoapods: latest
+      cocoapods: default
       vars:
         XCODE_WORKSPACE: "AlsaifAnalysis.xcworkspace"
         XCODE_SCHEME: "AlsaifAnalysis"
@@ -36,7 +36,7 @@ workflows:
         script: |
           cd ios
           pod repo update
-          pod install --repo-update
+          CURRENT_ARCH=arm64 pod install --repo-update
       - name: Build app for iOS Simulator
         script: |
           xcodebuild build \
