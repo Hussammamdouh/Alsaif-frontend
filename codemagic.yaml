@@ -34,9 +34,13 @@ workflows:
           npx expo prebuild --platform ios --no-install
       - name: Configure Podfile for Xcode 16 Compatibility
         script: |
-          ruby -e "content = File.read('ios/Podfile'); File.write('ios/Podfile', \"use_modular_headers!\n\n\" + content)"
           cat << 'EOF' > configure_podfile.rb
           content = File.read('ios/Podfile')
+          # Add specific modular headers for Firebase & Google Utilities pods
+          firebase_pods = "target 'AlsaifAnalysis' do\n  pod 'Firebase', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseCoreInternal', :modular_headers => true\n  pod 'GoogleUtilities', :modular_headers => true\n  pod 'FirebaseCoreExtension', :modular_headers => true\n  pod 'FirebaseMessaging', :modular_headers => true\n  pod 'PromisesObjC', :modular_headers => true"
+          content.gsub!("target 'AlsaifAnalysis' do", firebase_pods)
+
+          # Force c++17 standard for fmt pod due to Xcode 16 compilation bug
           content.gsub!(/(react_native_post_install\s*\(\s*(\w+)[\s\S]*?,\s*\n\s*\))/, "\\1\n    \\2.pods_project.targets.each { |t| t.build_configurations.each { |c| c.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17' if t.name.downcase.include?('fmt') } }")
           File.write('ios/Podfile', content)
           EOF
