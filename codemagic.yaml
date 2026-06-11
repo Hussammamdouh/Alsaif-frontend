@@ -1,0 +1,87 @@
+# Codemagic CI/CD configuration for Elsaif Analysis
+# Documentation: https://docs.codemagic.io/yaml-basic-configuration/yaml-getting-started/
+
+workflows:
+  ios-simulator:
+    name: Elsaif iOS Simulator Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      xcode: latest
+      cocoapods: default
+      vars:
+        XCODE_WORKSPACE: "AlsaifAnalysis.xcworkspace"
+        XCODE_SCHEME: "AlsaifAnalysis"
+        API_BASE_URL: "https://api.alsaifanalysis.com"
+        API_TIMEOUT: "30000"
+        ENABLE_LOGGING: "false"
+        LOG_LEVEL: "error"
+        EXPO_PUBLIC_ONESIGNAL_APP_ID: "43486064-cce9-4d0f-a006-8145e4a29e8d"
+    scripts:
+      - name: Create environment configuration
+        script: |
+          echo "API_BASE_URL=$API_BASE_URL" > .env
+          echo "API_TIMEOUT=$API_TIMEOUT" >> .env
+          echo "ENABLE_LOGGING=$ENABLE_LOGGING" >> .env
+          echo "LOG_LEVEL=$LOG_LEVEL" >> .env
+          echo "EXPO_PUBLIC_ONESIGNAL_APP_ID=$EXPO_PUBLIC_ONESIGNAL_APP_ID" >> .env
+      - name: Install npm dependencies
+        script: |
+          npm install
+      - name: Run Expo Prebuild
+        script: |
+          npx expo prebuild --platform ios --no-install
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios && pod install
+      - name: Build app for iOS Simulator
+        script: |
+          xcodebuild build \
+            -workspace "ios/$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - build/Build/Products/Release-iphonesimulator/*.app
+
+  android-simulator:
+    name: Elsaif Android Simulator Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      vars:
+        PACKAGE_NAME: "com.elsaifanalysis.app"
+        API_BASE_URL: "https://api.alsaifanalysis.com"
+        API_TIMEOUT: "30000"
+        ENABLE_LOGGING: "false"
+        LOG_LEVEL: "error"
+        EXPO_PUBLIC_ONESIGNAL_APP_ID: "43486064-cce9-4d0f-a006-8145e4a29e8d"
+    scripts:
+      - name: Create environment configuration
+        script: |
+          echo "API_BASE_URL=$API_BASE_URL" > .env
+          echo "API_TIMEOUT=$API_TIMEOUT" >> .env
+          echo "ENABLE_LOGGING=$ENABLE_LOGGING" >> .env
+          echo "LOG_LEVEL=$LOG_LEVEL" >> .env
+          echo "EXPO_PUBLIC_ONESIGNAL_APP_ID=$EXPO_PUBLIC_ONESIGNAL_APP_ID" >> .env
+      - name: Install npm dependencies
+        script: |
+          npm install
+      - name: Run Expo Prebuild
+        script: |
+          npx expo prebuild --platform android --no-install
+      - name: Set Android SDK location
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Build Android Release APK (signed with debug keystore)
+        script: |
+          cd android
+          ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk
