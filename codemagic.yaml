@@ -161,7 +161,7 @@ workflows:
       - name: Import Apple Distribution Certificate
         script: |
           echo "$IOS_DISTRIBUTION_P12" | base64 --decode > ios_distribution.p12
-          keychain import-certificate --path ios_distribution.p12
+          security import ios_distribution.p12 -P "" -A
       - name: Fetch Apple Certificates & Profiles
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
