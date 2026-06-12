@@ -108,6 +108,8 @@ workflows:
     name: Elsaif iOS App Store Production Build
     max_build_duration: 120
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: "Codemagic CI"
     environment:
       node: latest
       xcode: latest
