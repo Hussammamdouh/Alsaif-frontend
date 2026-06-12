@@ -158,12 +158,12 @@ workflows:
       - name: Set up Keychain for Code Signing
         script: |
           keychain initialize
+      - name: Apply Signing Certificates
+        script: |
+          keychain add-certificates
       - name: Fetch Apple Certificates & Profiles
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-      - name: Apply Provisioning Profiles
-        script: |
-          keychain add-certificates
       - name: Build App Store Archive
         script: |
           build-number --xcode
