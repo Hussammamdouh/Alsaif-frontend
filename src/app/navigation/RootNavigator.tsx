@@ -95,7 +95,7 @@ const linking = {
           Paywall: 'paywall',
           SubscriptionPlans: 'subscription-plans',
           PaymentSuccess: 'payment-success',
-          Terms: 'terms',
+          Terms: 'privacyandterms',
           About: 'about',
           AdminDashboard: 'admin/dashboard',
           AdminUsers: 'admin/users',
