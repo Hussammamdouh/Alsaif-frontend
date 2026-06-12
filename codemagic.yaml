@@ -204,12 +204,23 @@ workflows:
           fi
       - name: Fetch Apple Certificates & Profiles
         script: |
-          if openssl pkcs12 -in /tmp/certificate.p12 -nodes -nocerts -out /tmp/certificate_key.pem -passin pass:"${CM_CERTIFICATE_PASSWORD}" 2>/dev/null; then
-            echo "Private key extracted successfully"
+          if openssl pkcs12 -in /tmp/certificate.p12 -nodes -nocerts -out /tmp/certificate_key_raw.pem -passin pass:"${CM_CERTIFICATE_PASSWORD}" 2>/dev/null; then
+            echo "Private key extracted raw"
           else
-            echo "Retrying key extraction with legacy providers..."
-            openssl pkcs12 -in /tmp/certificate.p12 -nodes -nocerts -out /tmp/certificate_key.pem -passin pass:"${CM_CERTIFICATE_PASSWORD}" -provider legacy -provider default
+            echo "Retrying key extraction raw with legacy providers..."
+            openssl pkcs12 -in /tmp/certificate.p12 -nodes -nocerts -out /tmp/certificate_key_raw.pem -passin pass:"${CM_CERTIFICATE_PASSWORD}" -provider legacy -provider default
           fi
+          python3 -c "
+          import pathlib
+          raw = pathlib.Path('/tmp/certificate_key_raw.pem').read_text()
+          idx = raw.find('-----BEGIN')
+          if idx != -1:
+              pathlib.Path('/tmp/certificate_key.pem').write_text(raw[idx:])
+              print('Successfully cleaned private key headers.')
+          else:
+              print('ERROR: No private key block found in raw file!')
+              exit(1)
+          "
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
       - name: Build App Store Archive
         script: |
