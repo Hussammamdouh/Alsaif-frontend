@@ -221,7 +221,13 @@ workflows:
               print('ERROR: No private key block found in raw file!')
               exit(1)
           "
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
+          # Fetch signing files for main App Bundle ID
+          app-store-connect fetch-signing-files "com.elsaifanalysis.app" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
+          # Fetch signing files for OneSignal Notification Service Extension Bundle ID
+          app-store-connect fetch-signing-files "com.elsaifanalysis.app.OneSignalNotificationServiceExtension" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
+      - name: Set up Code Signing on Xcode Project
+        script: |
+          xcode-project use-profiles --project ios/AlsaifAnalysis.xcodeproj
       - name: Build App Store Archive
         script: |
           build-number --xcode
