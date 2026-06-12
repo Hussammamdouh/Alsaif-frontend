@@ -103,3 +103,81 @@ workflows:
           ./gradlew assembleRelease
     artifacts:
       - android/app/build/outputs/apk/release/*.apk
+
+  ios-production:
+    name: Elsaif iOS App Store Production Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      xcode: latest
+      cocoapods: default
+      vars:
+        XCODE_WORKSPACE: "AlsaifAnalysis.xcworkspace"
+        XCODE_SCHEME: "AlsaifAnalysis"
+        BUNDLE_ID: "com.elsaifanalysis.app"
+        API_BASE_URL: "https://api.alsaifanalysis.com"
+        API_TIMEOUT: "30000"
+        ENABLE_LOGGING: "false"
+        LOG_LEVEL: "error"
+        EXPO_PUBLIC_ONESIGNAL_APP_ID: "43486064-cce9-4d0f-a006-8145e4a29e8d"
+    scripts:
+      - name: Create environment configuration
+        script: |
+          echo "API_BASE_URL=$API_BASE_URL" > .env
+          echo "API_TIMEOUT=$API_TIMEOUT" >> .env
+          echo "ENABLE_LOGGING=$ENABLE_LOGGING" >> .env
+          echo "LOG_LEVEL=$LOG_LEVEL" >> .env
+          echo "EXPO_PUBLIC_ONESIGNAL_APP_ID=$EXPO_PUBLIC_ONESIGNAL_APP_ID" >> .env
+      - name: Install npm dependencies
+        script: |
+          npm install
+      - name: Run Expo Prebuild
+        script: |
+          npx expo prebuild --platform ios --no-install
+      - name: Configure Podfile for Xcode 16 Compatibility
+        script: |
+          cat << 'EOF' > configure_podfile.rb
+          content = File.read('ios/Podfile')
+          firebase_pods = "target 'AlsaifAnalysis' do\n  pod 'Firebase', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseCoreInternal', :modular_headers => true\n  pod 'GoogleUtilities', :modular_headers => true\n  pod 'FirebaseCoreExtension', :modular_headers => true\n  pod 'FirebaseMessaging', :modular_headers => true\n  pod 'PromisesObjC', :modular_headers => true"
+          content.gsub!("target 'AlsaifAnalysis' do", firebase_pods)
+          content.gsub!(/(react_native_post_install\s*\(\s*(\w+)[\s\S]*?,\s*\n\s*\))/, "\\1\n    \\2.pods_project.targets.each { |t| t.build_configurations.each { |c| c.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17' if t.name.downcase.include?('fmt') } }")
+          File.write('ios/Podfile', content)
+          EOF
+          ruby configure_podfile.rb
+          rm configure_podfile.rb
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod repo update
+          CURRENT_ARCH=arm64 pod install --repo-update
+      - name: Set up Keychain for Code Signing
+        script: |
+          keychain initialize
+      - name: Fetch Apple Certificates & Profiles
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+      - name: Apply Provisioning Profiles
+        script: |
+          keychain add-certificates
+      - name: Build App Store Archive
+        script: |
+          build-number --xcode
+          xcodebuild archive \
+            -workspace "ios/$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath "ios/build/AlsaifAnalysis.xcarchive"
+      - name: Export IPA for Distribution
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath "ios/build/AlsaifAnalysis.xcarchive" \
+            -exportOptionsPlist "/Users/builder/export_options.plist" \
+            -exportPath ios/build
+    artifacts:
+      - ios/build/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
