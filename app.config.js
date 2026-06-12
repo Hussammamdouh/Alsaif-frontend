@@ -21,11 +21,11 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.elsaifanalysis.app",
+      bundleIdentifier: "com.alsaifanalysis.com",
       googleServicesFile: "./GoogleService-Info.plist",
       entitlements: {
         "keychain-access-groups": [
-          "$(AppIdentifierPrefix)com.elsaifanalysis.app"
+          "$(AppIdentifierPrefix)com.alsaifanalysis.com"
         ]
       }
     },

@@ -119,7 +119,7 @@ workflows:
       vars:
         XCODE_WORKSPACE: "AlsaifAnalysis.xcworkspace"
         XCODE_SCHEME: "AlsaifAnalysis"
-        BUNDLE_ID: "com.elsaifanalysis.app"
+        BUNDLE_ID: "com.alsaifanalysis.com"
         API_BASE_URL: "https://api.alsaifanalysis.com"
         API_TIMEOUT: "30000"
         ENABLE_LOGGING: "false"
@@ -222,9 +222,9 @@ workflows:
               exit(1)
           "
           # Fetch signing files for main App Bundle ID
-          app-store-connect fetch-signing-files "com.elsaifanalysis.app" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
+          app-store-connect fetch-signing-files "com.alsaifanalysis.com" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
           # Fetch signing files for OneSignal Notification Service Extension Bundle ID
-          app-store-connect fetch-signing-files "com.elsaifanalysis.app.OneSignalNotificationServiceExtension" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
+          app-store-connect fetch-signing-files "com.alsaifanalysis.com.OneSignalNotificationServiceExtension" --type IOS_APP_STORE --create --certificate-key=@file:/tmp/certificate_key.pem
       - name: Set up Code Signing on Xcode Project
         script: |
           xcode-project use-profiles --project ios/AlsaifAnalysis.xcodeproj
