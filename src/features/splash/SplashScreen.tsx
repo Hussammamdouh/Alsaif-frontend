@@ -233,7 +233,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
           ]}
         >
           <Image
-            source={require('../../assets/images/logo.png')}
+            source={require('../../../assets/Logo_Secondry.png')}
             style={styles.logo}
             resizeMode="contain"
           />

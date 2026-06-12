@@ -15,7 +15,7 @@ export default {
       "**/*"
     ],
     splash: {
-      image: "./assets/Logo Secondry.jpg",
+      image: "./assets/Logo Secondry.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff"
     },
