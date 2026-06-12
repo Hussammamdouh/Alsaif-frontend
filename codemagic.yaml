@@ -158,9 +158,50 @@ workflows:
       - name: Set up Keychain for Code Signing
         script: |
           keychain initialize
+      - name: Decode Apple Distribution Certificate
+        script: |
+          python3 -c "
+          import os, base64
+          print('--- Environment check ---')
+          print('Available CM_ variables:', [k for k in os.environ if k.startswith('CM_')])
+          cert_base64 = os.environ.get('CM_CERTIFICATE')
+          if not cert_base64:
+              print('ERROR: CM_CERTIFICATE environment variable is missing or empty!')
+              print('Please check that CM_CERTIFICATE is added to the apple-credentials environment group in Codemagic.')
+              exit(1)
+          
+          # Clean whitespaces/newlines from base64 string
+          cert_base64 = cert_base64.strip().replace('\n', '').replace('\r', '')
+          
+          try:
+              cert_bytes = base64.b64decode(cert_base64)
+              print(f'Successfully decoded base64. Decoded size: {len(cert_bytes)} bytes')
+          except Exception as e:
+              print(f'ERROR: Failed to decode base64 string: {e}')
+              exit(1)
+              
+          if len(cert_bytes) == 0:
+              print('ERROR: Decoded certificate bytes are empty!')
+              exit(1)
+              
+          target_path = '/tmp/certificate.p12'
+          try:
+              with open(target_path, 'wb') as f:
+                  f.write(cert_bytes)
+              print(f'Successfully wrote certificate to {target_path}')
+          except Exception as e:
+              print(f'ERROR: Failed to write to {target_path}: {e}')
+              exit(1)
+          "
       - name: Apply Signing Certificates
         script: |
-          keychain add-certificates
+          if [ -z "${CM_CERTIFICATE_PASSWORD}" ]; then
+            echo "Applying certificate without password"
+            keychain add-certificates --certificate /tmp/certificate.p12
+          else
+            echo "Applying certificate with password"
+            keychain add-certificates --certificate /tmp/certificate.p12 --certificate-password "${CM_CERTIFICATE_PASSWORD}"
+          fi
       - name: Fetch Apple Certificates & Profiles
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create

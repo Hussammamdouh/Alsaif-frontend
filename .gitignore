@@ -17,6 +17,9 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.cer
+*.certSigningRequest
+*.cnf
 *.apk
 *.aab
 # Metro
