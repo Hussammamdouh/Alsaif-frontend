@@ -158,10 +158,6 @@ workflows:
       - name: Set up Keychain for Code Signing
         script: |
           keychain initialize
-      - name: Import Apple Distribution Certificate
-        script: |
-          python3 -c "import base64, os; open('ios_distribution.p12', 'wb').write(base64.b64decode(os.environ['IOS_DISTRIBUTION_P12']))"
-          security import ios_distribution.p12 -P "" -A
       - name: Fetch Apple Certificates & Profiles
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
