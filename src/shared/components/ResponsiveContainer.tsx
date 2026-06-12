@@ -12,13 +12,13 @@ interface ResponsiveContainerProps {
     style?: ViewStyle;
 }
 
-const DESKTOP_BREAKPOINT = 768;
+const DESKTOP_BREAKPOINT = 1024;
 const DEFAULT_MAX_WIDTH = 2000;
 
 /**
  * ResponsiveContainer wraps content and constrains its width on desktop screens.
- * On mobile (width <= 768px), content uses full width.
- * On desktop (width > 768px), content is centered with a max-width constraint.
+ * On mobile (width <= 1024px), content uses full width.
+ * On desktop (width > 1024px), content is centered with a max-width constraint.
  */
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
     children,
@@ -34,11 +34,11 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         <View
             style={[
                 styles.container,
-                shouldConstrain && { 
+                shouldConstrain ? { 
                     maxWidth: activeMaxWidth, 
                     alignSelf: 'center' as const,
                     width: activeMaxWidth,
-                },
+                } : null,
                 style,
             ]}
         >

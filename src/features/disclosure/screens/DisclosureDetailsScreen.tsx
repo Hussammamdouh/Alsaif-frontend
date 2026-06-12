@@ -195,7 +195,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
                         ) : <View style={{ width: 40 }} />}
                     </View>
 
-                    <View style={[styles.heroContent, isDesktop && { maxWidth: 1200, alignSelf: 'center', width: '100%' }]}>
+                    <View style={[styles.heroContent, isDesktop ? { maxWidth: 1200, alignSelf: 'center', width: '100%' } : null]}>
                         <View style={styles.topMeta}>
                             <View style={[styles.badge, { backgroundColor: disclosure.exchange === 'ADX' ? '#EAB30815' : '#3B82F615' }]}>
                                 <Text style={{ color: disclosure.exchange === 'ADX' ? '#EAB308' : '#3B82F6', fontWeight: '800', fontSize: 12 }}>
@@ -230,13 +230,13 @@ export const DisclosureDetailsScreen: React.FC = () => {
                         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.primary.main} />
                     }
                 >
-                    <View style={[styles.contentContainer, isDesktop && { maxWidth: 1200, alignSelf: 'center', width: '100%' }]}>
+                    <View style={[styles.contentContainer, isDesktop ? { maxWidth: 1200, alignSelf: 'center', width: '100%' } : null]}>
                         <View style={[
-                            isDesktop && styles.desktopGrid,
-                            isDesktop && isRTL && { flexDirection: 'row-reverse' }
+                            isDesktop ? styles.desktopGrid : null,
+                            (isDesktop && isRTL) ? { flexDirection: 'row-reverse' } : null
                         ]}>
                             {/* Main Column (Comments) */}
-                            <View style={[isDesktop && styles.mainColumn]}>
+                            <View style={[isDesktop ? styles.mainColumn : null]}>
                                 {/* User Comments Section Card */}
                                 <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border }]}>
                                     <View style={styles.cardHeader}>
@@ -343,7 +343,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
                             </View>
 
                             {/* Sidebar Column (Notes & Docs) */}
-                            <View style={[isDesktop && styles.sidebarColumn]}>
+                            <View style={[isDesktop ? styles.sidebarColumn : null]}>
                                 {/* PDF Section Card */}
                                 <View style={[styles.card, { backgroundColor: theme.background.secondary, borderColor: theme.ui.border, marginBottom: 24 }]}>
                                     <View style={styles.cardHeader}>

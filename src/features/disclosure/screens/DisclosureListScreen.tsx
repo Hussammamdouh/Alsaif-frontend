@@ -82,7 +82,7 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
                 style={[
                     styles.premiumCard, 
                     { backgroundColor: theme.background.secondary, borderColor: theme.ui.border },
-                    isDesktop && { flex: 1 }
+                    isDesktop ? { flex: 1 } : null
                 ]}
                 onPress={() => onPress(item)}
                 activeOpacity={0.9}
@@ -193,9 +193,9 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
         return (
             <View style={[
                 styles.headerWrapper,
-                isDesktop && styles.desktopHeaderWrapper,
+                isDesktop ? styles.desktopHeaderWrapper : null,
                 { borderBottomWidth: 1, borderBottomColor: theme.ui.border, paddingBottom: 24 },
-                !isDesktop && { paddingTop: Math.max(insets.top, 12), borderBottomWidth: 0 }
+                !isDesktop ? { paddingTop: Math.max(insets.top, 12), borderBottomWidth: 0 } : null
             ]}>
                 {isDesktop ? (
                     <>
@@ -231,7 +231,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                                                             ? '#3e7a33'
                                                             : (isDark ? 'rgba(62,122,51,0.1)' : 'rgba(62,122,51,0.06)')
                                                     },
-                                                    !isActive && { borderColor: isDark ? 'rgba(62,122,51,0.2)' : 'rgba(62,122,51,0.1)', borderWidth: 1 }
+                                                    !isActive ? { borderColor: isDark ? 'rgba(62,122,51,0.2)' : 'rgba(62,122,51,0.1)', borderWidth: 1 } : null
                                                 ]}
                                                 onPress={() => setFilter(f.key)}
                                             >
@@ -304,7 +304,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                                                         ? '#3e7a33'
                                                         : (isDark ? 'rgba(62,122,51,0.1)' : 'rgba(62,122,51,0.06)')
                                                 },
-                                                !isActive && { borderColor: isDark ? 'rgba(62,122,51,0.2)' : 'rgba(62,122,51,0.1)', borderWidth: 1 }
+                                                !isActive ? { borderColor: isDark ? 'rgba(62,122,51,0.2)' : 'rgba(62,122,51,0.1)', borderWidth: 1 } : null
                                             ]}
                                             onPress={() => setFilter(f.key)}
                                         >
@@ -480,7 +480,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                     }
                     contentContainerStyle={[
                         styles.listContent,
-                        isDesktop && styles.desktopList,
+                        isDesktop ? styles.desktopList : null,
                         { paddingBottom: isDesktop ? 100 : 40 }
                     ]}
                     columnWrapperStyle={isDesktop && filteredDisclosures.length > 0 ? styles.columnWrapper : undefined}
