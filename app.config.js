@@ -23,6 +23,7 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.alsaifanalysis.com",
       googleServicesFile: "./GoogleService-Info.plist",
+      buildNumber: process.env.BUILD_NUMBER || "2",
       entitlements: {
         "keychain-access-groups": [
           "$(AppIdentifierPrefix)com.alsaifanalysis.com"
@@ -30,7 +31,7 @@ export default {
       }
     },
     android: {
-      versionCode: 13,
+      versionCode: process.env.BUILD_NUMBER ? parseInt(process.env.BUILD_NUMBER, 10) : 13,
       adaptiveIcon: {
         foregroundImage: "./assets/logo.png",
         backgroundColor: "#ffffff"
