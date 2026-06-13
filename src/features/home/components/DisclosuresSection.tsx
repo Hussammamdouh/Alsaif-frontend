@@ -24,7 +24,7 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
     const { width } = useWindowDimensions();
     const isAuthenticated = useIsAuthenticated();
 
-    const isSmallLaptop = width >= 1024 && width < 1280;
+    const isSmallLaptop = width >= 768 && width < 1280;
     const shouldReduceTitle = !isAuthenticated && isSmallLaptop;
 
     return (

@@ -12,7 +12,7 @@ interface ResponsiveContainerProps {
     style?: ViewStyle;
 }
 
-const DESKTOP_BREAKPOINT = 1024;
+const DESKTOP_BREAKPOINT = 768;
 const DEFAULT_MAX_WIDTH = 2000;
 
 /**

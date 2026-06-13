@@ -91,7 +91,7 @@ export const DesktopTopNav: React.FC = () => {
         }).start();
     }, [isDark]);
 
-    if (width < 1024) return null;
+    if (width < 768) return null;
 
     const getInitials = () => {
         if (!user || !user.name) return 'U';

@@ -18,7 +18,7 @@ export const AboutScreen = () => {
     const { t, language } = useLocalization();
     const navigation = useNavigation<any>();
     const { width } = Dimensions.get('window');
-    const isDesktop = width >= 1024;
+    const isDesktop = width >= 768;
 
     const handleTabChange = React.useCallback((tab: SettingsTab) => {
         switch (tab) {

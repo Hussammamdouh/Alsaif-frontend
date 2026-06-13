@@ -47,7 +47,7 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
   const localStyles = useMemo(() => createLocalStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
 
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);

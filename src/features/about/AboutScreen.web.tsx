@@ -26,7 +26,7 @@ export const AboutScreen = () => {
     const navigation = useNavigation<any>();
     const { settings } = useSystemSettings();
     const { width } = Dimensions.get('window');
-    const isDesktop = width >= 1024;
+    const isDesktop = width >= 768;
     const { state: authState } = useAuth();
     const { subscription } = useProfile();
     const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';

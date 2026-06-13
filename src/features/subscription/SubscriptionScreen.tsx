@@ -40,7 +40,7 @@ export const SubscriptionScreen: React.FC = () => {
   const { t, isRTL } = useLocalization();
   const { width } = useWindowDimensions();
   const navigation = useNavigation<any>();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
   const { logout: authLogout } = useAuth();
 
   const styles = React.useMemo(() => createSubscriptionStyles(theme, isRTL), [theme, isRTL]);

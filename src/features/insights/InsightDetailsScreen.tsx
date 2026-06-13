@@ -59,7 +59,7 @@ export const InsightDetailsScreen: React.FC = () => {
   const { theme, isDark } = useTheme();
   const { t, isRTL, language } = useLocalization();
   const { width: contentWidth, width: screenWidth } = useWindowDimensions();
-  const isDesktop = screenWidth >= 1024;
+  const isDesktop = screenWidth >= 768;
   const isAuthenticated = useIsAuthenticated();
   const styles = useMemo(() => createInsightsStyles(theme), [theme]);
   const inputRef = useRef<TextInput>(null);

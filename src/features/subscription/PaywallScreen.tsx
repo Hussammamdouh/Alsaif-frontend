@@ -26,8 +26,8 @@ import { SUBSCRIPTION_THEME } from './SubscriptionDesignSystem';
 export const PaywallScreen: React.FC = () => {
   const navigation = useNavigation();
   const { width, height } = useWindowDimensions();
-  const isDesktop = width > 1024;
-  const isTablet = width > 768 && width <= 1024;
+  const isDesktop = width >= 768;
+  const isTablet = false;
   const { theme, isDark } = useTheme();
   const styles = useMemo(() => getStyles(theme, isDesktop, isTablet, height), [theme, isDesktop, isTablet, height]);
   const { t } = useLocalization();

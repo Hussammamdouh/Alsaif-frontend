@@ -186,7 +186,7 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
   const { theme, isDark } = useTheme();
   const { t } = useLocalization();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
   const columnCount = width > 1600 ? 3 : 2;
   const styles = React.useMemo(() => getStyles(theme, isDesktop), [theme, isDesktop]);
   const { hasPremiumAccess } = useSubscriptionAccess();

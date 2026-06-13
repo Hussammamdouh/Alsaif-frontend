@@ -53,7 +53,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   const { t } = useLocalization();
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
 
   // Get user from session
   const user = authState.session?.user;

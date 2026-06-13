@@ -45,7 +45,7 @@ export const AdminBroadcastScreen: React.FC = () => {
   const { t, isRTL } = useLocalization();
   const styles = useMemo(() => createAdminStyles(theme, isRTL), [theme, isRTL]);
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
 
   const { history, isLoading, isSending, error, broadcast, loadHistory } = useAdminBroadcast();
 

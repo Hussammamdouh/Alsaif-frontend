@@ -203,7 +203,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   const { theme, isDark } = useTheme();
   const { t, isRTL } = useLocalization();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
   const columnCount = width > 1600 ? 3 : 2;
   const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark, isRTL), [theme, isDesktop, isDark, isRTL]);
   const { canAccessInsight } = useSubscriptionAccess();

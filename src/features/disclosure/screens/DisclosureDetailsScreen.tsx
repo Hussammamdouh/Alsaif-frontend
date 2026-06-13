@@ -41,7 +41,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
     const isAdmin = useIsAdmin();
     const isAuthenticated = useIsAuthenticated();
     const { width } = useWindowDimensions();
-    const isDesktop = width >= 1024;
+    const isDesktop = width >= 768;
 
     const [disclosure, setDisclosure] = useState<Disclosure | undefined>(initialDisclosure);
     const [loading, setLoading] = useState(!initialDisclosure);

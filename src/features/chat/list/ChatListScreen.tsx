@@ -300,7 +300,7 @@ export const ChatListScreen: React.FC<ChatListScreenProps> = React.memo(
     const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
     const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
     const { width } = useWindowDimensions();
-    const isDesktop = width >= 1024;
+    const isDesktop = width >= 768;
 
     const [isNewChatModalVisible, setIsNewChatModalVisible] = useState(false);
     const [isCreateGroupModalVisible, setIsCreateGroupModalVisible] = useState(false);

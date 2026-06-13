@@ -25,7 +25,7 @@ import { SUBSCRIPTION_THEME } from './SubscriptionDesignSystem';
 
 export const SubscriptionPlansScreen: React.FC = () => {
   const { width, height } = useWindowDimensions();
-  const isDesktop = width > 1024;
+  const isDesktop = width >= 768;
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
   const { t } = useLocalization();

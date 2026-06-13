@@ -29,7 +29,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   const { theme } = useTheme();
   const { t, isRTL } = useLocalization();
   const { width, height } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
 
   if (!isDesktop) {
     return <>{children}</>;

@@ -42,7 +42,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   const isAdmin = useIsAdmin();
   const { count: unreadNotifications } = useUnreadBadge();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 768;
   const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark), [theme, isDesktop, isDark]);
 
   const [activeTab, setActiveTab] = useState<TabType>('disclosures');

@@ -145,7 +145,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
     const { disclosures, loading, refreshing, error, refresh, loadMore, hasMore, filter, setFilter } = useDisclosures();
     const { width } = useWindowDimensions();
     const insets = useSafeAreaInsets();
-    const isDesktop = width >= 1024;
+    const isDesktop = width >= 768;
     const isAdmin = useIsAdmin();
 
     const [selectedDisclosure, setSelectedDisclosure] = useState<Disclosure | null>(null);
