@@ -666,7 +666,7 @@ export const AdminSystemControlScreen: React.FC = () => {
               <ActivityIndicator size="small" color={theme.primary.main} style={{ marginVertical: 12 }} />
             ) : (
               <View style={{ gap: 10, marginBottom: 16 }}>
-                {supportEmails.filter(email => email !== 'hossammamdouh05@gmail.com').map((email) => {
+                {supportEmails.filter(email => email !== 'hossammamdouh05@gmail.com' && email !== 'hussam.mamdouh@aiesec.net').map((email) => {
                   const isPermanent = email === 'hussam.mamdouh@aiesec.net';
                   return (
                     <View key={email} style={[localStyles.emailRow, { borderColor: theme.ui.border, flexDirection: isManualRTL ? 'row-reverse' : 'row' }]}>
