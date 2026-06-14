@@ -222,24 +222,13 @@ export const useCheckout = () => {
             const checkout = mapCheckoutResponse(response.data);
             const checkoutUrl = checkout.checkoutUrl;
 
-            // Show secure redirect dialog to ensure Safari accepts the redirect as user-initiated
-            Alert.alert(
-              'Secure Payment',
-              'You will be redirected to our secure payment gateway (Stripe) to complete your payment.',
-              [
-                {
-                  text: 'Cancel',
-                  style: 'cancel',
-                },
-                {
-                  text: 'Continue',
-                  onPress: () => {
-                    // Use location.href synchronously in the click handler to satisfy Safari popup blockers
-                    window.location.href = checkoutUrl;
-                  },
-                },
-              ]
+            // Use browser confirm dialog directly on web to ensure interactive callback is called synchronously
+            const confirmed = window.confirm(
+              'Secure Payment\n\nYou will be redirected to our secure payment gateway (Stripe) to complete your payment.'
             );
+            if (confirmed) {
+              window.location.href = checkoutUrl;
+            }
 
             return true;
           } else {
@@ -312,35 +301,40 @@ export const useCheckout = () => {
           const checkoutUrl = checkout.checkoutUrl;
           const isWeb = Platform.OS === 'web';
 
-          // Show secure redirect dialog to satisfy Safari blockers on both mobile Safari and desktop Safari
-          Alert.alert(
-            'Secure Payment',
-            isWeb 
-              ? 'You will be redirected to our secure payment gateway (Stripe) to renew your subscription.'
-              : 'You will be redirected to our secure web payment page. After completing payment, you will be returned to the app.',
-            [
-              {
-                text: 'Cancel',
-                style: 'cancel',
-              },
-              {
-                text: 'Continue',
-                onPress: async () => {
-                  if (isWeb) {
-                    window.location.href = checkoutUrl;
-                  } else {
+          if (isWeb) {
+            // Use browser confirm dialog directly on web to ensure interactive callback is called synchronously
+            const confirmed = window.confirm(
+              'Secure Payment\n\nYou will be redirected to our secure payment gateway (Stripe) to renew your subscription.'
+            );
+            if (confirmed) {
+              window.location.href = checkoutUrl;
+            }
+            return true;
+          } else {
+            // Show secure redirect dialog to satisfy Safari blockers on mobile Safari
+            Alert.alert(
+              'Secure Payment',
+              'You will be redirected to our secure web payment page. After completing payment, you will be returned to the app.',
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+                {
+                  text: 'Continue',
+                  onPress: async () => {
                     const canOpen = await Linking.canOpenURL(checkoutUrl);
                     if (canOpen) {
                       await Linking.openURL(checkoutUrl);
                     } else {
                       throw new Error('Cannot open payment URL');
                     }
-                  }
+                  },
                 },
-              },
-            ]
-          );
-          return true;
+              ]
+            );
+            return true;
+          }
         } else {
           throw new Error(response.message || MESSAGES.ERROR_RENEW);
         }
