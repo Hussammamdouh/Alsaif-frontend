@@ -209,6 +209,15 @@ export const useCheckout = () => {
         setError(null);
 
         const isWeb = Platform.OS === 'web';
+        const isIOS = Platform.OS === 'ios';
+
+        if (isIOS) {
+          Alert.alert(
+            'Subscription Notice',
+            'Subscription plans and upgrades are managed on our website. Please log in with a premium account.'
+          );
+          return false;
+        }
 
         if (isWeb) {
           // Web: Direct Stripe checkout
@@ -300,6 +309,15 @@ export const useCheckout = () => {
           const checkout = mapCheckoutResponse(response.data);
           const checkoutUrl = checkout.checkoutUrl;
           const isWeb = Platform.OS === 'web';
+          const isIOS = Platform.OS === 'ios';
+
+          if (isIOS) {
+            Alert.alert(
+              'Subscription Notice',
+              'Subscription renewals and plans are managed on our website. Please log in with a premium account.'
+            );
+            return false;
+          }
 
           if (isWeb) {
             // Use browser confirm dialog directly on web to ensure interactive callback is called synchronously
@@ -377,12 +395,72 @@ export const useCheckout = () => {
     []
   );
 
+  const initiateWebPortal = useCallback(
+    async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const isWeb = Platform.OS === 'web';
+
+        if (isWeb) {
+          return true;
+        }
+
+        // Native: Generate magic link and open in external browser
+        const response = await apiClient.post(API_ENDPOINTS.MAGIC_LINK_GENERATE, {
+          purpose: 'subscription',
+          returnUrl: 'alsaif-analysis://subscription-plans',
+        }) as any;
+
+        if (response.success && response.data.checkoutUrl) {
+          const portalUrl = response.data.checkoutUrl;
+          
+          // Show info alert about external browser
+          Alert.alert(
+            'Redirecting to Web',
+            'You will be redirected to our website to manage your account. You will be logged in automatically.',
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+              },
+              {
+                text: 'Continue',
+                onPress: async () => {
+                  const canOpen = await Linking.canOpenURL(portalUrl);
+                  if (canOpen) {
+                    await Linking.openURL(portalUrl);
+                  } else {
+                    throw new Error('Cannot open portal URL');
+                  }
+                },
+              },
+            ]
+          );
+          return true;
+        } else {
+          throw new Error(response.message || 'Failed to generate portal link');
+        }
+      } catch (err: any) {
+        console.error('Error initiating web portal:', err);
+        setError(err.message || 'An error occurred. Please try again.');
+        Alert.alert('Error', err.message || 'An error occurred. Please try again.');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     loading,
     error,
     initiateCheckout,
     initiateRenewal,
     validatePromoCode,
+    initiateWebPortal,
   };
 };
 

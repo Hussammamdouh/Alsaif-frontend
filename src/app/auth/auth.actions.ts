@@ -5,6 +5,8 @@
  */
 
 import { Dispatch } from 'react';
+import { Platform } from 'react-native';
+import apiClient from '../../core/services/api/apiClient';
 import {
   AuthAction,
   AuthActionType,
@@ -54,6 +56,36 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
   dispatch({ type: AuthActionType.BOOTSTRAP_START });
 
   try {
+    if (Platform.OS === 'web') {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      if (token) {
+        try {
+          console.log('[AuthBootstrap] Verifying web magic link token:', token);
+          const response = await apiClient.get(`/api/magic-link/verify/${token}`) as any;
+          if (response.success && response.data) {
+            const session: AuthSession = {
+              user: response.data.user,
+              tokens: {
+                accessToken: response.data.accessToken,
+                refreshToken: response.data.refreshToken,
+              },
+              expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes
+            };
+            await saveAuthSession(session);
+            console.log('[AuthBootstrap] Magic link login successful, session saved');
+            
+            // Clean up the URL search parameter so it doesn't try to reuse/re-verify the token
+            const url = new URL(window.location.href);
+            url.searchParams.delete('token');
+            window.history.replaceState({}, '', url.pathname + url.search);
+          }
+        } catch (err) {
+          console.error('[AuthBootstrap] Magic link verification failed:', err);
+        }
+      }
+    }
+
     let result = await bootstrapApp();
 
     // Check if we should attempt token refresh

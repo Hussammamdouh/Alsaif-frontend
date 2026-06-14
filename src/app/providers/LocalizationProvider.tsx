@@ -529,6 +529,11 @@ const translations = {
     'paywall.restore': 'Restore',
     'paywall.terms': 'Terms',
     'paywall.privacy': 'Privacy',
+    'paywall.iosNoticeTitle': 'Premium Access Required',
+    'paywall.iosNoticeText': 'This content is exclusive to premium members. Subscriptions are managed outside of this application. If you already have a subscription, log in to access.',
+    'plans.iosNoticeTitle': 'Manage Subscription',
+    'plans.iosNoticeText': 'Subscription plans and upgrades are managed on our web platform. Logging in with a premium account is fully supported.',
+    'plans.iosPortalButton': 'Manage Account on Web',
 
     // Subscription Plans Screen
     'plans.title': 'Subscription Plans',
@@ -1859,6 +1864,11 @@ const translations = {
     'paywall.restore': 'استعادة',
     'paywall.terms': 'الشروط',
     'paywall.privacy': 'الخصوصية',
+    'paywall.iosNoticeTitle': 'مطلوب اشتراك مميز',
+    'paywall.iosNoticeText': 'هذا المحتوى حصري للأعضاء المشتركين. تتم إدارة الاشتراكات خارج التطبيق. إذا كان لديك اشتراك بالفعل، يرجى تسجيل الدخول للوصول إليه.',
+    'plans.iosNoticeTitle': 'إدارة الاشتراك',
+    'plans.iosNoticeText': 'تتم إدارة خطط الاشتراك والترقيات على منصتنا الإلكترونية. تسجيل الدخول باستخدام حساب مميز مدعوم بالكامل.',
+    'plans.iosPortalButton': 'إدارة الحساب على الويب',
 
     // Subscription Plans Screen
     'plans.title': 'خطط الاشتراك',

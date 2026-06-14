@@ -14,6 +14,7 @@ import {
   StatusBar,
   useWindowDimensions,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -22,6 +23,7 @@ import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { ResponsiveContainer } from '../../shared/components';
 import { SUBSCRIPTION_THEME } from './SubscriptionDesignSystem';
+import { useCheckout } from './subscription.hooks';
 
 export const PaywallScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -31,6 +33,7 @@ export const PaywallScreen: React.FC = () => {
   const { theme, isDark } = useTheme();
   const styles = useMemo(() => getStyles(theme, isDesktop, isTablet, height), [theme, isDesktop, isTablet, height]);
   const { t } = useLocalization();
+  const { initiateWebPortal, loading: portalLoading } = useCheckout();
 
   const handleChoosePlan = () => {
     navigation.navigate('SubscriptionPlans' as never);
@@ -104,21 +107,51 @@ export const PaywallScreen: React.FC = () => {
                 <Text style={styles.title}>{t('paywall.title')}</Text>
                 <Text style={styles.subtitle}>{t('paywall.subtitle')}</Text>
 
-                <TouchableOpacity
-                  style={styles.heroCTA}
-                  activeOpacity={0.8}
-                  onPress={handleChoosePlan}
-                >
-                  <LinearGradient
-                    colors={[theme.primary.main, theme.primary.dark]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.ctaGradient}
+                {Platform.OS === 'ios' ? (
+                  <View style={styles.iosNoticeCard}>
+                    <Ionicons name="information-circle-outline" size={24} color={theme.primary.main} style={{ marginBottom: 8 }} />
+                    <Text style={styles.iosNoticeTitle}>{t('paywall.iosNoticeTitle')}</Text>
+                    <Text style={styles.iosNoticeText}>{t('paywall.iosNoticeText')}</Text>
+                    <TouchableOpacity
+                      style={styles.portalButton}
+                      activeOpacity={0.8}
+                      onPress={initiateWebPortal}
+                      disabled={portalLoading}
+                    >
+                      <LinearGradient
+                        colors={[theme.primary.main, theme.primary.dark]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.portalButtonGradient}
+                      >
+                        {portalLoading ? (
+                          <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                          <>
+                            <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
+                            <Ionicons name="open-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
+                          </>
+                        )}
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.heroCTA}
+                    activeOpacity={0.8}
+                    onPress={handleChoosePlan}
                   >
-                    <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
-                    <Ionicons name="arrow-forward" size={20} color="#FFF" />
-                  </LinearGradient>
-                </TouchableOpacity>
+                    <LinearGradient
+                      colors={[theme.primary.main, theme.primary.dark]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.ctaGradient}
+                    >
+                      <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
+                      <Ionicons name="arrow-forward" size={20} color="#FFF" />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )}
 
                 <View style={styles.trustMiniRow}>
                   <View style={styles.trustMiniItem}>
@@ -228,26 +261,60 @@ export const PaywallScreen: React.FC = () => {
 
           {!isDesktop && (
             <View style={styles.mobileCTAWrap}>
-              <TouchableOpacity
-                style={styles.ctaButton}
-                activeOpacity={0.8}
-                onPress={handleChoosePlan}
-              >
-                <LinearGradient
-                  colors={[theme.primary.main, theme.primary.dark]}
-                  style={styles.ctaGradient}
+              {Platform.OS === 'ios' ? (
+                <View style={styles.iosNoticeCard}>
+                  <Ionicons name="information-circle-outline" size={24} color={theme.primary.main} style={{ marginBottom: 8 }} />
+                  <Text style={styles.iosNoticeTitle}>{t('paywall.iosNoticeTitle')}</Text>
+                  <Text style={styles.iosNoticeText}>{t('paywall.iosNoticeText')}</Text>
+                  <TouchableOpacity
+                    style={styles.portalButton}
+                    activeOpacity={0.8}
+                    onPress={initiateWebPortal}
+                    disabled={portalLoading}
+                  >
+                    <LinearGradient
+                      colors={[theme.primary.main, theme.primary.dark]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.portalButtonGradient}
+                    >
+                      {portalLoading ? (
+                        <ActivityIndicator size="small" color="#FFF" />
+                      ) : (
+                        <>
+                          <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
+                          <Ionicons name="open-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
+                        </>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.ctaButton}
+                  activeOpacity={0.8}
+                  onPress={handleChoosePlan}
                 >
-                  <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+                  <LinearGradient
+                    colors={[theme.primary.main, theme.primary.dark]}
+                    style={styles.ctaGradient}
+                  >
+                    <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
             </View>
           )}
 
           <View style={styles.footerLinks}>
-            <TouchableOpacity onPress={() => {/* Restore */ }}>
-              <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
-            </TouchableOpacity>
-            <Text style={styles.linkDot}>•</Text>
+            {Platform.OS !== 'ios' && (
+              <>
+                <TouchableOpacity onPress={() => {/* Restore */ }}>
+                  <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
+                </TouchableOpacity>
+                <Text style={styles.linkDot}>•</Text>
+              </>
+            )}
             <TouchableOpacity onPress={() => {/* Terms */ }}>
               <Text style={styles.footerLink}>{t('paywall.terms')}</Text>
             </TouchableOpacity>
@@ -596,5 +663,46 @@ const getStyles = (theme: any, isDesktop: boolean, isTablet: boolean, height: nu
   linkDot: {
     color: theme.text.hint,
     fontSize: 10,
+  },
+  iosNoticeCard: {
+    backgroundColor: theme.background.secondary,
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: theme.border.main,
+    marginTop: 16,
+    width: '100%',
+    maxWidth: isDesktop ? 400 : undefined,
+  },
+  iosNoticeTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: theme.text.primary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  iosNoticeText: {
+    fontSize: 14,
+    color: theme.text.secondary,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  portalButton: {
+    marginTop: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  portalButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  portalButtonText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

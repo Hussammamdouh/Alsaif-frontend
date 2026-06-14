@@ -442,6 +442,24 @@ export const createSubscriptionStyles = (theme: ColorPalette, isRTL: boolean) =>
       flex: 1,
       alignItems: 'center',
     },
+    portalButton: {
+      marginTop: 16,
+      borderRadius: 12,
+      overflow: 'hidden',
+      width: '100%',
+    },
+    portalButtonGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+    },
+    portalButtonText: {
+      color: '#FFF',
+      fontSize: 15,
+      fontWeight: '700',
+    },
     backButton: {
       marginRight: isRTL ? 0 : 12,
       marginLeft: isRTL ? 12 : 0,
