@@ -39,6 +39,26 @@ import * as Keychain from '../../core/utils/keychain-stub';
 import { login as loginApi, logout as logoutApi, refreshToken as refreshTokenApi, verify as verifyApi, resendVerificationCode as resendApi } from '../../core/services/auth/authService';
 import { register as registerApi } from '../../core/services/auth/register.service';
 
+// Module-level cache to capture the token immediately on load before any routing changes the URL
+let initialWebToken: string | null = null;
+if (Platform.OS === 'web') {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    initialWebToken = params.get('token');
+    
+    // Fallback to sessionStorage if URL params were cleared before this module loaded
+    if (!initialWebToken && typeof window !== 'undefined' && window.sessionStorage) {
+      initialWebToken = window.sessionStorage.getItem('pending_magic_token');
+    }
+    
+    if (initialWebToken) {
+      console.log('[AuthBootstrap] Captured token immediately at module load:', initialWebToken);
+    }
+  } catch (e) {
+    console.error('[AuthBootstrap] Failed to parse token at module load:', e);
+  }
+}
+
 /**
  * Maps catch errors to user-friendly messages
  */
@@ -57,8 +77,9 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
 
   try {
     if (Platform.OS === 'web') {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
+      const token = initialWebToken || 
+                    new URLSearchParams(window.location.search).get('token') || 
+                    (typeof window !== 'undefined' && window.sessionStorage ? window.sessionStorage.getItem('pending_magic_token') : null);
       if (token) {
         try {
           console.log('[AuthBootstrap] Verifying web magic link token:', token);
@@ -82,6 +103,12 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
           }
         } catch (err) {
           console.error('[AuthBootstrap] Magic link verification failed:', err);
+        } finally {
+          // ALWAYS clean up the pending token so we don't attempt to verify it again on subsequent renders/reboots
+          initialWebToken = null;
+          if (typeof window !== 'undefined' && window.sessionStorage) {
+            window.sessionStorage.removeItem('pending_magic_token');
+          }
         }
       }
     }
