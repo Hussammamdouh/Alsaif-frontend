@@ -1169,6 +1169,8 @@ const translations = {
     'admin.planBreakdown': 'Plan Breakdown',
     'admin.revenueByPlan': 'Revenue by Plan',
     'admin.revenueByCycle': 'Revenue by Billing Cycle',
+    'admin.systemSettings': 'System Settings',
+    'admin.enableNewSubscriptions': 'Enable New Subscriptions',
 
     // Notifications Screen
     'notifications.title': 'Notifications',
@@ -2511,6 +2513,8 @@ const translations = {
     'admin.planBreakdown': 'تفاصيل الخطط',
     'admin.revenueByPlan': 'الإيرادات حسب الخطة',
     'admin.revenueByCycle': 'الإيرادات حسب دورة الفوترة',
+    'admin.systemSettings': 'إعدادات النظام',
+    'admin.enableNewSubscriptions': 'تفعيل الاشتراكات الجديدة',
 
     // Notifications Screen
     'notifications.title': 'الإشعارات',

@@ -170,7 +170,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
 
             <View style={styles.footer}>
                 <Text style={[styles.footerText, { color: theme.text.tertiary }]}>
-                    © {new Date().getFullYear()} Elsaif Analysis. All rights reserved.
+                    © {new Date().getFullYear()} Alsaif Analysis. All rights reserved.
                 </Text>
             </View>
         </ScrollView>

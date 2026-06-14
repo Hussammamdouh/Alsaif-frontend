@@ -121,7 +121,7 @@ export const AboutScreen = () => {
                     {t('about.version')} 1.0.0
                 </Text>
                 <Text style={[styles.versionText, { color: theme.text.tertiary }]}>
-                    © 2024 Alsaif Analysis
+                    © 2026 Alsaif Analysis
                 </Text>
             </View>
         </ScrollView>
