@@ -62,7 +62,7 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
       if (token) {
         try {
           console.log('[AuthBootstrap] Verifying web magic link token:', token);
-          const response = await apiClient.get(`/api/magic-link/verify/${token}`) as any;
+          const response = await apiClient.get(`/api/magic-link/verify/${token}`, undefined, false) as any;
           if (response.success && response.data) {
             const session: AuthSession = {
               user: response.data.user,
