@@ -101,8 +101,12 @@ export const bootstrap = async (dispatch: Dispatch<AuthAction>) => {
             url.searchParams.delete('token');
             window.history.replaceState({}, '', url.pathname + url.search);
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('[AuthBootstrap] Magic link verification failed:', err);
+          if (Platform.OS === 'web' && typeof window !== 'undefined') {
+            const msg = err?.message || 'Invalid or expired token. Please log in manually.';
+            window.alert(`Auto-login failed:\n${msg}`);
+          }
         } finally {
           // ALWAYS clean up the pending token so we don't attempt to verify it again on subsequent renders/reboots
           initialWebToken = null;
