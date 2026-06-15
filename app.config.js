@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Alsaif Analysis",
     slug: "elsaif-analysis",
-    version: "1.0.3",
+    version: "1.0.4",
     orientation: "portrait",
     icon: "./assets/logo.png",
     userInterfaceStyle: "light",
@@ -31,7 +31,7 @@ export default {
       }
     },
     android: {
-      versionCode: process.env.BUILD_NUMBER ? parseInt(process.env.BUILD_NUMBER, 10) : 13,
+      versionCode: process.env.BUILD_NUMBER ? parseInt(process.env.BUILD_NUMBER, 10) : 14,
       adaptiveIcon: {
         foregroundImage: "./assets/logo.png",
         backgroundColor: "#ffffff"
