@@ -33,7 +33,7 @@ interface BottomTabNavigatorProps {
   onNavigateToInsightDetail: (insightId: string, title?: string) => void;
   onNavigateToSettings: () => void;
   onNavigateToSubscription: (isSubscribed: boolean) => void;
-  onNavigateToTerms: () => void;
+  onNavigateToTerms: (tab?: 'privacy' | 'terms') => void;
   onNavigateToAbout: () => void;
   onNavigateToInsightRequests: () => void;
   onLogout: () => void;

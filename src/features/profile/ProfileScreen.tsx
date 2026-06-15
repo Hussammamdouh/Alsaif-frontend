@@ -40,7 +40,7 @@ interface ProfileScreenProps {
   onNavigateBack: () => void;
   onNavigateToSettings: () => void;
   onNavigateToSubscription?: (isSubscribed: boolean) => void;
-  onNavigateToTerms: () => void;
+  onNavigateToTerms: (tab?: 'privacy' | 'terms') => void;
   onNavigateToAbout?: () => void;
   onNavigateToInsightRequests?: () => void;
   onLogout: () => void;
@@ -468,7 +468,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
               <TouchableOpacity
                 style={styles.menuItem}
                 activeOpacity={0.7}
-                onPress={onNavigateToTerms}
+                onPress={() => onNavigateToTerms('privacy')}
               >
                 <View style={styles.menuItemLeft}>
                   <View style={[styles.menuIconContainer, { backgroundColor: '#6366F110' }]}>

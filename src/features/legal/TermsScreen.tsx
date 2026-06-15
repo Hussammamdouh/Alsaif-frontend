@@ -23,10 +23,11 @@ import { useProfile } from '../profile/profile.hooks';
 const { width } = Dimensions.get('window');
 
 interface TermsScreenProps {
+    route?: any;
     onNavigateBack: () => void;
 }
 
-export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
+export const TermsScreen: React.FC<TermsScreenProps> = ({ route, onNavigateBack }) => {
     const { t, isRTL } = useLocalization();
     const { theme, isDark } = useTheme();
     const navigation = useNavigation<any>();
@@ -35,6 +36,15 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
     const { state: authState } = useAuth();
     const { subscription } = useProfile();
     const isAdmin = authState.session?.user?.role === 'admin' || authState.session?.user?.role === 'superadmin';
+
+    const initialTab = route?.params?.tab || 'privacy';
+    const [activePolicyTab, setActivePolicyTab] = React.useState<'privacy' | 'terms'>(initialTab);
+
+    React.useEffect(() => {
+        if (route?.params?.tab) {
+            setActivePolicyTab(route.params.tab);
+        }
+    }, [route?.params?.tab]);
 
     const handleTabChange = React.useCallback((tab: SettingsTab) => {
         switch (tab) {
@@ -113,7 +123,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                         <Ionicons name="document-text-outline" size={32} color={theme.primary.main} />
                     </View>
                     <Text style={[styles.heroTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-                        {t('legal.terms.header')}
+                        {activePolicyTab === 'privacy' ? t('legal.privacy.header') : t('legal.terms.header')}
                     </Text>
                 </View>
                 <Text style={[styles.heroSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
@@ -121,51 +131,95 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                 </Text>
             </View>
 
+            {/* Tab Selector */}
+            <View style={[styles.tabContainer, { backgroundColor: theme.background.secondary, borderColor: theme.border.main }]}>
+                <TouchableOpacity
+                    style={[
+                        styles.tabButton,
+                        activePolicyTab === 'privacy' && { backgroundColor: theme.primary.main }
+                    ]}
+                    onPress={() => setActivePolicyTab('privacy')}
+                >
+                    <Text style={[
+                        styles.tabButtonText,
+                        { color: activePolicyTab === 'privacy' ? '#FFFFFF' : theme.text.secondary }
+                    ]}>
+                        {t('legal.privacy.title')}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.tabButton,
+                        activePolicyTab === 'terms' && { backgroundColor: theme.primary.main }
+                    ]}
+                    onPress={() => setActivePolicyTab('terms')}
+                >
+                    <Text style={[
+                        styles.tabButtonText,
+                        { color: activePolicyTab === 'terms' ? '#FFFFFF' : theme.text.secondary }
+                    ]}>
+                        {t('legal.terms.title')}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
             {/* Content Sections */}
             <View style={styles.content}>
-                {renderSection('legal.terms.sec1Title', 'legal.terms.sec1Content')}
+                {activePolicyTab === 'privacy' ? (
+                    <>
+                        {renderSection('legal.privacy.sec1Title', 'legal.privacy.sec1Content')}
+                        {renderSection('legal.privacy.sec2Title', 'legal.privacy.sec2Content')}
+                        {renderSection('legal.privacy.sec3Title', 'legal.privacy.sec3Content')}
+                        {renderSection('legal.privacy.sec4Title', 'legal.privacy.sec4Content')}
+                        {renderSection('legal.privacy.sec5Title', 'legal.privacy.sec5Content')}
+                    </>
+                ) : (
+                    <>
+                        {renderSection('legal.terms.sec1Title', 'legal.terms.sec1Content')}
 
-                {renderSection('legal.terms.sec2Title', [
-                    'legal.terms.sec2Content1',
-                    'legal.terms.sec2Content2',
-                    'legal.terms.sec2Content3'
-                ])}
+                        {renderSection('legal.terms.sec2Title', [
+                            'legal.terms.sec2Content1',
+                            'legal.terms.sec2Content2',
+                            'legal.terms.sec2Content3'
+                        ])}
 
-                {renderSection('legal.terms.sec3Title', [
-                    'legal.terms.sec3Content1',
-                    'legal.terms.sec3Content2'
-                ])}
+                        {renderSection('legal.terms.sec3Title', [
+                            'legal.terms.sec3Content1',
+                            'legal.terms.sec3Content2'
+                        ])}
 
-                {renderSection('legal.terms.sec4Title', [
-                    'legal.terms.sec4Content1',
-                    'legal.terms.sec4Content2',
-                    'legal.terms.sec4Content3'
-                ])}
+                        {renderSection('legal.terms.sec4Title', [
+                            'legal.terms.sec4Content1',
+                            'legal.terms.sec4Content2',
+                            'legal.terms.sec4Content3'
+                        ])}
 
-                {renderSection('legal.terms.sec5Title', [
-                    'legal.terms.sec5Content1',
-                    'legal.terms.sec5Content2',
-                    'legal.terms.sec5Content3'
-                ])}
+                        {renderSection('legal.terms.sec5Title', [
+                            'legal.terms.sec5Content1',
+                            'legal.terms.sec5Content2',
+                            'legal.terms.sec5Content3'
+                        ])}
 
-                {renderSection('legal.terms.sec6Title', 'legal.terms.sec6Content')}
+                        {renderSection('legal.terms.sec6Title', 'legal.terms.sec6Content')}
 
-                {renderSection('legal.terms.sec7Title', 'legal.terms.sec7Content')}
+                        {renderSection('legal.terms.sec7Title', 'legal.terms.sec7Content')}
 
-                {renderSection('legal.terms.sec8Title', 'legal.terms.sec8Content')}
+                        {renderSection('legal.terms.sec8Title', 'legal.terms.sec8Content')}
 
-                {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
+                        {renderSection('legal.terms.sec9Title', 'legal.terms.sec9Content')}
 
-                {renderSection('legal.terms.sec10Title', [
-                    'legal.terms.sec10Content1',
-                    'legal.terms.sec10Content2',
-                    'legal.terms.sec10Bullet1',
-                    'legal.terms.sec10Bullet2',
-                    'legal.terms.sec10Bullet3',
-                    'legal.terms.sec10Bullet4'
-                ])}
+                        {renderSection('legal.terms.sec10Title', [
+                            'legal.terms.sec10Content1',
+                            'legal.terms.sec10Content2',
+                            'legal.terms.sec10Bullet1',
+                            'legal.terms.sec10Bullet2',
+                            'legal.terms.sec10Bullet3',
+                            'legal.terms.sec10Bullet4'
+                        ])}
 
-                {renderSection('legal.terms.sec11Title', 'legal.terms.sec11Content')}
+                        {renderSection('legal.terms.sec11Title', 'legal.terms.sec11Content')}
+                    </>
+                )}
             </View>
 
             <View style={styles.footer}>
@@ -217,7 +271,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ onNavigateBack }) => {
                         />
                     </TouchableOpacity>
                     <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
-                        {t('legal.terms.title')}
+                        {activePolicyTab === 'privacy' ? t('legal.privacy.title') : t('legal.terms.title')}
                     </Text>
                     <View style={{ width: 40 }} />
                 </View>
@@ -298,8 +352,26 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
     },
+    tabContainer: {
+        flexDirection: 'row',
+        borderRadius: 12,
+        padding: 4,
+        marginVertical: 20,
+        borderWidth: 1,
+    },
+    tabButton: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    tabButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+    },
     content: {
-        marginTop: 30,
+        marginTop: 10,
     },
     sectionContainer: {
         marginBottom: 32,

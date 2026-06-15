@@ -273,9 +273,10 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
                 screen: isSubscribed ? 'Subscription' : 'Paywall',
               })
             }
-            onNavigateToTerms={() =>
+            onNavigateToTerms={(tab?: 'privacy' | 'terms') =>
               navigation.navigate('Main', {
                 screen: 'Terms',
+                params: { tab: tab || 'privacy' }
               })
             }
             onNavigateToAbout={() =>
@@ -322,9 +323,10 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
             onNavigateToSubscription={(isSubscribed: boolean) =>
               settingsNav.navigate(isSubscribed ? 'Subscription' : 'Paywall')
             }
-            onNavigateToTerms={() =>
+            onNavigateToTerms={(tab?: 'privacy' | 'terms') =>
               navigation.navigate('Main', {
                 screen: 'Terms',
+                params: { tab: tab || 'privacy' }
               })
             }
             onNavigateToAbout={() =>
@@ -356,8 +358,8 @@ const MainStackScreens: React.FC<any> = ({ navigation }) => {
       <MainStack.Screen name="SubscriptionPlans" component={SubscriptionPlansScreen} />
       <MainStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
       <MainStack.Screen name="Terms">
-        {({ navigation: termsNav }) => (
-          <TermsScreen onNavigateBack={() => termsNav.goBack()} />
+        {({ route, navigation: termsNav }) => (
+          <TermsScreen route={route} onNavigateBack={() => termsNav.goBack()} />
         )}
       </MainStack.Screen>
 

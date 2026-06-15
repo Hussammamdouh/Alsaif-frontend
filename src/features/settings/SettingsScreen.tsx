@@ -53,7 +53,7 @@ interface SettingsScreenProps {
   onNavigateBack: () => void;
   onNavigateToSubscription?: (isSubscribed: boolean) => void;
   onNavigateToSecurity: () => void;
-  onNavigateToTerms: () => void;
+  onNavigateToTerms: (tab?: 'privacy' | 'terms') => void;
   onNavigateToAbout?: () => void;
   onLogout: () => void;
 }
@@ -1172,7 +1172,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
 
                   <TouchableOpacity
                     style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-                    onPress={onNavigateToTerms}
+                    onPress={() => onNavigateToTerms('terms')}
                   >
                     <View style={styles.settingLeft}>
                       <Icon name="document-text-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
@@ -1183,7 +1183,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
 
                   <TouchableOpacity
                     style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
-                    onPress={onNavigateToTerms}
+                    onPress={() => onNavigateToTerms('privacy')}
                   >
                     <View style={styles.settingLeft}>
                       <Icon name="shield-checkmark-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
