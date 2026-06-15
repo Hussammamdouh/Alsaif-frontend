@@ -13,6 +13,7 @@ import {
   RefreshControl,
   useWindowDimensions,
   Platform,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -50,6 +51,13 @@ export const SubscriptionScreen: React.FC = () => {
   const { subscription, loading: subLoading, refetch, cancelSubscription } = useSubscription();
   const { plans, loading: plansLoading } = useSubscriptionPlans();
   const { loading: checkoutLoading, initiateCheckout, initiateRenewal, initiateWebPortal } = useCheckout();
+
+  const handleContactSupport = () => {
+    const email = 'info@alsaifanalysis.com';
+    const subject = encodeURIComponent('Subscription Inquiry - ALSAIF ANALYSIS');
+    const body = encodeURIComponent('Hello Support,\n\nI want to upgrade my ALSAIF ANALYSIS account to Premium. How can I subscribe?\n\nThank you.');
+    Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
+  };
 
   const [selectedBillingCycle, setSelectedBillingCycle] = useState<BillingCycle>('monthly');
   const [refreshing, setRefreshing] = useState(false);
@@ -384,8 +392,7 @@ export const SubscriptionScreen: React.FC = () => {
                   <TouchableOpacity
                     style={styles.portalButton}
                     activeOpacity={0.8}
-                    onPress={initiateWebPortal}
-                    disabled={checkoutLoading}
+                    onPress={handleContactSupport}
                   >
                     <LinearGradient
                       colors={[theme.primary.main, theme.primary.dark]}
@@ -393,14 +400,8 @@ export const SubscriptionScreen: React.FC = () => {
                       end={{ x: 1, y: 0 }}
                       style={styles.portalButtonGradient}
                     >
-                      {checkoutLoading ? (
-                        <ActivityIndicator size="small" color="#FFF" />
-                      ) : (
-                        <>
-                          <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
-                          <Ionicons name="open-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
-                        </>
-                      )}
+                      <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
+                      <Ionicons name="mail-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>

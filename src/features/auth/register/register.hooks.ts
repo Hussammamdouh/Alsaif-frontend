@@ -185,7 +185,7 @@ export const useRegisterForm = () => {
     );
     // T&C validation is now handled in the modal
     const countryError = !formState.data.country ? 'Country is required' : undefined;
-    const phoneNumberError = !formState.data.phoneNumber ? 'Phone number is required' : undefined;
+    const phoneNumberError = undefined;
 
     if (fullNameError || emailError || phoneNumberError || passwordError || confirmPasswordError || countryError) {
       setFormState(prev => ({
@@ -257,11 +257,10 @@ export const useRegisterForm = () => {
    * Check if submit button should be disabled
    */
   const isSubmitDisabled = useMemo((): boolean => {
-    const { fullName, email, phoneNumber, password, confirmPassword, country } = formState.data;
+    const { fullName, email, password, confirmPassword, country } = formState.data;
     return (
       !fullName.trim() ||
       !email.trim() ||
-      !phoneNumber.trim() ||
       !password.trim() ||
       !confirmPassword.trim() ||
       !country ||

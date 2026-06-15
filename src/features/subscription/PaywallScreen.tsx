@@ -15,6 +15,7 @@ import {
   useWindowDimensions,
   Image,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -34,6 +35,13 @@ export const PaywallScreen: React.FC = () => {
   const styles = useMemo(() => getStyles(theme, isDesktop, isTablet, height), [theme, isDesktop, isTablet, height]);
   const { t } = useLocalization();
   const { initiateWebPortal, loading: portalLoading } = useCheckout();
+
+  const handleContactSupport = () => {
+    const email = 'info@alsaifanalysis.com';
+    const subject = encodeURIComponent('Subscription Inquiry - ALSAIF ANALYSIS');
+    const body = encodeURIComponent('Hello Support,\n\nI want to upgrade my ALSAIF ANALYSIS account to Premium. How can I subscribe?\n\nThank you.');
+    Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`);
+  };
 
   const handleChoosePlan = () => {
     navigation.navigate('SubscriptionPlans' as never);
@@ -115,8 +123,7 @@ export const PaywallScreen: React.FC = () => {
                     <TouchableOpacity
                       style={styles.portalButton}
                       activeOpacity={0.8}
-                      onPress={initiateWebPortal}
-                      disabled={portalLoading}
+                      onPress={handleContactSupport}
                     >
                       <LinearGradient
                         colors={[theme.primary.main, theme.primary.dark]}
@@ -124,14 +131,8 @@ export const PaywallScreen: React.FC = () => {
                         end={{ x: 1, y: 0 }}
                         style={styles.portalButtonGradient}
                       >
-                        {portalLoading ? (
-                          <ActivityIndicator size="small" color="#FFF" />
-                        ) : (
-                          <>
-                            <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
-                            <Ionicons name="open-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
-                          </>
-                        )}
+                        <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
+                        <Ionicons name="mail-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
                       </LinearGradient>
                     </TouchableOpacity>
                   </View>
@@ -269,8 +270,7 @@ export const PaywallScreen: React.FC = () => {
                   <TouchableOpacity
                     style={styles.portalButton}
                     activeOpacity={0.8}
-                    onPress={initiateWebPortal}
-                    disabled={portalLoading}
+                    onPress={handleContactSupport}
                   >
                     <LinearGradient
                       colors={[theme.primary.main, theme.primary.dark]}
@@ -278,14 +278,8 @@ export const PaywallScreen: React.FC = () => {
                       end={{ x: 1, y: 0 }}
                       style={styles.portalButtonGradient}
                     >
-                      {portalLoading ? (
-                        <ActivityIndicator size="small" color="#FFF" />
-                      ) : (
-                        <>
-                          <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
-                          <Ionicons name="open-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
-                        </>
-                      )}
+                      <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
+                      <Ionicons name="mail-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
