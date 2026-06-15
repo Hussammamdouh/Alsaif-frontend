@@ -172,6 +172,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ route, onNavigateBack 
                         {renderSection('legal.privacy.sec3Title', 'legal.privacy.sec3Content')}
                         {renderSection('legal.privacy.sec4Title', 'legal.privacy.sec4Content')}
                         {renderSection('legal.privacy.sec5Title', 'legal.privacy.sec5Content')}
+                        {renderSection('legal.privacy.sec6Title', 'legal.privacy.sec6Content')}
                     </>
                 ) : (
                     <>
