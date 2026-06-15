@@ -36,7 +36,7 @@ export default {
         foregroundImage: "./assets/logo.png",
         backgroundColor: "#ffffff"
       },
-      package: "com.elsaifanalysis.app",
+      package: "com.alsaifanalysis.app",
       googleServicesFile: "./google-services.json",
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false
