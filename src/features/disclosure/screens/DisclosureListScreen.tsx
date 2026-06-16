@@ -51,25 +51,28 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
     const isADX = item.exchange === 'ADX';
 
     // Animation logic
-    const translateY = React.useRef(new Animated.Value(30)).current;
-    const opacity = React.useRef(new Animated.Value(0)).current;
+    const isAnimated = index < 10;
+    const translateY = React.useRef(new Animated.Value(isAnimated ? 30 : 0)).current;
+    const opacity = React.useRef(new Animated.Value(isAnimated ? 0 : 1)).current;
 
     React.useEffect(() => {
-        Animated.parallel([
-            Animated.timing(translateY, {
-                toValue: 0,
-                duration: 400,
-                delay: Math.min(index * 50, 600),
-                useNativeDriver: true,
-                easing: Easing.out(Easing.back(1)),
-            }),
-            Animated.timing(opacity, {
-                toValue: 1,
-                duration: 400,
-                delay: Math.min(index * 50, 600),
-                useNativeDriver: true,
-            }),
-        ]).start();
+        if (isAnimated) {
+            Animated.parallel([
+                Animated.timing(translateY, {
+                    toValue: 0,
+                    duration: 400,
+                    delay: Math.min(index * 50, 600),
+                    useNativeDriver: true,
+                    easing: Easing.out(Easing.back(1)),
+                }),
+                Animated.timing(opacity, {
+                    toValue: 1,
+                    duration: 400,
+                    delay: Math.min(index * 50, 600),
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        }
     }, []);
 
     return (
