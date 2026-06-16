@@ -51,7 +51,7 @@ export const fetchDisclosures = async (
 
         if (response && response.data) {
             console.log('[DisclosuresApi] Found data array, length:', response.data.length);
-            return response.data;
+            return response;
         }
 
         // If success is false or no data

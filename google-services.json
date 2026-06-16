@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:996963538709:android:ca6432edc4e5fab43f3b1c",
+        "android_client_info": {
+          "package_name": "com.alsaifanalysis.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb0kLZ-mHE7Iq0f9hv2dkN7sYvAkO_kJI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:996963538709:android:315dc7d7919497ab3f3b1c",
         "android_client_info": {
           "package_name": "com.elsaifanalysis.app"

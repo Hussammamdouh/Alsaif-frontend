@@ -13,6 +13,7 @@ import {
     useWindowDimensions,
     Animated,
     Easing,
+    ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -415,7 +416,7 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
         );
     };
 
-    if (loading && !refreshing) {
+    if (loading && !refreshing && disclosures.length === 0) {
         return (
             <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
                 <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
@@ -502,14 +503,18 @@ export const DisclosureListScreen: React.FC<DisclosureListScreenProps> = ({ hide
                         ) : null
                     }
                     ListFooterComponent={
-                        !loading && disclosures.length > 0 ? (
+                        disclosures.length > 0 ? (
                             <View style={styles.footerContainer}>
-                                <TouchableOpacity
-                                    style={[styles.loadMoreButton, { backgroundColor: theme.primary.main }]}
-                                    onPress={loadMore}
-                                >
-                                    <Text style={styles.loadMoreText}>Load More</Text>
-                                </TouchableOpacity>
+                                {loading ? (
+                                    <ActivityIndicator size="small" color={theme.primary.main} />
+                                ) : hasMore ? (
+                                    <TouchableOpacity
+                                        style={[styles.loadMoreButton, { backgroundColor: theme.primary.main }]}
+                                        onPress={loadMore}
+                                    >
+                                        <Text style={styles.loadMoreText}>Load More</Text>
+                                    </TouchableOpacity>
+                                ) : null}
                             </View>
                         ) : null
                     }
