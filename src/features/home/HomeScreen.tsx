@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   Animated,
   Image,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -49,7 +50,9 @@ export const HomeScreen: React.FC = React.memo(() => {
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   // Animation for tab indicator
-  const tabWidth = isDesktop ? 120 : (width - 40) / 3;
+  const showPremiumTab = Platform.OS !== 'ios' || hasPremiumAccess;
+  const tabCount = showPremiumTab ? 3 : 2;
+  const tabWidth = isDesktop ? 120 : (width - 40) / tabCount;
   const indicatorX = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
@@ -166,37 +169,39 @@ export const HomeScreen: React.FC = React.memo(() => {
             style={[styles.tabText, { color: activeTab === 'free' ? '#FFFFFF' : theme.text.tertiary }]}
             numberOfLines={1}
           >
-            {t('insights.freeInsights')}
+            {showPremiumTab ? t('insights.freeInsights') : t('tabs.insights')}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => handleTabChange('premium')}
-          activeOpacity={0.7}
-        >
-          <View style={styles.tabContent}>
-            <Text
-              style={[
-                styles.tabText,
-                { color: activeTab === 'premium' ? '#FFFFFF' : theme.text.tertiary }
-              ]}
-              numberOfLines={1}
-            >
-              {t('common.premium')}
-            </Text>
-            {!hasPremiumAccess && (
-              <LinearGradient
-                colors={activeTab === 'premium' ? [theme.primary.light, theme.primary.main] : [theme.primary.main, theme.primary.dark]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.premiumBadge}
+        {showPremiumTab && (
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => handleTabChange('premium')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.tabContent}>
+              <Text
+                style={[
+                  styles.tabText,
+                  { color: activeTab === 'premium' ? '#FFFFFF' : theme.text.tertiary }
+                ]}
+                numberOfLines={1}
               >
-                <Text style={[styles.premiumBadgeText, { color: theme.primary.contrast }]}>PRO</Text>
-              </LinearGradient>
-            )}
-          </View>
-        </TouchableOpacity>
+                {t('common.premium')}
+              </Text>
+              {!hasPremiumAccess && (
+                <LinearGradient
+                  colors={activeTab === 'premium' ? [theme.primary.light, theme.primary.main] : [theme.primary.main, theme.primary.dark]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.premiumBadge}
+                >
+                  <Text style={[styles.premiumBadgeText, { color: theme.primary.contrast }]}>PRO</Text>
+                </LinearGradient>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

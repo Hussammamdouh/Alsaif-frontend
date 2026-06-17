@@ -24,6 +24,11 @@ export default {
       bundleIdentifier: "com.alsaifanalysis.com",
       googleServicesFile: "./GoogleService-Info.plist",
       buildNumber: process.env.BUILD_NUMBER || "2",
+      infoPlist: {
+        NSPhotoLibraryUsageDescription: "This app requires access to your photo library to allow you to select and upload a profile picture or avatar for your user account.",
+        NSCameraUsageDescription: "This app requires access to your camera to allow you to take a photo to use as a profile picture or avatar for your user account.",
+        NSPhotoLibraryAddUsageDescription: "This app requires access to save corporate disclosures, insights, and report screenshots directly to your photo library."
+      },
       entitlements: {
         "keychain-access-groups": [
           "$(AppIdentifierPrefix)com.alsaifanalysis.com"

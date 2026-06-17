@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { useInsights } from '../../insights/insights.hooks';
 import { useMarketData } from '../../../core/hooks/useMarketData';
 import { useTheme, useLocalization } from '../../../app/providers';
@@ -32,12 +32,17 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
     const activeMarketLoading = propMarketData ? !!propLoading : marketLoading;
     const loading = insightsLoading || activeMarketLoading;
     const navigation = useNavigation<any>();
-    const { canAccessInsight } = useSubscriptionAccess();
+    const { canAccessInsight, hasPremiumAccess } = useSubscriptionAccess();
 
 
     // Filter insights based on active market data
     const filteredInsights = React.useMemo(() => {
-        if (activeMarketLoading || activeMarketData.length === 0) return insights.slice(0, 4);
+        let list = insights;
+        if (Platform.OS === 'ios' && !hasPremiumAccess) {
+            list = list.filter(insight => insight.type !== 'premium');
+        }
+
+        if (activeMarketLoading || activeMarketData.length === 0) return list.slice(0, 4);
 
         const activeSymbols = new Set(
             activeMarketData
@@ -45,7 +50,7 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
                 .map(item => item.symbol.toUpperCase())
         );
 
-        return insights
+        return list
             .filter(insight => {
                 // Always show free insights
                 if (insight.type === 'free') return true;
@@ -57,7 +62,7 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
                 return true;
             })
             .slice(0, 4);
-    }, [insights, activeMarketData, activeMarketLoading]);
+    }, [insights, activeMarketData, activeMarketLoading, hasPremiumAccess]);
 
     if (loading && filteredInsights.length === 0) {
         return (

@@ -206,7 +206,8 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   const isDesktop = width >= 768;
   const columnCount = width > 1600 ? 3 : 2;
   const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark, isRTL), [theme, isDesktop, isDark, isRTL]);
-  const { canAccessInsight } = useSubscriptionAccess();
+  const { canAccessInsight, hasPremiumAccess } = useSubscriptionAccess();
+  const showPremiumTab = Platform.OS !== 'ios' || hasPremiumAccess;
 
 
   // Filter state
@@ -217,7 +218,11 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   // Build query params based on filters
   const queryParams = React.useMemo(() => {
     const params: any = {};
-    if (typeFilter !== 'all') params.type = typeFilter;
+    if (!showPremiumTab) {
+      params.type = 'free';
+    } else if (typeFilter !== 'all') {
+      params.type = typeFilter;
+    }
     if (searchQuery) params.search = searchQuery;
     if (marketFilter === 'signal') {
       params.insightFormat = 'signal';
@@ -225,7 +230,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
       params.market = marketFilter;
     }
     return params;
-  }, [typeFilter, marketFilter, searchQuery]);
+  }, [typeFilter, marketFilter, searchQuery, showPremiumTab]);
 
   const {
     insights,
@@ -251,9 +256,14 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
 
   // Filter insights based on active market data
   const filteredInsights = React.useMemo(() => {
-    if (marketLoading || marketData.length === 0) return insights;
+    let list = insights;
+    if (!showPremiumTab) {
+      list = list.filter(insight => insight.type !== 'premium');
+    }
 
-    return insights.filter(insight => {
+    if (marketLoading || marketData.length === 0) return list;
+
+    return list.filter(insight => {
       // Always show free insights
       if (insight.type === 'free') return true;
 
@@ -270,7 +280,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
 
       return true;
     });
-  }, [insights, activeSymbols, marketData, marketLoading]);
+  }, [insights, activeSymbols, marketData, marketLoading, showPremiumTab]);
 
   // Refresh when filters change
   React.useEffect(() => {
@@ -368,7 +378,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
             ]}>
               <View style={{ marginBottom: isDesktop ? 6 : 8, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                 <Text style={[styles.headerTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-                  {t('insights.freeInsights')}
+                  {showPremiumTab ? t('insights.freeInsights') : t('tabs.insights')}
                 </Text>
                 <Text style={[styles.headerSubtitle, { color: theme.text.tertiary, textAlign: isRTL ? 'right' : 'left' }]}>
                   {t('common.tagline')}
@@ -376,7 +386,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
               </View>
 
               <View style={{ gap: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                {!hideAccessFilter && (
+                {!hideAccessFilter && showPremiumTab && (
                   <FilterChips
                     options={[
                       { key: 'all', labelKey: 'filter.all' },
