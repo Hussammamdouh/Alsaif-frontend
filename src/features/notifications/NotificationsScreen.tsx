@@ -19,6 +19,7 @@ import {
   Dimensions,
   StyleSheet,
   Modal,
+  Platform,
 } from 'react-native';
 import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -29,6 +30,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNotifications } from './notifications.hooks';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { useLocalization } from '../../app/providers/LocalizationProvider';
+import { useSubscriptionAccess } from '../subscription';
 import {
   getNotificationIcon,
   getNotificationColor,
@@ -122,17 +124,26 @@ const NotificationsScreen: React.FC = () => {
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const route = useRoute<RouteProp<MainStackParamList, 'Notifications'>>();
-  const initialCategory = route.params?.category || 'all';
+  
+  const { hasPremiumAccess } = useSubscriptionAccess();
+  const showSubscriptionTab = Platform.OS !== 'ios' || hasPremiumAccess;
 
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const initialCategory = route.params?.category || 'all';
+  const safeInitialCategory = (!showSubscriptionTab && (initialCategory === NOTIFICATION_CATEGORIES.SUBSCRIPTION || initialCategory === NOTIFICATION_CATEGORIES.PREMIUM)) ? 'all' : initialCategory;
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(safeInitialCategory);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // Update selected category if route params change
   React.useEffect(() => {
     if (route.params?.category) {
-      setSelectedCategory(route.params.category);
+      if (!showSubscriptionTab && (route.params.category === NOTIFICATION_CATEGORIES.SUBSCRIPTION || route.params.category === NOTIFICATION_CATEGORIES.PREMIUM)) {
+        setSelectedCategory('all');
+      } else {
+        setSelectedCategory(route.params.category);
+      }
     }
-  }, [route.params?.category]);
+  }, [route.params?.category, showSubscriptionTab]);
 
   /**
    * Handle notification press
@@ -247,9 +258,16 @@ const NotificationsScreen: React.FC = () => {
    */
   const filteredNotifications = useMemo(() => {
     const safeNotifications = Array.isArray(notifications) ? notifications : [];
-    const filtered = filterNotificationsByCategory(safeNotifications, selectedCategory);
+    let filtered = filterNotificationsByCategory(safeNotifications, selectedCategory);
+    if (!showSubscriptionTab) {
+      filtered = filtered.filter(
+        notif =>
+          notif.type !== NOTIFICATION_CATEGORIES.SUBSCRIPTION &&
+          notif.type !== NOTIFICATION_CATEGORIES.PREMIUM
+      );
+    }
     return sortNotifications(filtered);
-  }, [notifications, selectedCategory]);
+  }, [notifications, selectedCategory, showSubscriptionTab]);
 
   /**
    * Group notifications by date
@@ -420,10 +438,10 @@ const NotificationsScreen: React.FC = () => {
   const renderCategoryFilter = () => {
     const categories = [
       { key: 'all', label: t('notifications.category.all') },
-      { key: NOTIFICATION_CATEGORIES.SUBSCRIPTION, label: t('notifications.category.subscription') },
+      ...(showSubscriptionTab ? [{ key: NOTIFICATION_CATEGORIES.SUBSCRIPTION, label: t('notifications.category.subscription') }] : []),
       { key: NOTIFICATION_CATEGORIES.CONTENT, label: t('notifications.category.content') },
       { key: NOTIFICATION_CATEGORIES.ENGAGEMENT, label: t('notifications.category.engagement') },
-      { key: NOTIFICATION_CATEGORIES.PREMIUM, label: t('notifications.category.premium') },
+      ...(showSubscriptionTab ? [{ key: NOTIFICATION_CATEGORIES.PREMIUM, label: t('notifications.category.premium') }] : []),
       { key: NOTIFICATION_CATEGORIES.SYSTEM, label: t('notifications.category.system') },
     ];
 
