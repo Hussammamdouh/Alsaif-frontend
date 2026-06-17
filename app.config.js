@@ -27,7 +27,8 @@ export default {
       infoPlist: {
         NSPhotoLibraryUsageDescription: "This app requires access to your photo library to allow you to select and upload a profile picture or avatar for your user account.",
         NSCameraUsageDescription: "This app requires access to your camera to allow you to take a photo to use as a profile picture or avatar for your user account.",
-        NSPhotoLibraryAddUsageDescription: "This app requires access to save corporate disclosures, insights, and report screenshots directly to your photo library."
+        NSPhotoLibraryAddUsageDescription: "This app requires access to save corporate disclosures, insights, and report screenshots directly to your photo library.",
+        NSLocationWhenInUseUsageDescription: "This app requires access to your location when open to provide region-specific financial markets and insights relevant to your area."
       },
       entitlements: {
         "keychain-access-groups": [
