@@ -111,10 +111,24 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
   const handleAvatarPress = useCallback(async () => {
     try {
       // Permission check
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera roll permissions to change your avatar.');
+      const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (current.status === 'denied') {
+        Alert.alert(
+          t('common.photoLibraryAccess') || 'Photo Library Access',
+          t('profile.photoPermissionMessage') || 'Please enable photo library access in your device Settings to change your avatar.',
+          [
+            { text: t('common.cancel'), style: 'cancel' },
+            { text: t('common.settings'), onPress: () => Linking.openSettings() }
+          ]
+        );
         return;
+      }
+
+      if (current.status === 'undetermined') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          return;
+        }
       }
 
       // Pick image
@@ -306,7 +320,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
               <Text style={[styles.statLabel, { color: theme.text.tertiary }]}>{t('profile.memberSince')}</Text>
             </View>
 
-            {!isAdmin && !(Platform.OS === 'ios' && subscription?.tier !== 'premium') && (
+            {!isAdmin && Platform.OS === 'android' && (
               <View style={[styles.statItem, {
                 backgroundColor: theme.background.secondary,
                 borderColor: theme.border.main
@@ -327,7 +341,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
           </View>
 
           {/* Subscription Card - HIDDEN for Admins */}
-          {!isAdmin && subscription && !(Platform.OS === 'ios' && subscription.tier !== 'premium') && (
+          {!isAdmin && subscription && Platform.OS === 'android' && (
             <View style={[styles.subscriptionCard, {
               backgroundColor: subscription.tier === 'premium' ? theme.primary.main + '05' : theme.background.secondary,
               borderColor: subscription.tier === 'premium' ? theme.primary.main + '30' : theme.border.main
@@ -592,7 +606,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
           activeTab="profile"
           onTabChange={handleTabChange}
           onLogout={handleLogoutPress}
-          showSubscription={!isAdmin && !(Platform.OS === 'ios' && subscription?.tier !== 'premium')}
+          showSubscription={!isAdmin && Platform.OS === 'android'}
         >
           {renderProfileContent()}
         </SettingsLayout>

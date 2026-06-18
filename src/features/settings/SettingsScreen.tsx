@@ -972,7 +972,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                 >
                   <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.security')}</Text>
 
-                  {onNavigateToSubscription && !(Platform.OS === 'ios' && subscription?.tier !== 'premium') && (
+                  {onNavigateToSubscription && Platform.OS === 'android' && (
                     <TouchableOpacity
                       style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
                       onPress={() => onNavigateToSubscription(subscription?.tier === 'premium')}
@@ -990,7 +990,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     </TouchableOpacity>
                   )}
 
-                  {subscription?.tier === 'premium' && subscription?.status !== 'cancelled' && (
+                  {subscription?.tier === 'premium' && subscription?.status !== 'cancelled' && Platform.OS === 'android' && (
                     <TouchableOpacity
                       style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
                       onPress={() => setShowCancelSubscriptionModal(true)}
@@ -1003,7 +1003,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     </TouchableOpacity>
                   )}
 
-                  {subscription?.status === 'cancelled' && subscription?.endDate && (
+                  {subscription?.status === 'cancelled' && subscription?.endDate && Platform.OS === 'android' && (
                     <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
                       <View style={styles.settingLeft}>
                         <Icon name="time-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
@@ -1243,7 +1243,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
             activeTab="preferences"
             onTabChange={handleTabChange}
             onLogout={() => setShowLogoutAllDevicesModal(true)}
-            showSubscription={!isAdmin && !(Platform.OS === 'ios' && subscription?.tier !== 'premium')}
+            showSubscription={!isAdmin && Platform.OS === 'android'}
           >
             {renderSettingsContent()}
           </SettingsLayout>
@@ -1769,7 +1769,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
 
               <ScrollView style={styles.notificationScrollView} showsVerticalScrollIndicator={false}>
                 {/* Subscription Notifications */}
-                {!(Platform.OS === 'ios' && subscription?.tier !== 'premium') && (
+                {Platform.OS === 'android' && (
                   <>
                     <Text style={[styles.notificationCategoryTitle, { color: theme.primary.main }]}>
                       {t('settings.subscription')}

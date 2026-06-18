@@ -50,7 +50,7 @@ export const HomeScreen: React.FC = React.memo(() => {
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   // Animation for tab indicator
-  const showPremiumTab = Platform.OS !== 'ios' || hasPremiumAccess;
+  const showPremiumTab = Platform.OS === 'android';
   const tabCount = showPremiumTab ? 3 : 2;
   const tabWidth = isDesktop ? 120 : (width - 40) / tabCount;
   const indicatorX = React.useRef(new Animated.Value(0)).current;

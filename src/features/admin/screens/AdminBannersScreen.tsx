@@ -20,7 +20,8 @@ import {
     ActivityIndicator,
     Image,
     useWindowDimensions,
-    Alert
+    Alert,
+    Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,10 +66,24 @@ export const AdminBannersScreen: React.FC = () => {
 
     const handlePickImage = useCallback(async () => {
         try {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permission Denied', 'We need camera roll permissions to upload banner images.');
+            const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+            if (current.status === 'denied') {
+                Alert.alert(
+                    t('common.photoLibraryAccess') || 'Photo Library Access',
+                    'Please enable photo library access in your device Settings to upload banner images.',
+                    [
+                        { text: t('common.cancel') || 'Cancel', style: 'cancel' },
+                        { text: t('common.settings') || 'Settings', onPress: () => Linking.openSettings() }
+                    ]
+                );
                 return;
+            }
+
+            if (current.status === 'undetermined') {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (status !== 'granted') {
+                    return;
+                }
             }
 
             const result = await ImagePicker.launchImageLibraryAsync({

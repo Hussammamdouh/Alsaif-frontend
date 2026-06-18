@@ -19,6 +19,7 @@ import {
     Modal,
     Dimensions,
     Alert,
+    Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
@@ -79,10 +80,24 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
     const handleAttach = useCallback(async () => {
         try {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permission Denied', 'We need camera roll permissions to attach images.');
+            const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+            if (current.status === 'denied') {
+                Alert.alert(
+                    t('common.photoLibraryAccess') || 'Photo Library Access',
+                    'Please enable photo library access in your device Settings to attach images.',
+                    [
+                        { text: t('common.cancel') || 'Cancel', style: 'cancel' },
+                        { text: t('common.settings') || 'Settings', onPress: () => Linking.openSettings() }
+                    ]
+                );
                 return;
+            }
+
+            if (current.status === 'undetermined') {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (status !== 'granted') {
+                    return;
+                }
             }
 
             const result = await ImagePicker.launchImageLibraryAsync({
