@@ -311,7 +311,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
                       >
                         <View style={[styles.logoImageContainer, { backgroundColor: theme.ui.card }]}>
                           <Image
-                            source={require('../../../assets/images/logo.png')}
+                            source={require('../../../../assets/Logo_Secondry.png')}
                             style={styles.logoImage}
                             resizeMode="contain"
                           />

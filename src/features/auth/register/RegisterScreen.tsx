@@ -288,11 +288,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
                         ]}
                       >
                         <View style={[styles.logoImageContainer, { backgroundColor: theme.ui.card }]}>
-                          <Image
-                            source={require('../../../assets/images/logo.png')}
-                            style={styles.logoImage}
-                            resizeMode="contain"
-                          />
+                           <Image
+                             source={require('../../../../assets/Logo_Secondry.png')}
+                             style={styles.logoImage}
+                             resizeMode="contain"
+                           />
                         </View>
                         <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
                       </Animated.View>

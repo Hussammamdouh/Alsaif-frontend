@@ -108,7 +108,7 @@ export const DesktopTopNav: React.FC = () => {
             onPress={() => navigation.navigate('HomeTab')}
         >
             <Image
-                source={require('../../../../assets/logo.png')}
+                source={require('../../../../assets/Logo_Secondry.png')}
                 style={styles.logo}
                 resizeMode="contain"
             />

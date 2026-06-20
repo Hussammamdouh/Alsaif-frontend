@@ -93,7 +93,7 @@ export const HomeScreen: React.FC = React.memo(() => {
     <View style={styles.header}>
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../../assets/logo.png')}
+          source={require('../../../assets/Logo_Secondry.png')}
           style={styles.logo}
           resizeMode="contain"
         />
