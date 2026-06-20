@@ -289,8 +289,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
                       >
                         <View style={[styles.logoImageContainer, { backgroundColor: theme.ui.card }]}>
                            <Image
-                             source={require('../../../../assets/Logo_Secondry.png')}
-                             style={[styles.logoImage, { tintColor: theme.primary.main }]}
+                             source={require('../../../../assets/Logo Secondry.jpg')}
+                             style={styles.logoImage}
                              resizeMode="contain"
                            />
                         </View>

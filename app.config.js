@@ -4,7 +4,7 @@ export default {
     slug: "elsaif-analysis",
     version: "1.0.4",
     orientation: "portrait",
-    icon: "./assets/Logo_Secondry.png",
+    icon: "./assets/Logo Secondry.jpg",
     userInterfaceStyle: "light",
     newArchEnabled: false,
     scheme: "alsaif-analysis",
@@ -39,7 +39,7 @@ export default {
     android: {
       versionCode: process.env.BUILD_NUMBER ? parseInt(process.env.BUILD_NUMBER, 10) : 14,
       adaptiveIcon: {
-        foregroundImage: "./assets/Logo_Secondry.png",
+        foregroundImage: "./assets/Logo Secondry.jpg",
         backgroundColor: "#ffffff"
       },
       package: "com.alsaifanalysis.app",
@@ -48,7 +48,7 @@ export default {
       predictiveBackGestureEnabled: false
     },
     web: {
-      favicon: "./assets/Logo_Secondry.png"
+      favicon: "./assets/Logo Secondry.jpg"
     },
     plugins: [
       "@react-native-firebase/app",
