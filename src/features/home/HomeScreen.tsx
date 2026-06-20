@@ -94,7 +94,7 @@ export const HomeScreen: React.FC = React.memo(() => {
       <View style={styles.logoContainer}>
         <Image
           source={require('../../../assets/Logo_Secondry.png')}
-          style={styles.logo}
+          style={[styles.logo, { tintColor: theme.primary.main }]}
           resizeMode="contain"
         />
       </View>

@@ -109,7 +109,7 @@ export const DesktopTopNav: React.FC = () => {
         >
             <Image
                 source={require('../../../../assets/Logo_Secondry.png')}
-                style={styles.logo}
+                style={[styles.logo, { tintColor: theme.primary.main }]}
                 resizeMode="contain"
             />
             {!isSmallDesktop && (
