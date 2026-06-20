@@ -388,7 +388,8 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
     backgroundColor: theme.background.primary,
   },
   logoContainer: {
-    padding: 6,
+    width: 44,
+    height: 44,
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
     borderWidth: 1,
@@ -398,13 +399,11 @@ const getStyles = (theme: any, isDesktop: boolean, isDark: boolean) => StyleShee
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 44,
-    height: 44,
+    overflow: 'hidden',
   },
   logo: {
-    width: 30,
-    height: 30,
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
   },
 });

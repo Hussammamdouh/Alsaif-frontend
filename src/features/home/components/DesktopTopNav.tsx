@@ -298,6 +298,7 @@ const styles = StyleSheet.create({
     logo: {
         width: 34,
         height: 34,
+        borderRadius: 8,
     },
     logoText: {
         fontSize: 22,

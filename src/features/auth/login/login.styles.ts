@@ -66,10 +66,12 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: theme.spacing.sm,
         ...theme.shadows.md,
+        overflow: 'hidden',
     },
     logoImage: {
-        width: 32, // Reduced from 44
-        height: 32, // Reduced from 44
+        width: '100%',
+        height: '100%',
+        borderRadius: theme.borderRadius.lg,
     },
     logoText: {
         ...theme.typography.h3,
