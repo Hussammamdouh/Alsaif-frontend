@@ -5,9 +5,8 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Image, Animated, Easing, Platform } from 'react-native';
+import { View, Text, Image, Animated, Easing, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { styles } from './splash.styles';
 import { APP_CONFIG } from '../../core/constants';
@@ -23,7 +22,7 @@ interface SplashScreenProps {
  * Modern animated splash screen with gradient background
  */
 export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { t } = useLocalization();
 
   // Animation values
@@ -212,18 +211,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
     }
   }, [healthChecked, minDurationElapsed, onFinish]);
 
+  const backgroundColor = isDark ? '#05130c' : '#f7faf5';
+
   return (
-    <LinearGradient
-      colors={[theme.primary.main, theme.primary.dark, theme.background.primary]}
-      style={styles.gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+    <View style={[styles.gradient, { backgroundColor }]}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        {/* App Logo with animations */}
-        <Animated.View
+        {/* Full screen splash image with scale/fade animations */}
+        <Animated.Image
+          source={isDark ? require('../../../assets/splash-dark.png') : require('../../../assets/splash.png')}
           style={[
-            styles.logoContainer,
+            StyleSheet.absoluteFillObject,
             {
               opacity: logoOpacity,
               transform: [
@@ -231,38 +228,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
               ],
             },
           ]}
-        >
-          <Image
-            source={require('../../../assets/Logo_Secondry.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </Animated.View>
-
-        {/* App Title and Tagline */}
-        <View style={styles.textContainer}>
-          <Animated.Text
-            style={[
-              styles.title,
-              { color: theme.text.primary },
-              {
-                opacity: titleOpacity,
-                transform: [{ translateY: titleTranslateY }],
-              },
-            ]}
-          >
-            {t('common.appName')}
-          </Animated.Text>
-          <Animated.Text
-            style={[
-              styles.tagline,
-              { color: theme.text.secondary },
-              { opacity: taglineOpacity },
-            ]}
-          >
-            {t('common.tagline')}
-          </Animated.Text>
-        </View>
+          resizeMode={Platform.OS === 'web' ? 'cover' : 'contain'}
+        />
 
         {/* Loading Indicator */}
         <Animated.View
@@ -299,7 +266,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
           </View>
         </Animated.View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 });
 
