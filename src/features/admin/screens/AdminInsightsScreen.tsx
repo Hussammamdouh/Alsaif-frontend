@@ -23,7 +23,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker from '../../../shared/components/PlatformDateTimePicker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { createAdminStyles } from '../admin.styles';
 import { useAdminInsights, useAdminInsightRequests } from '../hooks';

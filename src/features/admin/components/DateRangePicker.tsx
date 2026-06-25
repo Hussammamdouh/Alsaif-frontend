@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker from '../../../shared/components/PlatformDateTimePicker';
 import { useTheme, useLocalization } from '../../../app/providers';
 
 interface DateRangePickerProps {
@@ -163,26 +163,58 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               <View style={styles.customDatesContainer}>
                 <View style={styles.dateInputContainer}>
                   <Text style={styles.dateInputLabel}>From</Text>
-                  <TouchableOpacity
-                    style={styles.dateInput}
-                    onPress={() => setShowStartPicker(true)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.dateInputText}>{formatDate(tempStartDate)}</Text>
-                    <Ionicons name="calendar-outline" size={18} color={theme.primary.main} />
-                  </TouchableOpacity>
+                  {Platform.OS === 'web' ? (
+                    <View style={styles.dateInput}>
+                      <TextInput
+                        style={[styles.dateInputText, { width: '100%', borderOpacity: 0, outline: 'none', backgroundColor: 'transparent' }]}
+                        {...({ type: 'date' } as any)}
+                        value={tempStartDate.toISOString().split('T')[0]}
+                        onChangeText={(text) => {
+                          const date = new Date(text);
+                          if (!isNaN(date.getTime())) {
+                            setTempStartDate(date);
+                          }
+                        }}
+                      />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.dateInput}
+                      onPress={() => setShowStartPicker(true)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dateInputText}>{formatDate(tempStartDate)}</Text>
+                      <Ionicons name="calendar-outline" size={18} color={theme.primary.main} />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 <View style={styles.dateInputContainer}>
                   <Text style={styles.dateInputLabel}>To</Text>
-                  <TouchableOpacity
-                    style={styles.dateInput}
-                    onPress={() => setShowEndPicker(true)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.dateInputText}>{formatDate(tempEndDate)}</Text>
-                    <Ionicons name="calendar-outline" size={18} color={theme.primary.main} />
-                  </TouchableOpacity>
+                  {Platform.OS === 'web' ? (
+                    <View style={styles.dateInput}>
+                      <TextInput
+                        style={[styles.dateInputText, { width: '100%', borderOpacity: 0, outline: 'none', backgroundColor: 'transparent' }]}
+                        {...({ type: 'date' } as any)}
+                        value={tempEndDate.toISOString().split('T')[0]}
+                        onChangeText={(text) => {
+                          const date = new Date(text);
+                          if (!isNaN(date.getTime())) {
+                            setTempEndDate(date);
+                          }
+                        }}
+                      />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.dateInput}
+                      onPress={() => setShowEndPicker(true)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dateInputText}>{formatDate(tempEndDate)}</Text>
+                      <Ionicons name="calendar-outline" size={18} color={theme.primary.main} />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             )}
