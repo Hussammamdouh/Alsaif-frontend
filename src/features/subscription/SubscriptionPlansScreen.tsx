@@ -30,6 +30,9 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const { theme, isDark } = useTheme();
   const { t } = useLocalization();
 
+  const toggleWrapperWidth = isDesktop ? 408 : width - 56;
+  const sliderWidth = (toggleWrapperWidth - 8) / 3;
+
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
@@ -42,8 +45,14 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const [appliedPromo, setAppliedPromo] = useState<PromoValidation | null>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
 
+  const getToggleValue = (cycle: BillingCycle) => {
+    if (cycle === 'monthly') return 0;
+    if (cycle === 'quarterly') return 1;
+    return 2;
+  };
+
   // Animation values
-  const toggleAnim = useRef(new Animated.Value(billingCycle === 'monthly' ? 0 : 1)).current;
+  const toggleAnim = useRef(new Animated.Value(getToggleValue(billingCycle))).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const loading = plansLoading || settingsLoading;
@@ -55,7 +64,7 @@ export const SubscriptionPlansScreen: React.FC = () => {
 
   useEffect(() => {
     Animated.timing(toggleAnim, {
-      toValue: billingCycle === 'monthly' ? 0 : 1,
+      toValue: getToggleValue(billingCycle),
       duration: 300,
       easing: Easing.bezier(0.4, 0, 0.2, 1),
       useNativeDriver: false,
@@ -207,8 +216,8 @@ export const SubscriptionPlansScreen: React.FC = () => {
                   styles.toggleSlider,
                   {
                     left: toggleAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [4, isDesktop ? 204 : (width - 64) / 2 + 4]
+                      inputRange: [0, 1, 2],
+                      outputRange: [4, sliderWidth + 4, (sliderWidth * 2) + 4]
                     })
                   }
                 ]} />
@@ -217,19 +226,30 @@ export const SubscriptionPlansScreen: React.FC = () => {
                   onPress={() => setBillingCycle('monthly')}
                   activeOpacity={1}
                 >
-                  <Text style={[styles.toggleText, billingCycle === 'monthly' && styles.toggleTextActive]}>{t('plans.monthly')}</Text>
+                  <Text style={[styles.toggleText, billingCycle === 'monthly' && styles.toggleTextActive]}>{t('plans.monthly') || 'Monthly'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.toggleOption}
+                  onPress={() => setBillingCycle('quarterly')}
+                  activeOpacity={1}
+                >
+                  <Text style={[styles.toggleText, billingCycle === 'quarterly' && styles.toggleTextActive]}>{t('plans.quarterly') || 'Quarterly'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.toggleOption}
                   onPress={() => setBillingCycle('yearly')}
                   activeOpacity={1}
                 >
-                  <Text style={[styles.toggleText, billingCycle === 'yearly' && styles.toggleTextActive]}>{t('plans.yearly')}</Text>
+                  <Text style={[styles.toggleText, billingCycle === 'yearly' && styles.toggleTextActive]}>{t('plans.yearly') || 'Yearly'}</Text>
                 </TouchableOpacity>
               </View>
-              <View style={styles.saveBadgePill}>
-                <Text style={styles.saveBadgeText}>{t('plans.save') || 'SAVE 20%'}</Text>
-              </View>
+              {billingCycle !== 'monthly' && (
+                <View style={styles.saveBadgePill}>
+                  <Text style={styles.saveBadgeText}>
+                    {billingCycle === 'quarterly' ? (t('plans.save10') || 'SAVE 10%') : (t('plans.save20') || 'SAVE 20%')}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Maintenance Message */}
@@ -269,7 +289,9 @@ export const SubscriptionPlansScreen: React.FC = () => {
                       {hasDiscount && (
                         <Text style={styles.originalPriceStrikethrough}>{originalPrice}</Text>
                       )}
-                      <Text style={styles.period}>/{billingCycle === 'monthly' ? 'mo' : 'yr'}</Text>
+                      <Text style={styles.period}>
+                        /{billingCycle === 'monthly' ? 'mo' : billingCycle === 'quarterly' ? 'quarter' : 'yr'}
+                      </Text>
                     </View>
 
                     {plan.description ? (
@@ -465,7 +487,7 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
   toggleSlider: {
     position: 'absolute',
     top: 4,
-    width: isDesktop ? 200 : (width - 56 - 8) / 2,
+    width: isDesktop ? 133 : (width - 56 - 8) / 3,
     bottom: 4,
     backgroundColor: theme.background.secondary,
     borderRadius: 12,
@@ -491,7 +513,7 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
   saveBadgePill: {
     position: 'absolute',
     top: -12,
-    right: isDesktop ? '35%' : 24,
+    right: isDesktop ? '25%' : 16,
     backgroundColor: theme.primary.main,
     paddingHorizontal: 12,
     paddingVertical: 4,

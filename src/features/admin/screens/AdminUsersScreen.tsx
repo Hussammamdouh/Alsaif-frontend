@@ -101,6 +101,7 @@ export const AdminUsersScreen: React.FC = () => {
     { label: 'Users Only', value: 'user', labelKey: 'admin.usersOnly' },
     { label: 'Admins', value: 'admin', labelKey: 'admin.admins' },
     { label: 'Moderators', value: 'moderator', labelKey: 'role.moderator' },
+    { label: 'Premium Users', value: 'premium', labelKey: 'filter.premium' },
   ];
 
 
@@ -125,9 +126,22 @@ export const AdminUsersScreen: React.FC = () => {
   };
 
   const handleFilterChange = (filter: string | number | boolean) => {
-    const roleValue = filter as string;
-    setSelectedFilter(roleValue);
-    setFilters({ ...filters, role: roleValue === '' ? undefined : (roleValue as any) });
+    const filterValue = filter as string;
+    setSelectedFilter(filterValue);
+    
+    if (filterValue === 'premium') {
+      setFilters({
+        ...filters,
+        role: undefined,
+        subscriptionStatus: 'active'
+      });
+    } else {
+      setFilters({
+        ...filters,
+        role: filterValue === '' ? undefined : (filterValue as any),
+        subscriptionStatus: undefined
+      });
+    }
   };
 
   const handleStatusFilterChange = (isActive: boolean | undefined) => {
@@ -442,9 +456,13 @@ export const AdminUsersScreen: React.FC = () => {
       {/* Role Filters */}
       <FilterBar
         options={FILTER_OPTIONS.map(opt => ({
-          label: t(opt.labelKey),
+          label: t(opt.labelKey) || opt.label,
           value: opt.value,
-          icon: opt.value === 'admin' || opt.value === 'moderator' ? 'shield-outline' : 'people-outline'
+          icon: opt.value === 'admin' || opt.value === 'moderator' 
+            ? 'shield-outline' 
+            : opt.value === 'premium' 
+              ? 'star-outline' 
+              : 'people-outline'
         }))}
         selectedValue={selectedFilter}
         onSelect={handleFilterChange}

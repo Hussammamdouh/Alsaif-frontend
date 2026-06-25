@@ -46,13 +46,21 @@ export const mapSubscriptionResponse = (apiResponse: any): UserSubscription => {
  * Map API plan response to SubscriptionPlan
  */
 export const mapPlanResponse = (apiPlan: any): SubscriptionPlan => {
+  let cycle = apiPlan.billingCycle;
+  if (cycle === 'annual' || cycle === 'year' || cycle === 'yearly') {
+    cycle = 'yearly';
+  } else if (cycle === 'quarter' || cycle === 'quarterly') {
+    cycle = 'quarterly';
+  } else {
+    cycle = 'monthly';
+  }
   return {
     _id: apiPlan._id,
     name: apiPlan.name,
     tier: apiPlan.tier,
     price: apiPlan.price,
     currency: apiPlan.currency || 'USD',
-    billingCycle: apiPlan.billingCycle,
+    billingCycle: cycle,
     features: apiPlan.features || [],
     description: apiPlan.description,
     isFeatured: apiPlan.isFeatured || false,

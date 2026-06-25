@@ -77,12 +77,17 @@ const PremiumInsightCard: React.FC<InsightCardProps> = ({
     ]).start();
   }, []);
 
+  const { width } = useWindowDimensions();
+  const columnCount = width > 1600 ? 3 : 2;
+
   return (
     <Animated.View style={{ 
       opacity, 
       transform: [{ translateY }], 
       flex: isDesktop ? 1 : undefined,
-      width: isDesktop ? undefined : '100%'
+      maxWidth: isDesktop ? `${100 / columnCount}%` : '100%',
+      width: isDesktop ? undefined : '100%',
+      padding: isDesktop ? 12 : 0
     }}>
       <TouchableOpacity
         style={[
@@ -353,7 +358,7 @@ export const PremiumInsightsListScreen: React.FC<PremiumInsightsListScreenProps>
           renderItem={renderInsightCard}
           keyExtractor={(item) => item._id}
           numColumns={isDesktop ? columnCount : 1}
-          columnWrapperStyle={isDesktop && columnCount > 1 ? { gap: 24, paddingHorizontal: 24 } : null}
+          columnWrapperStyle={isDesktop && columnCount > 1 ? { paddingHorizontal: 12 } : null}
           contentContainerStyle={styles.listContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.primary.main} />}
           onEndReached={loadMore}

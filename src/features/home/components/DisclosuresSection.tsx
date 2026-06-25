@@ -110,9 +110,11 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
                             </Text>
                         </View>
 
-                        <Text style={[styles.symbolText, { color: isADX ? '#EAB308' : '#3B82F6', textAlign: isRTL ? 'right' : 'left' }]}>{item.symbol}</Text>
-                        <Text style={[styles.companyText, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{companyName}</Text>
-                        <Text style={[styles.titleText, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={2}>{title}</Text>
+                        <View style={styles.cardBody}>
+                            <Text style={[styles.symbolText, { color: isADX ? '#EAB308' : '#3B82F6', textAlign: isRTL ? 'right' : 'left' }]}>{item.symbol}</Text>
+                            <Text style={[styles.companyText, { color: theme.text.secondary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{companyName}</Text>
+                            <Text style={[styles.titleText, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={2}>{title}</Text>
+                        </View>
 
                         <View style={[styles.cardFooter, { justifyContent: isRTL ? 'flex-start' : 'flex-end' }]}>
                             <View style={[styles.readMore, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -187,6 +189,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     card: {
+        height: 170,
         borderRadius: 12,
         padding: spacing.md,
         marginBottom: spacing.md,
@@ -236,6 +239,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         lineHeight: 20,
+    },
+    cardBody: {
+        flex: 1,
+        justifyContent: 'flex-start',
     },
     cardFooter: {
         flexDirection: 'row',

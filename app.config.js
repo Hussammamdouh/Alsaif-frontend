@@ -5,9 +5,15 @@ export default {
     version: "1.0.4",
     orientation: "portrait",
     icon: "./assets/Logo Secondry.jpg",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "automatic",
     newArchEnabled: false,
     scheme: "alsaif-analysis",
+    updates: {
+      url: "https://u.expo.dev/e6f53f3b-43d3-4d4b-bbba-cfc35c5cd92b"
+    },
+    runtimeVersion: {
+      policy: "appVersion"
+    },
     experiments: {
       tsconfigPaths: true
     },
@@ -15,9 +21,13 @@ export default {
       "**/*"
     ],
     splash: {
-      image: "./assets/Logo_Secondry.png",
+      image: "./assets/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#f7faf5",
+      dark: {
+        image: "./assets/splash-dark.png",
+        backgroundColor: "#05130c"
+      }
     },
     ios: {
       supportsTablet: true,
@@ -37,7 +47,7 @@ export default {
       }
     },
     android: {
-      versionCode: process.env.BUILD_NUMBER ? parseInt(process.env.BUILD_NUMBER, 10) : 14,
+      versionCode: 24,
       adaptiveIcon: {
         foregroundImage: "./assets/Logo Secondry.jpg",
         backgroundColor: "#ffffff"

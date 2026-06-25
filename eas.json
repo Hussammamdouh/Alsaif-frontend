@@ -11,6 +11,7 @@
     "preview": {
       "autoIncrement": true,
       "distribution": "store",
+      "channel": "preview",
       "android": {
         "buildType": "apk"
       },
@@ -22,6 +23,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "channel": "production",
       "env": {
         "API_BASE_URL": "https://api.alsaifanalysis.com",
         "NODE_ENV": "production",
