@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
 import { useTheme, useLocalization } from '../../app/providers';
 import { marketService, MarketTicker } from '../../core/services/market/market.service';
 import { NewHeroCarousel } from './components/HeroLayout';
@@ -15,6 +15,9 @@ export const NewHomeScreen: React.FC = () => {
     const { t, isRTL } = useLocalization();
     const user = useUser();
     const isAuthenticated = !!user;
+    const { width } = useWindowDimensions();
+    const isSmallLaptop = width >= 768 && width < 1280;
+    const shouldReduceTitle = !isAuthenticated && isSmallLaptop;
     const [marketData, setMarketData] = useState<MarketTicker[]>([]);
     const [marketLoading, setMarketLoading] = useState(true);
 
@@ -58,9 +61,11 @@ export const NewHomeScreen: React.FC = () => {
                 <View style={[styles.gridContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     {/* Column 1: Market Data */}
                     <View style={styles.leftColumn}>
-                        <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-                            {t('market.title')}
-                        </Text>
+                        <View style={[styles.headerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                            <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left', fontSize: shouldReduceTitle ? 22 : 28 }]}>
+                                {t('market.title')}
+                            </Text>
+                        </View>
                         <MarketWatchWidget data={marketData} exchange="ADX" />
                         <MarketWatchWidget data={marketData} exchange="DFM" />
                     </View>
@@ -116,8 +121,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     sectionTitle: {
-        fontSize: 28,
         fontWeight: '900',
-        marginBottom: spacing.xl,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.lg,
     },
 });

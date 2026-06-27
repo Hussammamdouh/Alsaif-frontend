@@ -972,7 +972,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                 >
                   <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.security')}</Text>
 
-                  {onNavigateToSubscription && Platform.OS === 'android' && (
+                  {onNavigateToSubscription && (
                     <TouchableOpacity
                       style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
                       onPress={() => onNavigateToSubscription(subscription?.tier === 'premium')}
@@ -990,7 +990,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     </TouchableOpacity>
                   )}
 
-                  {subscription?.tier === 'premium' && subscription?.status !== 'cancelled' && Platform.OS === 'android' && (
+                  {subscription?.tier === 'premium' && subscription?.status !== 'cancelled' && (
                     <TouchableOpacity
                       style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}
                       onPress={() => setShowCancelSubscriptionModal(true)}
@@ -1003,7 +1003,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                     </TouchableOpacity>
                   )}
 
-                  {subscription?.status === 'cancelled' && subscription?.endDate && Platform.OS === 'android' && (
+                  {subscription?.status === 'cancelled' && subscription?.endDate && (
                     <View style={[styles.settingRow, { backgroundColor: theme.background.secondary, borderBottomColor: theme.border.main }]}>
                       <View style={styles.settingLeft}>
                         <Icon name="time-outline" size={24} color={theme.text.secondary} style={styles.settingIcon} />
@@ -1243,7 +1243,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
             activeTab="preferences"
             onTabChange={handleTabChange}
             onLogout={() => setShowLogoutAllDevicesModal(true)}
-            showSubscription={!isAdmin && Platform.OS === 'android'}
+            showSubscription={!isAdmin}
           >
             {renderSettingsContent()}
           </SettingsLayout>
@@ -1769,46 +1769,42 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
 
               <ScrollView style={styles.notificationScrollView} showsVerticalScrollIndicator={false}>
                 {/* Subscription Notifications */}
-                {Platform.OS === 'android' && (
-                  <>
-                    <Text style={[styles.notificationCategoryTitle, { color: theme.primary.main }]}>
-                      {t('settings.subscription')}
-                    </Text>
-                    <View style={[styles.notificationRow, { borderBottomColor: theme.border.light }]}>
-                      <Text style={[styles.notificationLabel, { color: theme.text.primary }]}>{t('settings.renewals')}</Text>
-                      <Switch
-                        value={preferences?.subscription?.renewals || false}
-                        onValueChange={(value) => {
-                          updatePreferences({ subscription: { ...preferences?.subscription, renewals: value } as any });
-                        }}
-                        trackColor={{ false: theme.border.main, true: theme.primary.main }}
-                        thumbColor={theme.background.primary}
-                      />
-                    </View>
-                    <View style={[styles.notificationRow, { borderBottomColor: theme.border.light }]}>
-                      <Text style={[styles.notificationLabel, { color: theme.text.primary }]}>{t('settings.cancellations')}</Text>
-                      <Switch
-                        value={preferences?.subscription?.cancellations || false}
-                        onValueChange={(value) => {
-                          updatePreferences({ subscription: { ...preferences?.subscription, cancellations: value } as any });
-                        }}
-                        trackColor={{ false: theme.border.main, true: theme.primary.main }}
-                        thumbColor={theme.background.primary}
-                      />
-                    </View>
-                    <View style={[styles.notificationRow, { borderBottomColor: theme.border.light }]}>
-                      <Text style={[styles.notificationLabel, { color: theme.text.primary }]}>{t('settings.upgrades')}</Text>
-                      <Switch
-                        value={preferences?.subscription?.upgrades || false}
-                        onValueChange={(value) => {
-                          updatePreferences({ subscription: { ...preferences?.subscription, upgrades: value } as any });
-                        }}
-                        trackColor={{ false: theme.border.main, true: theme.primary.main }}
-                        thumbColor={theme.background.primary}
-                      />
-                    </View>
-                  </>
-                )}
+                <Text style={[styles.notificationCategoryTitle, { color: theme.primary.main }]}>
+                  {t('settings.subscription')}
+                </Text>
+                <View style={[styles.notificationRow, { borderBottomColor: theme.border.light }]}>
+                  <Text style={[styles.notificationLabel, { color: theme.text.primary }]}>{t('settings.renewals')}</Text>
+                  <Switch
+                    value={preferences?.subscription?.renewals || false}
+                    onValueChange={(value) => {
+                      updatePreferences({ subscription: { ...preferences?.subscription, renewals: value } as any });
+                    }}
+                    trackColor={{ false: theme.border.main, true: theme.primary.main }}
+                    thumbColor={theme.background.primary}
+                  />
+                </View>
+                <View style={[styles.notificationRow, { borderBottomColor: theme.border.light }]}>
+                  <Text style={[styles.notificationLabel, { color: theme.text.primary }]}>{t('settings.cancellations')}</Text>
+                  <Switch
+                    value={preferences?.subscription?.cancellations || false}
+                    onValueChange={(value) => {
+                      updatePreferences({ subscription: { ...preferences?.subscription, cancellations: value } as any });
+                    }}
+                    trackColor={{ false: theme.border.main, true: theme.primary.main }}
+                    thumbColor={theme.background.primary}
+                  />
+                </View>
+                <View style={[styles.notificationRow, { borderBottomColor: theme.border.light }]}>
+                  <Text style={[styles.notificationLabel, { color: theme.text.primary }]}>{t('settings.upgrades')}</Text>
+                  <Switch
+                    value={preferences?.subscription?.upgrades || false}
+                    onValueChange={(value) => {
+                      updatePreferences({ subscription: { ...preferences?.subscription, upgrades: value } as any });
+                    }}
+                    trackColor={{ false: theme.border.main, true: theme.primary.main }}
+                    thumbColor={theme.background.primary}
+                  />
+                </View>
 
                 {/* Content Notifications */}
                 <Text style={[styles.notificationCategoryTitle, { color: theme.primary.main }]}>

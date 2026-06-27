@@ -126,7 +126,7 @@ const NotificationsScreen: React.FC = () => {
   const route = useRoute<RouteProp<MainStackParamList, 'Notifications'>>();
   
   const { hasPremiumAccess } = useSubscriptionAccess();
-  const showSubscriptionTab = Platform.OS === 'android';
+  const showSubscriptionTab = true;
 
   const initialCategory = route.params?.category || 'all';
   const safeInitialCategory = (!showSubscriptionTab && (initialCategory === NOTIFICATION_CATEGORIES.SUBSCRIPTION || initialCategory === NOTIFICATION_CATEGORIES.PREMIUM)) ? 'all' : initialCategory;

@@ -23,10 +23,10 @@ export default {
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#f7faf5",
+      backgroundColor: "#438730",
       dark: {
         image: "./assets/splash-dark.png",
-        backgroundColor: "#05130c"
+        backgroundColor: "#438730"
       }
     },
     ios: {

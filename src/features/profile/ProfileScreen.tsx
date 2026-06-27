@@ -320,7 +320,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
               <Text style={[styles.statLabel, { color: theme.text.tertiary }]}>{t('profile.memberSince')}</Text>
             </View>
 
-            {!isAdmin && Platform.OS === 'android' && (
+            {!isAdmin && (
               <View style={[styles.statItem, {
                 backgroundColor: theme.background.secondary,
                 borderColor: theme.border.main
@@ -341,7 +341,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
           </View>
 
           {/* Subscription Card - HIDDEN for Admins */}
-          {!isAdmin && subscription && Platform.OS === 'android' && (
+          {!isAdmin && subscription && (
             <View style={[styles.subscriptionCard, {
               backgroundColor: subscription.tier === 'premium' ? theme.primary.main + '05' : theme.background.secondary,
               borderColor: subscription.tier === 'premium' ? theme.primary.main + '30' : theme.border.main
@@ -606,7 +606,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
           activeTab="profile"
           onTabChange={handleTabChange}
           onLogout={handleLogoutPress}
-          showSubscription={!isAdmin && Platform.OS === 'android'}
+          showSubscription={!isAdmin}
         >
           {renderProfileContent()}
         </SettingsLayout>

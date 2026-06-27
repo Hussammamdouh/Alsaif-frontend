@@ -48,7 +48,11 @@ export const PaywallScreen: React.FC = () => {
   };
 
   const handleClose = () => {
-    navigation.goBack();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('MainTabs' as never);
+    }
   };
 
   const features = [

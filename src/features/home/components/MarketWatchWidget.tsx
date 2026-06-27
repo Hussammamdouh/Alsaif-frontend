@@ -15,11 +15,14 @@ export const MarketWatchWidget: React.FC<MarketWatchWidgetProps> = ({ data, exch
     const { t } = useLocalization();
 
     const filteredData = useMemo(() => {
-        return data
-            .filter(item => {
-                const hasData = (item.price && item.price > 0) || (item.volume && item.volume > 0);
-                return hasData && item.exchange === exchange;
-            })
+        const filtered = data.filter(item => {
+            const hasData = (item.price && item.price > 0) || (item.volume && item.volume > 0);
+            return hasData && item.exchange === exchange;
+        });
+
+        // Randomize the list of companies on each data update/refresh
+        return [...filtered]
+            .sort(() => Math.random() - 0.5)
             .slice(0, 5);
     }, [data, exchange]);
 

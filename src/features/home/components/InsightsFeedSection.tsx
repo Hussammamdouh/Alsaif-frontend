@@ -38,9 +38,7 @@ export const InsightsFeedSection: React.FC<InsightsFeedSectionProps> = ({
     // Filter insights based on active market data
     const filteredInsights = React.useMemo(() => {
         let list = insights;
-        if (Platform.OS !== 'android') {
-            list = list.filter(insight => insight.type !== 'premium');
-        }
+
 
         if (activeMarketLoading || activeMarketData.length === 0) return list.slice(0, 4);
 

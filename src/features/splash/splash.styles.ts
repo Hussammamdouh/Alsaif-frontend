@@ -20,11 +20,15 @@ export const styles = StyleSheet.create({
 
   // Logo Container - centered in the screen
   logoContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
     width: 180,
     height: 180,
+    marginTop: -90,
+    marginLeft: -90,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing['3xl'],
   },
 
   logo: {
@@ -34,9 +38,13 @@ export const styles = StyleSheet.create({
 
   // Text Container - below logo
   textContainer: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: 110,
+    left: 0,
+    right: 0,
     alignItems: 'center',
     paddingHorizontal: theme.spacing.xl,
-    marginBottom: theme.spacing['4xl'],
   },
 
   title: {

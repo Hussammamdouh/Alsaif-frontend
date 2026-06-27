@@ -212,7 +212,7 @@ export const InsightsListScreen: React.FC<InsightsListScreenProps> = ({
   const columnCount = width > 1600 ? 3 : 2;
   const styles = React.useMemo(() => getStyles(theme, isDesktop, isDark, isRTL), [theme, isDesktop, isDark, isRTL]);
   const { canAccessInsight, hasPremiumAccess } = useSubscriptionAccess();
-  const showPremiumTab = Platform.OS === 'android';
+  const showPremiumTab = true;
 
 
   // Filter state

@@ -59,7 +59,11 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const plans = allPlans.filter(p => p.billingCycle === billingCycle);
 
   const handleClose = () => {
-    navigation.goBack();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('MainTabs' as never);
+    }
   };
 
   useEffect(() => {

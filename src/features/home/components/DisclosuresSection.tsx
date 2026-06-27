@@ -33,55 +33,57 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
                 <Text style={[styles.sectionTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left', fontSize: shouldReduceTitle ? 22 : 28 }]}>
                     {exchange ? `${exchange === 'ADX' ? t('market.adxTitle') : t('market.dfmTitle')} ${t('tabs.disclosures')}` : t('tabs.disclosures')}
                 </Text>
+
+                {/* Filter Pills (only show if exchange prop is not provided, i.e., in the authenticated Desktop Home tab) */}
+                {!exchange && (
+                    <View style={[
+                        styles.filterContainer,
+                        {
+                            flexDirection: isRTL ? 'row-reverse' : 'row',
+                            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                            marginBottom: 0, // Reset bottom margin since it is now side-by-side
+                        }
+                    ]}>
+                        <TouchableOpacity
+                            style={[
+                                styles.filterTab,
+                                !selectedExchange && { backgroundColor: theme.primary.main }
+                            ]}
+                            onPress={() => setSelectedExchange(undefined)}
+                        >
+                            <Text style={[styles.filterTabText, { color: !selectedExchange ? '#FFF' : theme.text.secondary }]}>
+                                {language === 'ar' ? 'الكل' : 'All'}
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.filterTab,
+                                selectedExchange === 'ADX' && { backgroundColor: '#EAB308' }
+                            ]}
+                            onPress={() => setSelectedExchange('ADX')}
+                        >
+                            <Text style={[styles.filterTabText, { color: selectedExchange === 'ADX' ? '#FFF' : theme.text.secondary }]}>
+                                {t('market.adxTitle')}
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.filterTab,
+                                selectedExchange === 'DFM' && { backgroundColor: '#3B82F6' }
+                            ]}
+                            onPress={() => setSelectedExchange('DFM')}
+                        >
+                            <Text style={[styles.filterTabText, { color: selectedExchange === 'DFM' ? '#FFF' : theme.text.secondary }]}>
+                                {t('market.dfmTitle')}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
                 <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'DisclosuresTab' })}>
                     <Text style={[styles.viewAll, { color: theme.primary.main }]}>{t('common.viewAll')}</Text>
                 </TouchableOpacity>
             </View>
-
-            {/* Filter Pills (only show if exchange prop is not provided, i.e., in the authenticated Desktop Home tab) */}
-            {!exchange && (
-                <View style={[
-                    styles.filterContainer,
-                    {
-                        flexDirection: isRTL ? 'row-reverse' : 'row',
-                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
-                    }
-                ]}>
-                    <TouchableOpacity
-                        style={[
-                            styles.filterTab,
-                            !selectedExchange && { backgroundColor: theme.primary.main }
-                        ]}
-                        onPress={() => setSelectedExchange(undefined)}
-                    >
-                        <Text style={[styles.filterTabText, { color: !selectedExchange ? '#FFF' : theme.text.secondary }]}>
-                            {language === 'ar' ? 'الكل' : 'All'}
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.filterTab,
-                            selectedExchange === 'ADX' && { backgroundColor: '#EAB308' }
-                        ]}
-                        onPress={() => setSelectedExchange('ADX')}
-                    >
-                        <Text style={[styles.filterTabText, { color: selectedExchange === 'ADX' ? '#FFF' : theme.text.secondary }]}>
-                            {t('market.adxTitle')}
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.filterTab,
-                            selectedExchange === 'DFM' && { backgroundColor: '#3B82F6' }
-                        ]}
-                        onPress={() => setSelectedExchange('DFM')}
-                    >
-                        <Text style={[styles.filterTabText, { color: selectedExchange === 'DFM' ? '#FFF' : theme.text.secondary }]}>
-                            {t('market.dfmTitle')}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            )}
 
             {loading && disclosures.length === 0 ? (
                 <View style={styles.loadingContainer}>
