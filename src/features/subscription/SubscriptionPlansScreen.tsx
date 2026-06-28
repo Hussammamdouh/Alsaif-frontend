@@ -552,7 +552,8 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
     alignItems: 'stretch',
   },
   planCard: {
-    flex: 1,
+    flex: isDesktop ? 1 : undefined,
+    width: isDesktop ? undefined : '100%',
     maxWidth: isDesktop ? 450 : '100%',
     borderRadius: 32,
     padding: 40,
@@ -654,14 +655,14 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
     alignItems: 'center',
     borderWidth: 1,
     borderColor: theme.border.main,
-    marginTop: 'auto',
+    marginTop: isDesktop ? 'auto' : 24,
   },
   actionBtnFeatured: {
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
     overflow: 'hidden',
-    marginTop: 'auto',
+    marginTop: isDesktop ? 'auto' : 24,
   },
   actionBtnText: {
     fontSize: 16,

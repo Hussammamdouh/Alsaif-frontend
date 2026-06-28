@@ -263,58 +263,60 @@ export const SplashScreen: React.FC<SplashScreenProps> = React.memo(({ onFinish 
       end={{ x: 0, y: 1 }}
     >
       <CircularSideGradients isDark={isDark} />
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        {/* Centered Logo Container */}
-        <Animated.View
+      
+      {/* Centered Logo Container */}
+      <Animated.View
+        style={[
+          styles.logoContainer,
+          {
+            opacity: logoOpacity,
+            transform: [
+              { scale: Animated.multiply(logoScale, pulseAnim) },
+            ],
+          },
+        ]}
+      >
+        <Image
+          source={require('../../../assets/Logo Secondry.jpg')}
           style={[
-            styles.logoContainer,
+            styles.logo,
             {
-              opacity: logoOpacity,
-              transform: [
-                { scale: Animated.multiply(logoScale, pulseAnim) },
-              ],
+              borderRadius: 36, // Rounded corners for premium app icon look
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+            }
+          ]}
+          resizeMode="contain"
+        />
+      </Animated.View>
+
+      {/* App Title and Tagline */}
+      <View style={styles.textContainer}>
+        <Animated.Text
+          style={[
+            styles.title,
+            { color: '#FFFFFF' },
+            {
+              opacity: titleOpacity,
+              transform: [{ translateY: titleTranslateY }],
             },
           ]}
         >
-          <Image
-            source={require('../../../assets/Logo Secondry.jpg')}
-            style={[
-              styles.logo,
-              {
-                borderRadius: 36, // Rounded corners for premium app icon look
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-              }
-            ]}
-            resizeMode="contain"
-          />
-        </Animated.View>
+          {t('common.appName')}
+        </Animated.Text>
+        <Animated.Text
+          style={[
+            styles.tagline,
+            { color: 'rgba(255, 255, 255, 0.8)' },
+            { opacity: taglineOpacity },
+          ]}
+        >
+          {t('common.tagline')}
+        </Animated.Text>
+      </View>
 
-        {/* App Title and Tagline */}
-        <View style={styles.textContainer}>
-          <Animated.Text
-            style={[
-              styles.title,
-              { color: '#FFFFFF' },
-              {
-                opacity: titleOpacity,
-                transform: [{ translateY: titleTranslateY }],
-              },
-            ]}
-          >
-            {t('common.appName')}
-          </Animated.Text>
-          <Animated.Text
-            style={[
-              styles.tagline,
-              { color: 'rgba(255, 255, 255, 0.8)' },
-              { opacity: taglineOpacity },
-            ]}
-          >
-            {t('common.tagline')}
-          </Animated.Text>
-        </View>
-
+      {/* SafeAreaView solely to handle bottom inset padding for progress indicators */}
+      <SafeAreaView style={styles.container} edges={['bottom']} pointerEvents="box-none">
         {/* Loading Indicator */}
         <Animated.View
           style={[
