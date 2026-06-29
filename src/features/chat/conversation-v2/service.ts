@@ -151,7 +151,7 @@ export const getConversationMessages = async (
     id: chatData._id,
     type: chatData.type,
     name: chatData.name,
-    avatar: chatData.avatar,
+    avatar: chatData.type === 'group' ? chatData.groupAvatar : chatData.avatar,
     participants: chatData.participants
       .filter((p: any) => p.user && (p.user._id || typeof p.user === 'string'))
       .map((p: any) => ({

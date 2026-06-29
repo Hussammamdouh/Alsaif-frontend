@@ -244,6 +244,37 @@ export function useChatSettings(chatId: string) {
         }
     }, [chatId, fetchSettings]);
 
+    /**
+     * Update a participant's permission (role)
+     */
+    const updateParticipantPermission = useCallback(async (userId: string, permission: 'read_only' | 'member' | 'moderator' | 'admin') => {
+        if (!chatId) return false;
+
+        setIsUpdating(true);
+        setError(null);
+
+        try {
+            const response = await apiClient.post<{ success: boolean; message?: string }>(
+                `/api/chats/${chatId}/participants/${userId}/permission`,
+                { permission }
+            );
+
+            if (response.success) {
+                await fetchSettings();
+                return true;
+            } else {
+                setError(response.message || 'Failed to update participant role');
+                return false;
+            }
+        } catch (err: any) {
+            console.error('[useChatSettings] Update permission error:', err);
+            setError(err.message || 'Failed to update participant role');
+            return false;
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [chatId, fetchSettings]);
+
     // Fetch settings on mount
     useEffect(() => {
         fetchSettings();
@@ -262,5 +293,6 @@ export function useChatSettings(chatId: string) {
         deleteGroup,
         leaveGroup,
         addParticipants,
+        updateParticipantPermission,
     };
 }

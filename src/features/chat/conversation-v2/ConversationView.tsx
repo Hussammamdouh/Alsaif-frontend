@@ -20,6 +20,7 @@ import {
     Dimensions,
     Alert,
     Linking,
+    Image,
 } from 'react-native';
 import { Ionicons as Icon } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -278,17 +279,25 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
             <View style={[styles.headerCenter, hideBackButton && { marginLeft: 0 }]}>
                 {conversation?.type === 'group' ? (
-                    <View style={[styles.groupBadge, { backgroundColor: theme.primary.main }]}>
-                        <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>
-                            {conversation.name?.substring(0, 2).toUpperCase() || 'GC'}
-                        </Text>
-                    </View>
+                    conversation.avatar ? (
+                        <Image source={{ uri: conversation.avatar }} style={styles.groupBadge} />
+                    ) : (
+                        <View style={[styles.groupBadge, { backgroundColor: theme.primary.main }]}>
+                            <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>
+                                {conversation.name?.substring(0, 2).toUpperCase() || 'GC'}
+                            </Text>
+                        </View>
+                    )
                 ) : (
-                    <View style={[styles.avatar, { backgroundColor: theme.primary.light }]}>
-                        <Text style={styles.avatarText}>
-                            {conversation?.participants.find(p => p.user.id !== currentUserId)?.user.name.charAt(0).toUpperCase() || 'U'}
-                        </Text>
-                    </View>
+                    conversation?.participants.find(p => p.user.id !== currentUserId)?.user.avatar ? (
+                        <Image source={{ uri: conversation.participants.find(p => p.user.id !== currentUserId)?.user.avatar }} style={styles.avatar} />
+                    ) : (
+                        <View style={[styles.avatar, { backgroundColor: theme.primary.light }]}>
+                            <Text style={styles.avatarText}>
+                                {conversation?.participants.find(p => p.user.id !== currentUserId)?.user.name.charAt(0).toUpperCase() || 'U'}
+                            </Text>
+                        </View>
+                    )
                 )}
 
                 <View style={styles.headerInfo}>

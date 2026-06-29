@@ -31,6 +31,10 @@ import { ResponsiveContainer } from '../../../shared/components';
 import { useChatSettings } from './chatSettings.hooks';
 import { ChatParticipant } from './chatSettings.types';
 import { ConfirmationModal } from '../../admin/components/ConfirmationModal';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadImage } from '../../../core/services/media/mediaService';
+import { useUser } from '../../../app/auth/auth.hooks';
+import { Linking } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const isDesktop = width > 768;
@@ -62,9 +66,136 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
         deleteGroup,
         leaveGroup,
         addParticipants,
+        updateParticipantPermission,
     } = useChatSettings(chatId);
 
     const [selectedMember, setSelectedMember] = useState<ChatParticipant | null>(null);
+    const user = useUser();
+    const currentUserId = user?.id || '';
+
+    const changeUserRole = useCallback(async (targetUserId: string, permission: 'admin' | 'moderator' | 'member' | 'read_only') => {
+        const success = await updateParticipantPermission(targetUserId, permission);
+        if (success) {
+            showAlert(t('common.success') || 'Success', t('chat.settings.roleChanged') || 'Role updated successfully');
+        } else {
+            showAlert(t('common.error') || 'Error', t('chat.settings.updateFailed') || 'Failed to update role');
+        }
+    }, [updateParticipantPermission, showAlert, t]);
+
+    const handleMemberPress = useCallback((member: ChatParticipant) => {
+        const currentUserPerm = settings?.currentUserPermission;
+        if (!currentUserPerm) return;
+
+        const options: { text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }[] = [];
+
+        if (currentUserPerm === 'admin') {
+            options.push({
+                text: t('chat.settings.admin') || 'Admin',
+                onPress: () => changeUserRole(member.id, 'admin'),
+            });
+            options.push({
+                text: t('chat.settings.moderator') || 'Moderator',
+                onPress: () => changeUserRole(member.id, 'moderator'),
+            });
+            options.push({
+                text: t('chat.settings.youAreMember') || 'Member',
+                onPress: () => changeUserRole(member.id, 'member'),
+            });
+            options.push({
+                text: t('chat.settings.read_only') || 'Read Only',
+                onPress: () => changeUserRole(member.id, 'read_only'),
+            });
+        } else if (currentUserPerm === 'moderator') {
+            options.push({
+                text: t('chat.settings.youAreMember') || 'Member',
+                onPress: () => changeUserRole(member.id, 'member'),
+            });
+            options.push({
+                text: t('chat.settings.read_only') || 'Read Only',
+                onPress: () => changeUserRole(member.id, 'read_only'),
+            });
+        }
+
+        options.push({
+            text: t('common.cancel') || 'Cancel',
+            style: 'cancel',
+            onPress: () => {},
+        });
+
+        Alert.alert(
+            t('chat.settings.changeRole') || 'Change Participant Role',
+            t('chat.settings.changeRoleDescription', { name: member.name }) || `Update role for ${member.name}`,
+            options
+        );
+    }, [settings, t, changeUserRole]);
+
+    const handleSelectGroupPicture = useCallback(async () => {
+        try {
+            const current = await ImagePicker.getMediaLibraryPermissionsAsync();
+            if (current.status === 'denied') {
+                Alert.alert(
+                    t('common.photoLibraryAccess') || 'Photo Library Access',
+                    'Please enable photo library access in your device Settings to change the group picture.',
+                    [
+                        { text: t('common.cancel') || 'Cancel', style: 'cancel' },
+                        { text: t('common.settings') || 'Settings', onPress: () => Linking.openSettings() }
+                    ]
+                );
+                return;
+            }
+
+            if (current.status === 'undetermined') {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (status !== 'granted') {
+                    return;
+                }
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const selectedImage = result.assets[0];
+
+                const MAX_FILE_SIZE = 5 * 1024 * 1024;
+                let fileSize = selectedImage.fileSize;
+                if (!fileSize && selectedImage.uri) {
+                    try {
+                        const response = await fetch(selectedImage.uri);
+                        const blob = await response.blob();
+                        fileSize = blob.size;
+                    } catch (e) {
+                        console.log('Error getting size from blob:', e);
+                    }
+                }
+
+                if (fileSize && fileSize > MAX_FILE_SIZE) {
+                    Alert.alert(t('common.error'), t('media.fileTooLarge') || 'File size too large');
+                    return;
+                }
+
+                const imageUrl = await uploadImage(
+                    selectedImage.uri,
+                    'group_avatar.jpg',
+                    'image/jpeg'
+                );
+
+                const success = await updateSettings({ groupAvatar: imageUrl });
+                if (success) {
+                    Alert.alert(t('common.success') || 'Success', 'Group picture updated successfully');
+                } else {
+                    Alert.alert(t('common.error'), 'Failed to update group picture');
+                }
+            }
+        } catch (error: any) {
+            console.error('[ChatSettingsScreen] Group picture update error:', error);
+            Alert.alert(t('common.error'), error.message || 'Could not update group picture');
+        }
+    }, [updateSettings, t]);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showEditNameModal, setShowEditNameModal] = useState(false);
@@ -309,20 +440,38 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
      * Render member item
      */
     const renderMemberItem = useCallback(({ item }: { item: ChatParticipant }) => {
-        const isAdmin = item.permission === 'admin';
-        const canManage = settings?.isAdmin && !isAdmin;
+        const isTargetAdmin = item.permission === 'admin';
+        const isTargetMod = item.permission === 'moderator';
+        const isSelf = item.id === currentUserId;
+        
+        const currentUserPerm = settings?.currentUserPermission;
+        const canManage = currentUserPerm === 'admin'
+            ? (!isTargetAdmin && !isSelf)
+            : (currentUserPerm === 'moderator' && !isTargetAdmin && !isTargetMod && !isSelf);
+
+        const isAdmin = isTargetAdmin;
 
         return (
             <View style={[styles.memberItem, {
                 backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
                 borderColor: theme.border.light,
             }]}>
-                <View style={styles.memberInfo}>
+                <TouchableOpacity 
+                    style={styles.memberInfo}
+                    disabled={!canManage}
+                    onPress={() => handleMemberPress(item)}
+                    activeOpacity={0.7}
+                >
                     <LinearGradient
-                        colors={isAdmin ? [theme.primary.main, theme.primary.dark] : [theme.background.tertiary, theme.background.tertiary]}
+                        colors={isAdmin 
+                            ? [theme.primary.main, theme.primary.dark] 
+                            : isTargetMod
+                                ? [theme.warning.main, theme.warning.dark || theme.warning.main]
+                                : [theme.background.tertiary, theme.background.tertiary]
+                        }
                         style={styles.memberAvatar}
                     >
-                        <Text style={[styles.memberAvatarText, { color: isAdmin ? '#FFFFFF' : theme.text.secondary }]}>
+                        <Text style={[styles.memberAvatarText, { color: (isAdmin || isTargetMod) ? '#FFFFFF' : theme.text.secondary }]}>
                             {item.name.charAt(0).toUpperCase()}
                         </Text>
                     </LinearGradient>
@@ -332,17 +481,21 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
                             <Text style={[styles.memberName, { color: theme.text.primary }]}>
                                 {item.name}
                             </Text>
-                            {isAdmin && (
+                            {isAdmin ? (
                                 <View style={[styles.roleBadge, { backgroundColor: theme.primary.main + '20' }]}>
                                     <Text style={[styles.roleText, { color: theme.primary.main }]}>{t('chat.settings.admin')}</Text>
                                 </View>
-                            )}
+                            ) : isTargetMod ? (
+                                <View style={[styles.roleBadge, { backgroundColor: theme.warning.main + '20' }]}>
+                                    <Text style={[styles.roleText, { color: theme.warning.main }]}>{t('chat.settings.moderator') || 'Moderator'}</Text>
+                                </View>
+                            ) : null}
                         </View>
                         <Text style={[styles.memberEmail, { color: theme.text.tertiary }]}>
                             {item.email}
                         </Text>
                     </View>
-                </View>
+                </TouchableOpacity>
 
                 {canManage ? (
                     <View style={styles.memberActions}>
@@ -375,18 +528,33 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
                 )}
             </View>
         );
-    }, [settings, theme, isUpdating, isDark, handleToggleSendPermission, handleKickMember, t]);
+    }, [settings, theme, isUpdating, isDark, handleToggleSendPermission, handleKickMember, handleMemberPress, currentUserId, t]);
 
     const renderHeader = () => (
         <View style={styles.groupHeaderContainer}>
             <View style={styles.groupCard}>
                 <View style={styles.groupInfoRow}>
-                    <LinearGradient
-                        colors={[theme.primary.light, theme.primary.main]}
-                        style={styles.largeGroupIcon}
+                    <TouchableOpacity
+                        disabled={!settings?.isAdmin && settings?.currentUserPermission !== 'moderator'}
+                        onPress={handleSelectGroupPicture}
+                        activeOpacity={0.7}
                     >
-                        <Icon name="people" size={32} color="#FFFFFF" />
-                    </LinearGradient>
+                        {settings?.groupAvatar ? (
+                            <Image source={{ uri: settings.groupAvatar }} style={styles.largeGroupIcon} />
+                        ) : (
+                            <LinearGradient
+                                colors={[theme.primary.light, theme.primary.main]}
+                                style={styles.largeGroupIcon}
+                            >
+                                <Icon name="people" size={32} color="#FFFFFF" />
+                            </LinearGradient>
+                        )}
+                        {(settings?.isAdmin || settings?.currentUserPermission === 'moderator') && (
+                            <View style={styles.cameraIconBadge}>
+                                <Icon name="camera" size={14} color="#FFFFFF" />
+                            </View>
+                        )}
+                    </TouchableOpacity>
 
                     <View style={styles.groupTextInfo}>
                         <Text style={[styles.groupNameTitle, { color: theme.text.primary }]}>
@@ -479,12 +647,22 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
 
                         <View style={[styles.statusItem, { backgroundColor: theme.primary.main + '15' }]}>
                             <Icon
-                                name={settings?.isAdmin ? 'shield-checkmark' : 'person'}
+                                name={settings?.currentUserPermission === 'admin' 
+                                    ? 'shield-checkmark' 
+                                    : settings?.currentUserPermission === 'moderator'
+                                        ? 'shield'
+                                        : 'person'
+                                }
                                 size={18}
                                 color={theme.primary.main}
                             />
                             <Text style={[styles.statusText, { color: theme.primary.main }]}>
-                                {settings?.isAdmin ? t('chat.settings.youAreAdmin') : t('chat.settings.youAreMember')}
+                                {settings?.currentUserPermission === 'admin' 
+                                    ? t('chat.settings.youAreAdmin') 
+                                    : settings?.currentUserPermission === 'moderator'
+                                        ? (t('chat.settings.youAreModerator') || 'You are a moderator')
+                                        : t('chat.settings.youAreMember')
+                                }
                             </Text>
                         </View>
                     </View>
@@ -1021,6 +1199,19 @@ const getStyles = (theme: any, isDark: boolean) => StyleSheet.create({
         bottom: 0,
         right: 0,
         backgroundColor: '#FFB800',
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+    },
+    cameraIconBadge: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: theme.primary.main,
         width: 24,
         height: 24,
         borderRadius: 12,

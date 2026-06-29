@@ -12,7 +12,7 @@ export interface ChatParticipant {
     email?: string;
     avatar?: string;
     role?: 'user' | 'admin' | 'superadmin';
-    permission: 'read_only' | 'member' | 'admin';
+    permission: 'read_only' | 'member' | 'moderator' | 'admin';
     joinedAt: string;
     canSend: boolean;
 }
@@ -26,13 +26,14 @@ export interface ChatSettings {
     type: 'private' | 'group';
     isSystemGroup: boolean;
     tierGroup: 'free' | 'premium' | null;
+    groupAvatar?: string;
     participantCount: number;
     settings: {
         onlyAdminsCanSend: boolean;
         allowedSenders: string[];
     };
     participants: ChatParticipant[];
-    currentUserPermission: 'read_only' | 'member' | 'admin';
+    currentUserPermission: 'read_only' | 'member' | 'moderator' | 'admin';
     isAdmin: boolean;
     canSend: boolean;
 }
@@ -52,4 +53,5 @@ export interface ChatSettingsResponse {
 export interface UpdateSettingsRequest {
     name?: string;
     onlyAdminsCanSend?: boolean;
+    groupAvatar?: string;
 }

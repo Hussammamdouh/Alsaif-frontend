@@ -18,14 +18,14 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Logo Container - centered in the screen
   logoContainer: {
     position: 'absolute',
     top: '50%',
-    alignSelf: 'center',
+    left: '50%',
     width: 180,
     height: 180,
-    marginTop: -90,
+    marginLeft: -90,
+    marginTop: -140,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
   textContainer: {
     position: 'absolute',
     top: '50%',
-    marginTop: 110,
+    marginTop: 60,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -64,10 +64,11 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Loading Indicator - at the bottom
   progressContainer: {
     position: 'absolute',
     bottom: theme.spacing['5xl'],
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
 
