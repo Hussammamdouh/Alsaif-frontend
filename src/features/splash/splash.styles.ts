@@ -22,11 +22,10 @@ export const styles = StyleSheet.create({
   logoContainer: {
     position: 'absolute',
     top: '50%',
-    left: '50%',
+    alignSelf: 'center',
     width: 180,
     height: 180,
     marginTop: -90,
-    marginLeft: -90,
     alignItems: 'center',
     justifyContent: 'center',
   },
