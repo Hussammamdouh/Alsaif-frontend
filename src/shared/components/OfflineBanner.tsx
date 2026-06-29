@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { theme as staticTheme } from '../../core/theme';
 import { useIsOnline } from '../../core/utils/network';

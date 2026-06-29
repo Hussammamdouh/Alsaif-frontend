@@ -5,6 +5,7 @@
 
 export { StatCard } from './StatCard';
 export { DateRangePicker } from './DateRangePicker';
+export type { Preset } from './DateRangePicker';
 export { Chart, generateChartColors, formatChartData, formatPieChartData } from './Chart';
 export { FilterBar } from './FilterBar';
 export type { FilterOption } from './FilterBar';

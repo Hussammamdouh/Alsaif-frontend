@@ -6,7 +6,7 @@
 import React from 'react';
 import { Platform, View, StyleSheet, Animated } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { BottomTabParamList } from './types';
 import { useAuth } from '../auth';

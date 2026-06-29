@@ -14,7 +14,7 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { useTheme } from '../../../app/providers/ThemeProvider';
 import { useLocalization } from '../../../app/providers/LocalizationProvider';
 import { useProfile } from '../../profile/profile.hooks';

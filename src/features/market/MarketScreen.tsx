@@ -7,7 +7,7 @@ import { useLocalization } from '../../app/providers/LocalizationProvider';
 import { marketService, MarketTicker } from '../../core/services/market/market.service';
 import { favoritesService } from '../../core/services/market/favorites.service';
 import { spacing } from '../../core/theme/spacing';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ResponsiveContainer } from '../../shared/components';
 import { calculateCommission } from '../../core/utils/commission';

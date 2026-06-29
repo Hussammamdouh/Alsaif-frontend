@@ -6,7 +6,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 import { theme as staticTheme } from '../../core/theme';
 import { useTheme } from '../../app/providers/ThemeProvider';

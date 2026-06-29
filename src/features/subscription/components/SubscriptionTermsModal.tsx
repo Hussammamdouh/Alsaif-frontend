@@ -18,7 +18,7 @@ import {
     NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { Button, Checkbox, ResponsiveContainer } from '../../../shared/components';
 

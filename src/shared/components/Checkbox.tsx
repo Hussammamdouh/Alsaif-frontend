@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { theme } from '../../core/theme';
 
 interface CheckboxProps {

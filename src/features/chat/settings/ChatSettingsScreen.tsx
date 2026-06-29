@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import { apiClient } from '../../../core/services/api/apiClient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { ResponsiveContainer } from '../../../shared/components';

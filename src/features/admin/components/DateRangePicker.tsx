@@ -9,19 +9,26 @@ interface DateRangePickerProps {
   endDate: Date;
   onRangeChange: (startDate: Date, endDate: Date) => void;
   label?: string;
+  selectedPreset?: Preset;
+  onPresetChange?: (preset: Preset) => void;
 }
 
-type Preset = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
+export type Preset = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
 export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   startDate,
   endDate,
   onRangeChange,
   label = 'Date Range',
+  selectedPreset: propSelectedPreset,
+  onPresetChange,
 }) => {
   const { theme } = useTheme();
   const [showModal, setShowModal] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<Preset>('month');
+  const [localSelectedPreset, setLocalSelectedPreset] = useState<Preset>('year');
+  
+  const selectedPreset = propSelectedPreset !== undefined ? propSelectedPreset : localSelectedPreset;
+  const setSelectedPreset = onPresetChange !== undefined ? onPresetChange : setLocalSelectedPreset;
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [tempStartDate, setTempStartDate] = useState(startDate);
@@ -29,6 +36,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   const { isRTL } = useLocalization();
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
+
+  // Sync temp dates with props when modal opens or props change
+  React.useEffect(() => {
+    if (showModal) {
+      setTempStartDate(startDate);
+      setTempEndDate(endDate);
+    }
+  }, [showModal, startDate, endDate]);
 
   const formatDate = (date: Date): string => {
     const month = date.getMonth() + 1;

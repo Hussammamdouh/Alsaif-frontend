@@ -12,7 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../app/navigation/types';
 import { Asset } from 'expo-asset';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { SettingsLayout, SettingsTab } from '../settings/SettingsLayout';
 import { Dimensions } from 'react-native';
 import { useAuth } from '../../app/auth';

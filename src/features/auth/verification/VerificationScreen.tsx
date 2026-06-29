@@ -19,7 +19,7 @@ import {
     ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { Button, ThemeLanguageToggle, ResponsiveContainer, CodeInput } from '../../../shared/components';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { useAuth } from '../../../app/auth';

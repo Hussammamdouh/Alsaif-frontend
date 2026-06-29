@@ -30,6 +30,7 @@ import { useAnalytics } from '../hooks';
 import {
   StatCard,
   DateRangePicker,
+  Preset,
   Chart,
   FilterBar,
   LoadingState,
@@ -57,9 +58,10 @@ export const AdminAnalyticsScreen: React.FC = () => {
   const isDesktop = width >= 768;
 
   const [startDate, setStartDate] = useState(
-    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    new Date(new Date().getFullYear(), 0, 1)
   );
   const [endDate, setEndDate] = useState(new Date());
+  const [selectedPreset, setSelectedPreset] = useState<Preset>('year');
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('day');
   const [activeTab, setActiveTab] = useState<'overview' | 'audience' | 'engagement' | 'revenue' | 'plans'>('overview');
 
@@ -151,6 +153,8 @@ export const AdminAnalyticsScreen: React.FC = () => {
           startDate={startDate}
           endDate={endDate}
           onRangeChange={handleDateRangeChange}
+          selectedPreset={selectedPreset}
+          onPresetChange={setSelectedPreset}
           label={t('admin.dateRange')}
         />
 

@@ -17,7 +17,7 @@ import {
     useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme, useLocalization } from '../../app/providers';
 import { Button, ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
