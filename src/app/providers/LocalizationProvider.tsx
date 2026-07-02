@@ -886,6 +886,7 @@ const translations = {
     'admin.revenueDashboard': 'Revenue Dashboard',
     'admin.contentScheduler': 'Content Scheduler',
     'admin.contentModeration': 'Content Moderation',
+    'admin.groupChats': 'Group Chats',
 
     // Admin Section Descriptions
     'admin.manageUsersRoles': 'Manage users, roles, and permissions',
@@ -893,6 +894,7 @@ const translations = {
     'admin.viewManageSubscriptions': 'View and manage subscriptions',
     'admin.broadcastNotifications': 'Broadcast notifications to users',
     'admin.viewComprehensiveAnalytics': 'View comprehensive analytics and insights',
+    'admin.manageGroupChatsDesc': 'Manage group chats, participants, and settings',
     'admin.trackRevenueMRR': 'Track revenue, MRR, ARR, and payments',
     'admin.schedulePublishContent': 'Schedule and publish content',
     'admin.reviewModerateContent': 'Review and moderate user content',
@@ -2246,6 +2248,7 @@ const translations = {
     'admin.revenueDashboard': 'لوحة الإيرادات',
     'admin.contentScheduler': 'جدولة المحتوى',
     'admin.contentModeration': 'إشراف المحتوى',
+    'admin.groupChats': 'المجموعات المشتركة',
 
     // Admin Section Descriptions
     'admin.manageUsersRoles': 'إدارة المستخدمين والأدوار والصلاحيات',
@@ -2253,6 +2256,7 @@ const translations = {
     'admin.viewManageSubscriptions': 'عرض وإدارة الاشتراكات',
     'admin.broadcastNotifications': 'بث الإشعارات للمستخدمين',
     'admin.viewComprehensiveAnalytics': 'عرض التحليلات والتوصية الشاملة',
+    'admin.manageGroupChatsDesc': 'إدارة المجموعات والأعضاء والإعدادات',
     'admin.trackRevenueMRR': 'تتبع الإيرادات والإيرادات الشهرية والسنوية',
     'admin.schedulePublishContent': 'جدولة ونشر المحتوى',
     'admin.reviewModerateContent': 'مراجعة وإشراف محتوى المستخدم',

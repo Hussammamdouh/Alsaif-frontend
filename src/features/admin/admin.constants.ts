@@ -287,6 +287,7 @@ export const ADMIN_ROUTES = {
   SUBSCRIPTION_PLANS: 'AdminSubscriptionPlans',
   DISCOUNT_CODES: 'AdminDiscountCodes',
   BANNERS: 'AdminBanners',
+  GROUP_CHATS: 'AdminGroupChat',
 } as const;
 
 // Permission Checks
@@ -352,6 +353,10 @@ export const DASHBOARD_SECTION_TRANSLATIONS = {
   audit_logs: {
     titleKey: 'admin.auditLogs',
     descriptionKey: 'admin.auditLogsOverview',
+  },
+  group_chats: {
+    titleKey: 'admin.groupChats',
+    descriptionKey: 'admin.manageGroupChatsDesc',
   },
 } as const;
 
@@ -446,5 +451,13 @@ export const DASHBOARD_SECTIONS = [
     description: 'View system audits and logs',
     color: '#8e8e93',
     superadminOnly: true,
+  },
+  {
+    id: 'group_chats',
+    title: 'Group Chats',
+    icon: 'chatbubbles',
+    route: ADMIN_ROUTES.GROUP_CHATS,
+    description: 'Manage group chats and participants',
+    color: '#00c7b1',
   },
 ];
