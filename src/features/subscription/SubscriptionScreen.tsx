@@ -379,59 +379,30 @@ export const SubscriptionScreen: React.FC = () => {
             {renderActionButtons()}
 
             {/* Available Plans */}
-            {Platform.OS === 'ios' ? (
-              subscription?.tier === 'free' && (
-                <View style={[styles.currentPlanCard, { marginTop: 24, alignItems: 'center', padding: 24 }]}>
-                  <Ionicons name="card-outline" size={32} color={theme.primary.main} style={{ marginBottom: 12 }} />
-                  <Text style={[styles.planName, { marginBottom: 8, textAlign: 'center' }]}>
-                    {t('plans.iosNoticeTitle')}
-                  </Text>
-                  <Text style={{ fontSize: 14, color: theme.text.secondary, lineHeight: 22, textAlign: 'center', marginBottom: 16 }}>
-                    {t('plans.iosNoticeText')}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.portalButton}
-                    activeOpacity={0.8}
-                    onPress={handleContactSupport}
-                  >
-                    <LinearGradient
-                      colors={[theme.primary.main, theme.primary.dark]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.portalButtonGradient}
-                    >
-                      <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
-                      <Ionicons name="mail-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              )
-            ) : (
-              (subscription?.canUpgrade || subscription?.canRenew) && (
-                <>
-                  <Text style={[styles.sectionTitle, isDesktop && { marginTop: 40 }]}>
-                    {subscription.canRenew ? t('plans.renewSubscription') || 'Renew Subscription' : t('plans.upgradeToPremium') || 'Upgrade to Premium'}
-                  </Text>
+            {(subscription?.canUpgrade || subscription?.canRenew) && (
+              <>
+                <Text style={[styles.sectionTitle, isDesktop && { marginTop: 40 }]}>
+                  {subscription.canRenew ? t('plans.renewSubscription') || 'Renew Subscription' : t('plans.upgradeToPremium') || 'Upgrade to Premium'}
+                </Text>
 
-                  {renderBillingCycleSelector()}
+                {renderBillingCycleSelector()}
 
-                  {plansLoading ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color={theme.primary.main} />
-                    </View>
-                  ) : plans.length === 0 ? (
-                    <View style={styles.emptyState}>
-                      <Ionicons name="card-outline" size={64} color={theme.border.main} style={styles.emptyStateIcon} />
-                      <Text style={styles.emptyStateTitle}>No Plans Available</Text>
-                      <Text style={styles.emptyStateText}>{MESSAGES.NO_PLANS_AVAILABLE}</Text>
-                    </View>
-                  ) : (
-                    <View style={isDesktop ? { flexDirection: 'row', flexWrap: 'wrap', gap: 20, justifyContent: 'center' } : null}>
-                      {plans.map(renderPlanCard)}
-                    </View>
-                  )}
-                </>
-              )
+                {plansLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={theme.primary.main} />
+                  </View>
+                ) : plans.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Ionicons name="card-outline" size={64} color={theme.border.main} style={styles.emptyStateIcon} />
+                    <Text style={styles.emptyStateTitle}>No Plans Available</Text>
+                    <Text style={styles.emptyStateText}>{MESSAGES.NO_PLANS_AVAILABLE}</Text>
+                  </View>
+                ) : (
+                  <View style={isDesktop ? { flexDirection: 'row', flexWrap: 'wrap', gap: 20, justifyContent: 'center' } : null}>
+                    {plans.map(renderPlanCard)}
+                  </View>
+                )}
+              </>
             )}
           </View>
         </ResponsiveContainer>

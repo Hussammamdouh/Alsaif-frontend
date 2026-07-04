@@ -16,6 +16,7 @@ import {
   Image,
   ActivityIndicator,
   Linking,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -48,10 +49,36 @@ export const PaywallScreen: React.FC = () => {
   };
 
   const handleClose = () => {
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      navigation.navigate('MainTabs' as never);
+    navigation.goBack();
+  };
+
+  const handleRestorePurchases = async () => {
+    try {
+      const { initIAP, endIAP } = require('./subscription.iap');
+      const { getAvailablePurchases } = require('react-native-iap');
+      const apiClient = require('../../core/services/api/apiClient').default;
+
+      await initIAP();
+      const purchases = await getAvailablePurchases();
+      if (purchases && purchases.length > 0) {
+        const latestPurchase = purchases[purchases.length - 1];
+        if (latestPurchase.transactionId) {
+          const response = await apiClient.post('/api/subscriptions/apple/verify', {
+            transactionId: latestPurchase.transactionId
+          }) as any;
+          if (response && response.success) {
+            Alert.alert('Success', 'Your purchases have been restored successfully!');
+            return;
+          }
+        }
+      }
+      Alert.alert('Restore Purchases', 'No active subscription purchases were found to restore.');
+    } catch (error: any) {
+      console.error('[Restore] Failed:', error);
+      Alert.alert('Restore Purchases', 'Failed to restore purchases. Please try again.');
+    } finally {
+      const { endIAP } = require('./subscription.iap');
+      await endIAP();
     }
   };
 
@@ -119,44 +146,21 @@ export const PaywallScreen: React.FC = () => {
                 <Text style={styles.title}>{t('paywall.title')}</Text>
                 <Text style={styles.subtitle}>{t('paywall.subtitle')}</Text>
 
-                {Platform.OS === 'ios' ? (
-                  <View style={styles.iosNoticeCard}>
-                    <Ionicons name="information-circle-outline" size={24} color={theme.primary.main} style={{ marginBottom: 8 }} />
-                    <Text style={styles.iosNoticeTitle}>{t('paywall.iosNoticeTitle')}</Text>
-                    <Text style={styles.iosNoticeText}>{t('paywall.iosNoticeText')}</Text>
-                    <TouchableOpacity
-                      style={styles.portalButton}
-                      activeOpacity={0.8}
-                      onPress={handleContactSupport}
-                    >
-                      <LinearGradient
-                        colors={[theme.primary.main, theme.primary.dark]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.portalButtonGradient}
-                      >
-                        <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
-                        <Ionicons name="mail-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.heroCTA}
-                    activeOpacity={0.8}
-                    onPress={handleChoosePlan}
+                <TouchableOpacity
+                  style={styles.heroCTA}
+                  activeOpacity={0.8}
+                  onPress={handleChoosePlan}
+                >
+                  <LinearGradient
+                    colors={[theme.primary.main, theme.primary.dark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.ctaGradient}
                   >
-                    <LinearGradient
-                      colors={[theme.primary.main, theme.primary.dark]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.ctaGradient}
-                    >
-                      <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
-                      <Ionicons name="arrow-forward" size={20} color="#FFF" />
-                    </LinearGradient>
-                  </TouchableOpacity>
-                )}
+                    <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
+                    <Ionicons name="arrow-forward" size={20} color="#FFF" />
+                  </LinearGradient>
+                </TouchableOpacity>
 
                 <View style={styles.trustMiniRow}>
                   <View style={styles.trustMiniItem}>
@@ -266,48 +270,25 @@ export const PaywallScreen: React.FC = () => {
 
           {!isDesktop && (
             <View style={styles.mobileCTAWrap}>
-              {Platform.OS === 'ios' ? (
-                <View style={styles.iosNoticeCard}>
-                  <Ionicons name="information-circle-outline" size={24} color={theme.primary.main} style={{ marginBottom: 8 }} />
-                  <Text style={styles.iosNoticeTitle}>{t('paywall.iosNoticeTitle')}</Text>
-                  <Text style={styles.iosNoticeText}>{t('paywall.iosNoticeText')}</Text>
-                  <TouchableOpacity
-                    style={styles.portalButton}
-                    activeOpacity={0.8}
-                    onPress={handleContactSupport}
-                  >
-                    <LinearGradient
-                      colors={[theme.primary.main, theme.primary.dark]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.portalButtonGradient}
-                    >
-                      <Text style={styles.portalButtonText}>{t('plans.iosPortalButton')}</Text>
-                      <Ionicons name="mail-outline" size={18} color="#FFF" style={{ marginLeft: 8 }} />
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={styles.ctaButton}
-                  activeOpacity={0.8}
-                  onPress={handleChoosePlan}
+              <TouchableOpacity
+                style={styles.ctaButton}
+                activeOpacity={0.8}
+                onPress={handleChoosePlan}
+              >
+                <LinearGradient
+                  colors={[theme.primary.main, theme.primary.dark]}
+                  style={styles.ctaGradient}
                 >
-                  <LinearGradient
-                    colors={[theme.primary.main, theme.primary.dark]}
-                    style={styles.ctaGradient}
-                  >
-                    <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              )}
+                  <Text style={styles.ctaText}>{t('paywall.explorePlans')}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
           )}
 
           <View style={styles.footerLinks}>
-            {Platform.OS !== 'ios' && (
+            {Platform.OS !== 'web' && (
               <>
-                <TouchableOpacity onPress={() => {/* Restore */ }}>
+                <TouchableOpacity onPress={handleRestorePurchases}>
                   <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
                 </TouchableOpacity>
                 <Text style={styles.linkDot}>•</Text>
