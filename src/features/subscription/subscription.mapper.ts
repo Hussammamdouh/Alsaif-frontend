@@ -59,7 +59,7 @@ export const mapPlanResponse = (apiPlan: any): SubscriptionPlan => {
     name: apiPlan.name,
     tier: apiPlan.tier,
     price: apiPlan.price,
-    currency: apiPlan.currency || 'USD',
+    currency: apiPlan.currency || 'AED',
     billingCycle: cycle,
     features: apiPlan.features || [],
     description: apiPlan.description,
@@ -99,7 +99,7 @@ export const mapCheckoutResponse = (apiCheckout: any): CheckoutSession => {
 /**
  * Format currency amount
  */
-export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
+export const formatCurrency = (amount: number, currency: string = 'AED'): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
