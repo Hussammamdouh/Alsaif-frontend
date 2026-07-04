@@ -149,13 +149,13 @@ export const AdminSubscriptionsScreen: React.FC = () => {
     }
 
     console.log('[AdminSubscriptionsScreen] revoking subscription:', {
-      userId: selectedSubscription.user.id,
+      userId: selectedSubscription.user?.id,
       reason: revokeReason,
       currentStatus: selectedSubscription.status
     });
 
     try {
-      await revokeSubscription(selectedSubscription.user.id, revokeReason);
+      await revokeSubscription(selectedSubscription.user?.id || '', revokeReason);
       console.log('[AdminSubscriptionsScreen] revocation successful');
       setShowRevokeModal(false);
       setFormError('');
@@ -187,8 +187,8 @@ export const AdminSubscriptionsScreen: React.FC = () => {
     if (!subscriptions || subscriptions.length === 0) return;
 
     const exportData = subscriptions.map(sub => ({
-      User: sub.user.name,
-      Email: sub.user.email,
+      User: sub.user?.name || 'Unknown User',
+      Email: sub.user?.email || 'N/A',
       Tier: sub.tier,
       Status: sub.status,
       StartDate: new Date(sub.startDate).toLocaleDateString(),
@@ -218,12 +218,12 @@ export const AdminSubscriptionsScreen: React.FC = () => {
         <View style={localStyles.userHeader}>
           <View style={localStyles.userAvatar}>
             <Text style={localStyles.avatarText}>
-              {item.user.name.substring(0, 2).toUpperCase()}
+              {(item.user?.name || 'Unknown User').substring(0, 2).toUpperCase()}
             </Text>
           </View>
           <View style={localStyles.userInfo}>
-            <Text style={localStyles.userName}>{item.user.name}</Text>
-            <Text style={localStyles.userEmail}>{item.user.email}</Text>
+            <Text style={localStyles.userName}>{item.user?.name || 'Unknown User'}</Text>
+            <Text style={localStyles.userEmail}>{item.user?.email || 'N/A'}</Text>
           </View>
         </View>
 
@@ -455,7 +455,7 @@ export const AdminSubscriptionsScreen: React.FC = () => {
           onClose={() => {
             setShowActionSheet(false);
           }}
-          title={selectedSubscription?.user.name || t('admin.manageSubscription')}
+          title={selectedSubscription?.user?.name || t('admin.manageSubscription')}
           options={[
             {
               label: t('admin.revokeSubscription'),

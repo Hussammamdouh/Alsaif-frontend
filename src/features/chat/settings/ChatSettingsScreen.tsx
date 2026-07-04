@@ -73,6 +73,14 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
     const user = useUser();
     const currentUserId = user?.id || '';
 
+    const showAlert = useCallback((title: string, message: string) => {
+        if (Platform.OS === 'web') {
+            window.alert(`${title}: ${message}`);
+        } else {
+            Alert.alert(title, message);
+        }
+    }, []);
+
     const changeUserRole = useCallback(async (targetUserId: string, permission: 'admin' | 'moderator' | 'member' | 'read_only') => {
         const success = await updateParticipantPermission(targetUserId, permission);
         if (success) {
@@ -267,14 +275,6 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
         const existingIds = new Set((settings?.participants || []).map((p) => p.id));
         return searchResults.filter((u) => !selectedIds.has(u.id) && !existingIds.has(u.id));
     }, [searchResults, selectedMembers, settings?.participants]);
-
-    const showAlert = useCallback((title: string, message: string) => {
-        if (Platform.OS === 'web') {
-            window.alert(`${title}: ${message}`);
-        } else {
-            Alert.alert(title, message);
-        }
-    }, []);
 
     /**
      * Handle leaving the group
