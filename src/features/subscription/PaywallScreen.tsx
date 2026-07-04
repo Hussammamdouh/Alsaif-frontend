@@ -54,25 +54,15 @@ export const PaywallScreen: React.FC = () => {
 
   const handleRestorePurchases = async () => {
     try {
-      const { initIAP, endIAP } = require('./subscription.iap');
-      const { getAvailablePurchases } = require('react-native-iap');
-      const apiClient = require('../../core/services/api/apiClient').default;
+      const { initIAP, endIAP, restoreApplePurchases } = require('./subscription.iap');
 
       await initIAP();
-      const purchases = await getAvailablePurchases();
-      if (purchases && purchases.length > 0) {
-        const latestPurchase = purchases[purchases.length - 1];
-        if (latestPurchase.transactionId) {
-          const response = await apiClient.post('/api/subscriptions/apple/verify', {
-            transactionId: latestPurchase.transactionId
-          }) as any;
-          if (response && response.success) {
-            Alert.alert('Success', 'Your purchases have been restored successfully!');
-            return;
-          }
-        }
+      const success = await restoreApplePurchases();
+      if (success) {
+        Alert.alert('Success', 'Your purchases have been restored successfully!');
+      } else {
+        Alert.alert('Restore Purchases', 'No active subscription purchases were found to restore.');
       }
-      Alert.alert('Restore Purchases', 'No active subscription purchases were found to restore.');
     } catch (error: any) {
       console.error('[Restore] Failed:', error);
       Alert.alert('Restore Purchases', 'Failed to restore purchases. Please try again.');

@@ -1,12 +1,4 @@
 import { Platform, Alert } from 'react-native';
-import {
-  initConnection,
-  endConnection,
-  clearTransactionIOS,
-  fetchProducts,
-  requestPurchase,
-  finishTransaction
-} from 'react-native-iap';
 import apiClient from '../../core/services/api/apiClient';
 
 /**
@@ -15,6 +7,7 @@ import apiClient from '../../core/services/api/apiClient';
 export const initIAP = async (): Promise<boolean> => {
   if (Platform.OS === 'web') return false;
   try {
+    const { initConnection, clearTransactionIOS } = require('react-native-iap');
     await initConnection();
     if (Platform.OS === 'ios') {
       // Clear outstanding transactions on iOS to prevent blocked queues
@@ -34,6 +27,7 @@ export const initIAP = async (): Promise<boolean> => {
 export const endIAP = async (): Promise<void> => {
   if (Platform.OS === 'web') return;
   try {
+    const { endConnection } = require('react-native-iap');
     await endConnection();
     console.log('[IAP] Connection closed');
   } catch (error) {
@@ -51,6 +45,8 @@ export const purchaseAppleSubscription = async (
   if (Platform.OS !== 'ios') return false;
 
   try {
+    const { fetchProducts, requestPurchase, finishTransaction } = require('react-native-iap');
+
     // 1. Ensure connection is active
     await initIAP();
 
@@ -113,5 +109,34 @@ export const purchaseAppleSubscription = async (
     return false;
   } finally {
     await endIAP();
+  }
+};
+
+/**
+ * Restore active Apple purchases
+ */
+export const restoreApplePurchases = async (): Promise<boolean> => {
+  if (Platform.OS !== 'ios') return false;
+
+  try {
+    const { getAvailablePurchases } = require('react-native-iap');
+    const purchases = await getAvailablePurchases();
+    if (purchases && purchases.length > 0) {
+      const latestPurchase = purchases[purchases.length - 1];
+      const transactionId = latestPurchase.transactionId;
+      if (transactionId) {
+        console.log(`[IAP] Restoring transaction: ${transactionId}`);
+        const response = await apiClient.post('/api/subscriptions/apple/verify', {
+          transactionId
+        }) as any;
+        if (response && response.success) {
+          return true;
+        }
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error('[IAP] Restore purchases failed:', error);
+    throw error;
   }
 };
