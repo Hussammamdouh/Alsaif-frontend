@@ -21,6 +21,7 @@ import {
 } from './subscription.mapper';
 import { API_ENDPOINTS, MESSAGES } from './subscription.constants';
 import { mapStripeError } from './subscription.utils';
+import { purchaseAppleSubscription } from './subscription.iap';
 
 /**
  * Hook to manage current user's subscription
@@ -212,11 +213,23 @@ export const useCheckout = () => {
         const isIOS = Platform.OS === 'ios';
 
         if (isIOS) {
-          Alert.alert(
-            'Subscription Notice',
-            'Subscription plans and upgrades are managed on our website. Please log in with a premium account.'
-          );
-          return false;
+          console.log(`[useCheckout] Initiating iOS In-App Purchase for plan: ${planId}`);
+          // Fetch plans from API to retrieve the appleProductId
+          const plansResponse = await apiClient.get(API_ENDPOINTS.SUBSCRIPTION_PLANS) as any;
+          if (!plansResponse.success || !plansResponse.data?.plans) {
+            throw new Error('Failed to load subscription plans details.');
+          }
+          const targetPlan = plansResponse.data.plans.find((p: any) => p._id === planId);
+          if (!targetPlan || !targetPlan.appleProductId) {
+            throw new Error('This plan is not configured for In-App Purchase on iOS.');
+          }
+
+          // Trigger native StoreKit purchase flow
+          const success = await purchaseAppleSubscription(targetPlan.appleProductId, () => {
+            // Success callback - verification completed
+            console.log('[useCheckout] Apple subscription verified successfully.');
+          });
+          return success;
         }
 
         if (isWeb) {
@@ -312,11 +325,9 @@ export const useCheckout = () => {
           const isIOS = Platform.OS === 'ios';
 
           if (isIOS) {
-            Alert.alert(
-              'Subscription Notice',
-              'Subscription renewals and plans are managed on our website. Please log in with a premium account.'
-            );
-            return false;
+            // iOS: Auto-renewing subscriptions are managed by StoreKit.
+            // If manual renewal is requested, route via regular In-App Purchase checkout.
+            return initiateCheckout(planId, billingCycle);
           }
 
           if (isWeb) {

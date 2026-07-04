@@ -64,6 +64,9 @@ export const mapPlanResponse = (apiPlan: any): SubscriptionPlan => {
     features: apiPlan.features || [],
     description: apiPlan.description,
     isFeatured: apiPlan.isFeatured || false,
+    stripeProductId: apiPlan.stripeProductId,
+    stripePriceId: apiPlan.stripePriceId,
+    appleProductId: apiPlan.appleProductId,
   };
 };
 

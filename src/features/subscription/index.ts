@@ -23,6 +23,9 @@ export {
 // Access Control Hook
 export { useSubscriptionAccess } from './useSubscriptionAccess';
 
+// StoreKit In-App Purchases
+export { purchaseAppleSubscription, initIAP, endIAP } from './subscription.iap';
+
 // Types
 export type {
   SubscriptionTier,

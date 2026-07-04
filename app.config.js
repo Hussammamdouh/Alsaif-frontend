@@ -63,6 +63,7 @@ export default {
     plugins: [
       "@react-native-firebase/app",
       "@react-native-community/datetimepicker",
+      "react-native-iap",
       [
         "onesignal-expo-plugin",
         {

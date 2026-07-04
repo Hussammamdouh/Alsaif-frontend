@@ -28,6 +28,7 @@ export interface SubscriptionPlan {
   isFeatured: boolean;
   stripeProductId?: string;
   stripePriceId?: string;
+  appleProductId?: string;
 }
 
 export interface UserSubscription {
