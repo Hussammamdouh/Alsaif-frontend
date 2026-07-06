@@ -6,13 +6,10 @@ export default {
     orientation: "portrait",
     icon: "./assets/Logo Secondry.jpg",
     userInterfaceStyle: "automatic",
-    newArchEnabled: false,
+    newArchEnabled: true,
     scheme: "alsaif-analysis",
     updates: {
-      url: "https://u.expo.dev/e6f53f3b-43d3-4d4b-bbba-cfc35c5cd92b"
-    },
-    runtimeVersion: {
-      policy: "appVersion"
+      enabled: false
     },
     experiments: {
       tsconfigPaths: true
