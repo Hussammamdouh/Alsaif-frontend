@@ -122,6 +122,29 @@ export const PdfViewerScreen: React.FC = () => {
         setViewerMode(prev => prev === 'google' ? 'direct' : 'google');
     };
 
+    const handleBack = () => {
+        if (navigation.canGoBack()) {
+            navigation.goBack();
+        } else {
+            if (Platform.OS === 'web') {
+                const hasBrowserHistory = typeof window !== 'undefined' && window.history && window.history.length > 1;
+                if (hasBrowserHistory) {
+                    window.history.back();
+                    // Fallback to redirecting to disclosures if history back didn't navigate away in 150ms
+                    setTimeout(() => {
+                        try {
+                            navigation.navigate('MainTabs', { screen: 'DisclosuresTab' });
+                        } catch (e) {}
+                    }, 150);
+                } else {
+                    navigation.navigate('MainTabs', { screen: 'DisclosuresTab' });
+                }
+            } else {
+                navigation.navigate('MainTabs', { screen: 'DisclosuresTab' });
+            }
+        }
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
             {/* Ambient background decoration for web-feel */}
@@ -145,7 +168,7 @@ export const PdfViewerScreen: React.FC = () => {
                 <ResponsiveContainer maxWidth={1200}>
                     <View style={styles.headerInner}>
                         <TouchableOpacity
-                            onPress={() => navigation.goBack()}
+                            onPress={handleBack}
                             style={[styles.headerButton, { backgroundColor: theme.background.tertiary }]}
                         >
                             <Ionicons name="chevron-back" size={24} color={theme.text.primary} />
