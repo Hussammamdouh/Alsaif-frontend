@@ -465,5 +465,22 @@ export const createSubscriptionStyles = (theme: ColorPalette, isRTL: boolean) =>
       marginLeft: isRTL ? 12 : 0,
       padding: 4,
     },
+    maintenanceBanner: {
+      flexDirection: isRTL ? 'row-reverse' : 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      padding: 16,
+      borderRadius: 12,
+      marginHorizontal: 16,
+      marginBottom: 20,
+      gap: 12,
+    },
+    maintenanceText: {
+      fontSize: 14,
+      color: '#EF4444',
+      fontWeight: '600',
+      flex: 1,
+      textAlign: isRTL ? 'right' : 'left',
+    },
   });
 };

@@ -560,6 +560,7 @@ const translations = {
     'plans.promoPlaceholder': 'Enter code',
     'plans.apply': 'Apply',
     'plans.temporarilyDisabled': 'Promo codes are temporarily disabled',
+    'plans.pausedMessage': 'Subscriptions are temporarily paused. Payments and new purchases are disabled.',
     'plans.loginMessage': 'Log in or create an account to choose a plan and start your premium journey.',
 
     // Settings Screen
@@ -1906,6 +1907,7 @@ const translations = {
     'plans.promoPlaceholder': 'أدخل الكود',
     'plans.apply': 'تطبيق',
     'plans.temporarilyDisabled': 'أكواد الخصم معطلة مؤقتاً',
+    'plans.pausedMessage': 'الاشتراكات معطلة مؤقتًا. عمليات الدفع والشراء الجديدة غير متاحة.',
     'plans.loginMessage': 'سجل الدخول أو أنشئ حساباً لاختيار خطة وبدء رحلتك المميزة.',
 
     // Settings Screen

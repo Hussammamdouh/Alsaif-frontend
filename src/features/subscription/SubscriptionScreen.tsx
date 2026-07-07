@@ -26,6 +26,7 @@ import {
   useSubscription,
   useSubscriptionPlans,
   useCheckout,
+  useSystemSettings,
 } from './subscription.hooks';
 import {
   TIER_COLORS,
@@ -51,6 +52,7 @@ export const SubscriptionScreen: React.FC = () => {
   const { subscription, loading: subLoading, refetch, cancelSubscription } = useSubscription();
   const { plans, loading: plansLoading } = useSubscriptionPlans();
   const { loading: checkoutLoading, initiateCheckout, initiateRenewal, initiateWebPortal } = useCheckout();
+  const { settings } = useSystemSettings();
 
   const handleContactSupport = () => {
     const email = 'info@alsaifanalysis.com';
@@ -227,6 +229,9 @@ export const SubscriptionScreen: React.FC = () => {
 
     const isCurrentPlan = subscription?.tier === plan.tier && subscription?.status === 'active';
     const canSelect = subscription?.canUpgrade || subscription?.canRenew;
+    const isPaused = settings?.isSubscriptionsPaused === true;
+    const isNewDisabled = settings?.isNewSubscriptionsEnabled === false;
+    const isSelectionDisabled = isCurrentPlan || !canSelect || checkoutLoading || isPaused || isNewDisabled;
 
     return (
       <View
@@ -282,7 +287,7 @@ export const SubscriptionScreen: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.selectButton,
-            (isCurrentPlan || !canSelect || checkoutLoading) && styles.selectButtonDisabled,
+            isSelectionDisabled && styles.selectButtonDisabled,
           ]}
           onPress={() => {
             if (subscription?.canRenew) {
@@ -291,7 +296,7 @@ export const SubscriptionScreen: React.FC = () => {
               handleUpgrade(plan._id);
             }
           }}
-          disabled={isCurrentPlan || !canSelect || checkoutLoading}
+          disabled={isSelectionDisabled}
           activeOpacity={0.7}
         >
           <Text style={styles.selectButtonText}>
@@ -386,6 +391,18 @@ export const SubscriptionScreen: React.FC = () => {
                 </Text>
 
                 {renderBillingCycleSelector()}
+
+                {/* Maintenance Message */}
+                {settings && (!settings.isNewSubscriptionsEnabled || settings.isSubscriptionsPaused) && (
+                  <View style={styles.maintenanceBanner}>
+                    <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                    <Text style={styles.maintenanceText}>
+                      {settings.isSubscriptionsPaused
+                        ? t('plans.pausedMessage')
+                        : (settings.subscriptionDisabledMessage || t('plans.temporarilyDisabled'))}
+                    </Text>
+                  </View>
+                )}
 
                 {plansLoading ? (
                   <View style={styles.loadingContainer}>

@@ -812,7 +812,10 @@ export const AdminSystemControlScreen: React.FC = () => {
       <ConfirmationModal
         visible={isMaintenanceModalVisible}
         onClose={() => setIsMaintenanceModalVisible(false)}
-        onConfirm={async () => { await runDatabaseMaintenance(); }}
+        onConfirm={async () => {
+          setIsMaintenanceModalVisible(false);
+          await runDatabaseMaintenance();
+        }}
         title={t('admin.maintenanceConfirmTitle')}
         message={t('admin.maintenanceConfirmMessage')}
         confirmText={t('common.confirm')}
@@ -824,7 +827,10 @@ export const AdminSystemControlScreen: React.FC = () => {
       <ConfirmationModal
         visible={isResetMetricsModalVisible}
         onClose={() => setIsResetMetricsModalVisible(false)}
-        onConfirm={async () => { await resetPerformanceMetrics(); }}
+        onConfirm={async () => {
+          setIsResetMetricsModalVisible(false);
+          await resetPerformanceMetrics();
+        }}
         title={t('admin.resetMetricsConfirmTitle')}
         message={t('admin.resetMetricsConfirmMessage')}
         confirmText={t('common.confirm')}
@@ -837,7 +843,10 @@ export const AdminSystemControlScreen: React.FC = () => {
       <ConfirmationModal
         visible={isRetryJobsModalVisible}
         onClose={() => setIsRetryJobsModalVisible(false)}
-        onConfirm={async () => { await retryFailedJobs(); }}
+        onConfirm={async () => {
+          setIsRetryJobsModalVisible(false);
+          await retryFailedJobs();
+        }}
         title={t('admin.retryJobsConfirmTitle')}
         message={t('admin.retryJobsConfirmMessage')}
         confirmText={t('common.confirm')}
@@ -849,7 +858,10 @@ export const AdminSystemControlScreen: React.FC = () => {
       <ConfirmationModal
         visible={isClearJobsModalVisible}
         onClose={() => setIsClearJobsModalVisible(false)}
-        onConfirm={async () => { await clearFailedJobs(); }}
+        onConfirm={async () => {
+          setIsClearJobsModalVisible(false);
+          await clearFailedJobs();
+        }}
         title={t('admin.clearJobsConfirmTitle')}
         message={t('admin.clearJobsConfirmMessage')}
         confirmText={t('common.confirm')}
@@ -862,7 +874,10 @@ export const AdminSystemControlScreen: React.FC = () => {
       <ConfirmationModal
         visible={isPauseSubsModalVisible}
         onClose={() => setIsPauseSubsModalVisible(false)}
-        onConfirm={() => toggleSubscriptionPause()}
+        onConfirm={async () => {
+          setIsPauseSubsModalVisible(false);
+          await toggleSubscriptionPause();
+        }}
         title={t('admin.pauseSubsConfirmTitle')}
         message={t('admin.pauseSubsConfirmMessage')}
         confirmText={t('common.confirm')}
@@ -874,7 +889,10 @@ export const AdminSystemControlScreen: React.FC = () => {
       <ConfirmationModal
         visible={isToggleNewSubsModalVisible}
         onClose={() => setIsToggleNewSubsModalVisible(false)}
-        onConfirm={() => toggleNewSubscriptions(!settings?.isNewSubscriptionsEnabled, lockoutMsg)}
+        onConfirm={async () => {
+          setIsToggleNewSubsModalVisible(false);
+          await toggleNewSubscriptions(!settings?.isNewSubscriptionsEnabled, lockoutMsg);
+        }}
         title={t('admin.toggleNewSubsConfirmTitle')}
         message={t('admin.toggleNewSubsConfirmMessage')}
         confirmText={t('common.confirm')}

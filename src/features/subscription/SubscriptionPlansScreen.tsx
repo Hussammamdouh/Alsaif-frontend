@@ -257,11 +257,13 @@ export const SubscriptionPlansScreen: React.FC = () => {
             </View>
 
             {/* Maintenance Message */}
-            {settings && !settings.isNewSubscriptionsEnabled && (
+            {settings && (!settings.isNewSubscriptionsEnabled || settings.isSubscriptionsPaused) && (
               <View style={styles.maintenanceBanner}>
                 <Ionicons name="alert-circle" size={20} color="#EF4444" />
                 <Text style={styles.maintenanceText}>
-                  {settings.subscriptionDisabledMessage || t('plans.temporarilyDisabled')}
+                  {settings.isSubscriptionsPaused
+                    ? t('plans.pausedMessage')
+                    : (settings.subscriptionDisabledMessage || t('plans.temporarilyDisabled'))}
                 </Text>
               </View>
             )}
@@ -271,6 +273,10 @@ export const SubscriptionPlansScreen: React.FC = () => {
               {plans.map((plan) => {
                 const featured = isFeaturedPlan(plan);
                 const { displayPrice, originalPrice, hasDiscount } = getPriceData(plan);
+
+                const isSelectionDisabled = checkoutLoading ||
+                  settings?.isNewSubscriptionsEnabled === false ||
+                  settings?.isSubscriptionsPaused === true;
 
                 return (
                   <View key={plan._id} style={[styles.planCard, featured && styles.planCardFeatured]}>
@@ -319,10 +325,10 @@ export const SubscriptionPlansScreen: React.FC = () => {
                       <TouchableOpacity
                         style={[
                           styles.actionBtnFeatured,
-                          (checkoutLoading || settings?.isNewSubscriptionsEnabled === false) && styles.btnDisabled
+                          isSelectionDisabled && styles.btnDisabled
                         ]}
                         onPress={() => handleSelectPlan(plan._id)}
-                        disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
+                        disabled={isSelectionDisabled}
                       >
                         <LinearGradient
                           colors={[theme.primary.main, theme.primary.dark]}
@@ -338,10 +344,10 @@ export const SubscriptionPlansScreen: React.FC = () => {
                       <TouchableOpacity
                         style={[
                           styles.actionBtn,
-                          (settings?.isNewSubscriptionsEnabled === false || checkoutLoading) && styles.btnDisabled
+                          isSelectionDisabled && styles.btnDisabled
                         ]}
                         onPress={() => handleSelectPlan(plan._id)}
-                        disabled={checkoutLoading || settings?.isNewSubscriptionsEnabled === false}
+                        disabled={isSelectionDisabled}
                       >
                         {checkoutLoading && pendingPlanId === plan._id ? (
                           <ActivityIndicator color={theme.primary.main} />
