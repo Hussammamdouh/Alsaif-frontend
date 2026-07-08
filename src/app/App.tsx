@@ -6,10 +6,21 @@
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
-import * as QuickActions from 'expo-quick-actions';
 import { AppProviders } from './providers';
 import { RootNavigator } from './navigation';
 import { AppLockWrapper } from '../shared/components';
+
+// Dynamically resolve quick actions module on native platforms
+const getQuickActionsModule = () => {
+  if (Platform.OS !== 'web') {
+    try {
+      return require('expo-quick-actions');
+    } catch (e) {
+      console.warn('[QuickActions] Failed to import expo-quick-actions:', e);
+    }
+  }
+  return null;
+};
 
 /**
  * Branded Scrollbar for Web
@@ -47,7 +58,8 @@ const GlobalStyles = () => {
 
 const App: React.FC = () => {
   useEffect(() => {
-    if (Platform.OS !== 'web') {
+    const QuickActions = getQuickActionsModule();
+    if (QuickActions) {
       // Set quick action items on device home screen
       QuickActions.setItems([
         {
@@ -67,7 +79,7 @@ const App: React.FC = () => {
       ]);
 
       // Listen to quick action taps while app is running
-      const sub = QuickActions.addListener((action) => {
+      const sub = QuickActions.addListener((action: any) => {
         if (action?.params?.url) {
           Linking.openURL(action.params.url).catch((err) =>
             console.error('[QuickActions] Failed to open URL:', err)
@@ -77,14 +89,14 @@ const App: React.FC = () => {
 
       // Handle initial action if the app was launched by tapping a shortcut
       QuickActions.initialAction()
-        .then((action) => {
+        .then((action: any) => {
           if (action?.params?.url) {
             Linking.openURL(action.params.url).catch((err) =>
               console.error('[QuickActions] Failed to open initial URL:', err)
             );
           }
         })
-        .catch((err) => console.error('[QuickActions] Initial action error:', err));
+        .catch((err: any) => console.error('[QuickActions] Initial action error:', err));
 
       return () => {
         sub.remove();

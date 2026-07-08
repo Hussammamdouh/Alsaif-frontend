@@ -5,10 +5,21 @@
 
 import { apiClient } from '../api/apiClient';
 import { Platform } from 'react-native';
-import UserDefaults from '@alevy97/react-native-userdefaults';
 import { saveMarketDataToCache, getMarketDataFromCache } from '../../../shared/services/offlineCache';
 
-const sharedDefaults = Platform.OS === 'ios' ? new UserDefaults('group.com.alsaifanalysis.com') : null;
+const getSharedDefaults = () => {
+  if (Platform.OS === 'ios') {
+    try {
+      const UserDefaults = require('@alevy97/react-native-userdefaults').default;
+      return new UserDefaults('group.com.alsaifanalysis.com');
+    } catch (e) {
+      console.warn('[MarketService] Failed to load react-native-userdefaults:', e);
+    }
+  }
+  return null;
+};
+
+const sharedDefaults = getSharedDefaults();
 
 // Types
 export interface MarketTicker {

@@ -1,10 +1,21 @@
-import ExpoCoreSpotlight from 'expo-core-spotlight';
 import { Platform } from 'react-native';
 
 /**
  * iOS Spotlight Search Service
  * Indexes content in the Apple search directory to enable deep links from outside the app
  */
+
+// Dynamically resolve the native module on iOS only to prevent web/android import crashes
+const getSpotlightModule = () => {
+  if (Platform.OS === 'ios') {
+    try {
+      return require('expo-core-spotlight').default;
+    } catch (e) {
+      console.warn('[SpotlightService] Failed to import expo-core-spotlight:', e);
+    }
+  }
+  return null;
+};
 
 /**
  * Index a list of Disclosures in Spotlight
@@ -13,6 +24,9 @@ export const indexDisclosuresInSpotlight = async (disclosures: any[]): Promise<v
   if (Platform.OS !== 'ios') return;
 
   try {
+    const ExpoCoreSpotlight = getSpotlightModule();
+    if (!ExpoCoreSpotlight) return;
+
     const isAvail = await ExpoCoreSpotlight.isAvailable();
     if (!isAvail) return;
 
@@ -32,7 +46,6 @@ export const indexDisclosuresInSpotlight = async (disclosures: any[]): Promise<v
       };
     });
 
-    // Index all items batch
     await ExpoCoreSpotlight.indexItems(items);
     console.log('[SpotlightService] Successfully indexed disclosures count:', items.length);
   } catch (error) {
@@ -51,6 +64,9 @@ export const indexMarketSymbolInSpotlight = async (
   if (Platform.OS !== 'ios') return;
 
   try {
+    const ExpoCoreSpotlight = getSpotlightModule();
+    if (!ExpoCoreSpotlight) return;
+
     const isAvail = await ExpoCoreSpotlight.isAvailable();
     if (!isAvail) return;
 
@@ -77,6 +93,9 @@ export const clearAllSpotlightItems = async (): Promise<void> => {
   if (Platform.OS !== 'ios') return;
 
   try {
+    const ExpoCoreSpotlight = getSpotlightModule();
+    if (!ExpoCoreSpotlight) return;
+
     const isAvail = await ExpoCoreSpotlight.isAvailable();
     if (!isAvail) return;
 
