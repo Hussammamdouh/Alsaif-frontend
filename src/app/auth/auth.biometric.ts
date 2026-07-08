@@ -3,7 +3,7 @@
  * Handles Face ID, Touch ID, and Fingerprint authentication
  */
 
-import * as Keychain from '../../core/utils/keychain-stub';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { Platform } from 'react-native';
 import { BiometricAvailability, BiometricType } from './auth.types';
 
@@ -13,53 +13,56 @@ import { BiometricAvailability, BiometricType } from './auth.types';
  *
  * @returns Biometric availability status
  */
-export const checkBiometricAvailability =
-  async (): Promise<BiometricAvailability> => {
-    try {
-      const biometryType = await Keychain.getSupportedBiometryType();
+export const checkBiometricAvailability = async (): Promise<BiometricAvailability> => {
+  if (Platform.OS === 'web') {
+    return {
+      available: false,
+      biometryType: null,
+      error: 'Biometric authentication is not supported on web',
+    };
+  }
 
-      if (!biometryType) {
-        return {
-          available: false,
-          biometryType: null,
-          error: 'Biometric authentication is not available on this device',
-        };
-      }
-
-      // Map keychain biometry type to our enum
-      const mappedType = mapBiometryType(biometryType);
-
-      return {
-        available: true,
-        biometryType: mappedType,
-      };
-    } catch (error) {
-      console.error('[Biometric] Failed to check availability:', error);
+  try {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    if (!hasHardware) {
       return {
         available: false,
         biometryType: null,
-        error: 'Failed to check biometric availability',
+        error: 'Biometric hardware is not available on this device',
       };
     }
-  };
 
-/**
- * Map Keychain Biometry Type to Our Enum
- */
-const mapBiometryType = (
-  keychainType: Keychain.BIOMETRY_TYPE
-): BiometricType => {
-  switch (keychainType) {
-    case Keychain.BIOMETRY_TYPE.FACE_ID:
-      return BiometricType.FACE_ID;
-    case Keychain.BIOMETRY_TYPE.TOUCH_ID:
-      return BiometricType.TOUCH_ID;
-    case Keychain.BIOMETRY_TYPE.FINGERPRINT:
-      return BiometricType.FINGERPRINT;
-    case Keychain.BIOMETRY_TYPE.IRIS:
-      return BiometricType.IRIS;
-    default:
-      return BiometricType.FINGERPRINT;
+    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+    if (!isEnrolled) {
+      return {
+        available: false,
+        biometryType: null,
+        error: 'No biometric credentials enrolled on this device',
+      };
+    }
+
+    const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+    let biometryType: BiometricType = BiometricType.FINGERPRINT;
+
+    if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+      biometryType = BiometricType.FACE_ID;
+    } else if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+      biometryType = BiometricType.FINGERPRINT;
+    } else if (types.includes(LocalAuthentication.AuthenticationType.IRIS)) {
+      biometryType = BiometricType.IRIS;
+    }
+
+    return {
+      available: true,
+      biometryType,
+    };
+  } catch (error) {
+    console.error('[Biometric] Failed to check availability:', error);
+    return {
+      available: false,
+      biometryType: null,
+      error: 'Failed to check biometric availability',
+    };
   }
 };
 
@@ -115,16 +118,7 @@ export const getBiometricEnableMessage = (
 export const validateBiometricSecurity = async (): Promise<boolean> => {
   try {
     const availability = await checkBiometricAvailability();
-
-    if (!availability.available) {
-      return false;
-    }
-
-    // Additional security checks can go here
-    // e.g., check if device is rooted/jailbroken
-    // e.g., verify hardware-backed keystore
-
-    return true;
+    return availability.available;
   } catch (error) {
     console.error('[Biometric] Security validation failed:', error);
     return false;

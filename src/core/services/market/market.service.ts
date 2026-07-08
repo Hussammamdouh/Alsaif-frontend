@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from '../api/apiClient';
+import { saveMarketDataToCache, getMarketDataFromCache } from '../../../shared/services/offlineCache';
 
 // Types
 export interface MarketTicker {
@@ -40,7 +41,25 @@ export const marketService = {
      * Optimized for startup
      */
     getAllMarketData: async (): Promise<MarketResponse> => {
-        return apiClient.get<MarketResponse>('/api/market/all', undefined, false);
+        try {
+            const response = await apiClient.get<MarketResponse>('/api/market/all', undefined, false);
+            if (response && response.success && response.data) {
+                saveMarketDataToCache(response.data);
+            }
+            return response;
+        } catch (error) {
+            console.warn('[MarketService] Failed to fetch market data, loading from cache fallback:', error);
+            const cached = await getMarketDataFromCache();
+            if (cached.data && cached.data.length > 0) {
+                return {
+                    success: true,
+                    data: cached.data,
+                    count: cached.data.length,
+                    timestamp: cached.timestamp ? new Date(cached.timestamp).toISOString() : new Date().toISOString(),
+                };
+            }
+            throw error;
+        }
     },
 
     /**

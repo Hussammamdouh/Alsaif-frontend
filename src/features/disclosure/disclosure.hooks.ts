@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDisclosures, Disclosure } from './disclosure.api';
+import { saveDisclosuresToCache, getDisclosuresFromCache } from '../../shared/services/offlineCache';
 
 export type ExchangeFilter = 'ALL' | 'DFM' | 'ADX';
 
@@ -37,6 +38,10 @@ export const useDisclosures = (limit: number = 5, initialExchange?: ExchangeFilt
 
             if (isRefresh || pageNum === 1) {
                 setDisclosures(fetchedData);
+                // Save first page data to offline cache
+                if (fetchedData.length > 0) {
+                    saveDisclosuresToCache(filter, fetchedData);
+                }
             } else {
                 setDisclosures(prev => [...prev, ...fetchedData]);
             }
@@ -45,6 +50,16 @@ export const useDisclosures = (limit: number = 5, initialExchange?: ExchangeFilt
             setError(null);
         } catch (e: any) {
             setError(e.message || 'Failed to fetch disclosures');
+            
+            // Offline fallback for the initial page load
+            if (pageNum === 1) {
+                const cached = await getDisclosuresFromCache(filter);
+                if (cached.data && cached.data.length > 0) {
+                    setDisclosures(cached.data);
+                    setHasMore(false);
+                    setError(null); // Clear error because we loaded cached data
+                }
+            }
         } finally {
             setLoading(false);
             setRefreshing(false);

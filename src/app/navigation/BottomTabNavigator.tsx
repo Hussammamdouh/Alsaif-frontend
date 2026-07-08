@@ -13,6 +13,7 @@ import { useAuth } from '../auth';
 import { useLocalization } from '../providers/LocalizationProvider';
 import { useTheme } from '../providers/ThemeProvider';
 import { spacing } from '../../core/theme/spacing';
+import { triggerHaptic } from '../../shared/utils/haptics';
 
 // Import Tab Screens
 import { HomeScreen } from '../../features/home/HomeScreen';
@@ -169,6 +170,11 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
               <TabIcon name="home-outline" color={color} focused={focused} />
             ),
           }}
+          listeners={{
+            tabPress: () => {
+              triggerHaptic('light');
+            },
+          }}
           component={HomeScreen}
         />
 
@@ -180,6 +186,11 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
             tabBarIcon: ({ color, focused }) => (
               <TabIcon name="bar-chart-outline" color={color} focused={focused} />
             ),
+          }}
+          listeners={{
+            tabPress: () => {
+              triggerHaptic('light');
+            },
           }}
         >
           {() => (
@@ -203,6 +214,11 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
               <TabIcon name="chatbubbles-outline" color={color} focused={focused} />
             ),
           }}
+          listeners={{
+            tabPress: () => {
+              triggerHaptic('light');
+            },
+          }}
         >
           {() => (
             <ChatListScreen
@@ -223,6 +239,11 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
             tabBarIcon: ({ color, focused }) => (
               <TabIcon name="person-outline" color={color} focused={focused} />
             ),
+          }}
+          listeners={{
+            tabPress: () => {
+              triggerHaptic('light');
+            },
           }}
         >
           {() => (
@@ -249,6 +270,11 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
               tabBarIcon: ({ color, focused }) => (
                 <TabIcon name="shield-outline" color={color} focused={focused} />
               ),
+            }}
+            listeners={{
+              tabPress: () => {
+                triggerHaptic('light');
+              },
             }}
             component={AdminDashboardScreen}
           />

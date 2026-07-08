@@ -233,7 +233,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
      * Handle biometric authentication
      */
     const handleBiometricAuth = useCallback(async () => {
-      if (!biometricEnabled) {
+      if (!biometricEnabled || !hasSavedSession) {
+        const biometricName = biometricType === 'FaceID' ? 'Face ID' : biometricType === 'TouchID' ? 'Touch ID' : 'Biometrics';
+        Alert.alert(
+          `${biometricName} Setup`,
+          `Please log in with your email and password first. You will be prompted to enable ${biometricName} for subsequent logins.`,
+          [{ text: 'OK' }]
+        );
         return;
       }
 
@@ -248,7 +254,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
           [{ text: 'OK' }]
         );
       }
-    }, [biometricEnabled, loginWithBiometric, onLoginSuccess]);
+    }, [biometricEnabled, biometricType, hasSavedSession, loginWithBiometric, onLoginSuccess]);
 
     // Auto-trigger biometric authentication if enabled and we have a saved session
     useEffect(() => {
@@ -459,7 +465,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = React.memo(
                       </View>
 
                       {/* Biometric Auth */}
-                      {biometricEnabled && hasSavedSession && (
+                      {biometricAvailable && (
                         <TouchableOpacity
                           style={styles.biometricContainer}
                           onPress={handleBiometricAuth}

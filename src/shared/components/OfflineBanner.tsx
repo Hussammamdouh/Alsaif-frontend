@@ -6,6 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Ionicons as Icon } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme as staticTheme } from '../../core/theme';
 import { useIsOnline } from '../../core/utils/network';
@@ -18,6 +19,7 @@ import { useTheme } from '../../app/providers/ThemeProvider';
 export const OfflineBanner: React.FC = () => {
   const isOnline = useIsOnline();
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   // Don't render anything if online
   if (isOnline) {
@@ -25,7 +27,13 @@ export const OfflineBanner: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.accent.error }]}>
+    <View style={[
+      styles.container, 
+      { 
+        backgroundColor: theme.accent.error,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 12) : 12 
+      }
+    ]}>
       <View style={styles.content}>
         <Icon
           name="cloud-offline-outline"
