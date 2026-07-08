@@ -88,15 +88,12 @@ const App: React.FC = () => {
       });
 
       // Handle initial action if the app was launched by tapping a shortcut
-      QuickActions.initialAction()
-        .then((action: any) => {
-          if (action?.params?.url) {
-            Linking.openURL(action.params.url).catch((err) =>
-              console.error('[QuickActions] Failed to open initial URL:', err)
-            );
-          }
-        })
-        .catch((err: any) => console.error('[QuickActions] Initial action error:', err));
+      const launchAction = QuickActions.initial;
+      if (launchAction?.params?.url) {
+        Linking.openURL(launchAction.params.url).catch((err) =>
+          console.error('[QuickActions] Failed to open initial URL:', err)
+        );
+      }
 
       return () => {
         sub.remove();
