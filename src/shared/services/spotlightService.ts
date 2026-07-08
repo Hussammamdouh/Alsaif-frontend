@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { requireNativeModule } from 'expo';
 
 /**
  * iOS Spotlight Search Service
@@ -9,9 +10,13 @@ import { Platform } from 'react-native';
 const getSpotlightModule = () => {
   if (Platform.OS === 'ios') {
     try {
-      return require('expo-core-spotlight').default;
+      // Pre-flight check: see if the native module is actually compiled into the binary
+      const nativeModule = requireNativeModule('ExpoCoreSpotlight');
+      if (nativeModule) {
+        return require('expo-core-spotlight').default;
+      }
     } catch (e) {
-      console.warn('[SpotlightService] Failed to import expo-core-spotlight:', e);
+      console.warn('[SpotlightService] ExpoCoreSpotlight native module is not compiled in this binary:', e);
     }
   }
   return null;

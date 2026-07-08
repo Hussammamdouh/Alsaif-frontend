@@ -1,11 +1,7 @@
-/**
- * App Component
- * Main application entry point
- */
-
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
+import { requireNativeModule } from 'expo';
 import { AppProviders } from './providers';
 import { RootNavigator } from './navigation';
 import { AppLockWrapper } from '../shared/components';
@@ -14,9 +10,13 @@ import { AppLockWrapper } from '../shared/components';
 const getQuickActionsModule = () => {
   if (Platform.OS !== 'web') {
     try {
-      return require('expo-quick-actions');
+      // Pre-flight check: see if the native module is compiled into the binary
+      const nativeModule = requireNativeModule('ExpoQuickActions');
+      if (nativeModule) {
+        return require('expo-quick-actions');
+      }
     } catch (e) {
-      console.warn('[QuickActions] Failed to import expo-quick-actions:', e);
+      console.warn('[QuickActions] ExpoQuickActions native module is not compiled in this binary:', e);
     }
   }
   return null;
