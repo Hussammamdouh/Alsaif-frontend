@@ -4,7 +4,11 @@
  */
 
 import { apiClient } from '../api/apiClient';
+import { Platform } from 'react-native';
+import UserDefaults from '@alevy97/react-native-userdefaults';
 import { saveMarketDataToCache, getMarketDataFromCache } from '../../../shared/services/offlineCache';
+
+const sharedDefaults = Platform.OS === 'ios' ? new UserDefaults('group.com.alsaifanalysis.com') : null;
 
 // Types
 export interface MarketTicker {
@@ -45,12 +49,20 @@ export const marketService = {
             const response = await apiClient.get<MarketResponse>('/api/market/all', undefined, false);
             if (response && response.success && response.data) {
                 saveMarketDataToCache(response.data);
+                if (sharedDefaults) {
+                    sharedDefaults.set('elsaif_widget_market_data', JSON.stringify(response.data.slice(0, 10)))
+                        .catch(err => console.warn('[UserDefaults] Failed to write market data:', err));
+                }
             }
             return response;
         } catch (error) {
             console.warn('[MarketService] Failed to fetch market data, loading from cache fallback:', error);
             const cached = await getMarketDataFromCache();
             if (cached.data && cached.data.length > 0) {
+                if (sharedDefaults) {
+                    sharedDefaults.set('elsaif_widget_market_data', JSON.stringify(cached.data.slice(0, 10)))
+                        .catch(err => console.warn('[UserDefaults] Failed to write cached market data:', err));
+                }
                 return {
                     success: true,
                     data: cached.data,

@@ -15,16 +15,20 @@ import {
     RefreshControl,
     Animated,
     useWindowDimensions,
+    Switch,
+    Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme, useLocalization } from '../../app/providers';
 import { Button, ResponsiveContainer, AuthRequiredGate } from '../../shared/components';
 import * as SettingsService from '../../core/services/settings/settingsService';
 import { useAuth } from '../../app/auth';
 import { ActiveSession } from '../settings/settings.types';
 import { SettingsLayout, SettingsTab } from './SettingsLayout';
+import { triggerHaptic } from '../../shared/utils/haptics';
 
 interface SecuritySettingsScreenProps {
     onNavigateBack: () => void;
@@ -50,6 +54,30 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [revokingId, setRevokingId] = useState<string | null>(null);
+    const [appLockEnabled, setAppLockEnabled] = useState(false);
+
+    useEffect(() => {
+        const loadAppLockPreference = async () => {
+            try {
+                const value = await AsyncStorage.getItem('elsaif_app_lock_enabled');
+                setAppLockEnabled(value === 'true');
+            } catch (e) {
+                console.error('[SecuritySettings] Failed to load app lock preference:', e);
+            }
+        };
+        loadAppLockPreference();
+    }, []);
+
+    const handleToggleAppLock = async (value: boolean) => {
+        try {
+            await AsyncStorage.setItem('elsaif_app_lock_enabled', value ? 'true' : 'false');
+            setAppLockEnabled(value);
+            triggerHaptic('selection');
+        } catch (e) {
+            console.error('[SecuritySettings] Failed to save app lock preference:', e);
+            Alert.alert('Error', 'Failed to save setting');
+        }
+    };
 
     // Animation values
     const [headerOpacity] = useState(new Animated.Value(0));
@@ -250,6 +278,32 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                         shadowRadius: 12,
                         elevation: 5,
                     } : null}>
+                        {/* App Lock Settings Section */}
+                        <View style={{ marginBottom: 32 }}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>{t('settings.appSecurity') || 'App Security'}</Text>
+                                <Text style={[styles.sectionSubtitle, { color: theme.text.secondary }]}>
+                                    {t('settings.appSecuritySubtitle') || 'Protect your account using local device security.'}
+                                </Text>
+                            </View>
+                            <View style={[styles.toggleCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border }]}>
+                                <View style={{ flex: 1, paddingRight: 16 }}>
+                                    <Text style={[styles.toggleTitle, { color: theme.text.primary }]}>
+                                        {t('settings.biometricLock') || 'Biometric App Lock'}
+                                    </Text>
+                                    <Text style={[styles.toggleSubtitle, { color: theme.text.secondary }]}>
+                                        {t('settings.biometricLockSubtitle') || 'Require Face ID / Touch ID when opening the application.'}
+                                    </Text>
+                                </View>
+                                <Switch
+                                    value={appLockEnabled}
+                                    onValueChange={handleToggleAppLock}
+                                    trackColor={{ false: theme.ui.border, true: theme.primary.main }}
+                                    thumbColor={Platform.OS === 'android' ? '#FFFFFF' : undefined}
+                                />
+                            </View>
+                        </View>
+
                         <View style={styles.sectionHeader}>
                             <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Active Sessions</Text>
                             <Text style={[styles.sectionSubtitle, { color: theme.text.secondary }]}>
@@ -480,5 +534,23 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 12,
         lineHeight: 18,
+    },
+    toggleCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        marginTop: 12,
+    },
+    toggleTitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    toggleSubtitle: {
+        fontSize: 11,
+        lineHeight: 16,
     },
 });

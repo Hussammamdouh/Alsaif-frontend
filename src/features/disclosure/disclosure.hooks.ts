@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDisclosures, Disclosure } from './disclosure.api';
 import { saveDisclosuresToCache, getDisclosuresFromCache } from '../../shared/services/offlineCache';
+import { indexDisclosuresInSpotlight } from '../../shared/services/spotlightService';
 
 export type ExchangeFilter = 'ALL' | 'DFM' | 'ADX';
 
@@ -41,6 +42,7 @@ export const useDisclosures = (limit: number = 5, initialExchange?: ExchangeFilt
                 // Save first page data to offline cache
                 if (fetchedData.length > 0) {
                     saveDisclosuresToCache(filter, fetchedData);
+                    indexDisclosuresInSpotlight(fetchedData);
                 }
             } else {
                 setDisclosures(prev => [...prev, ...fetchedData]);

@@ -40,6 +40,9 @@ export default {
       entitlements: {
         "keychain-access-groups": [
           "$(AppIdentifierPrefix)com.alsaifanalysis.com"
+        ],
+        "com.apple.security.application-groups": [
+          "group.com.alsaifanalysis.com"
         ]
       }
     },
@@ -61,6 +64,9 @@ export default {
       "@react-native-firebase/app",
       "@react-native-community/datetimepicker",
       "react-native-iap",
+      "expo-quick-actions",
+      "expo-core-spotlight",
+      "@bacons/apple-targets",
       [
         "onesignal-expo-plugin",
         {
