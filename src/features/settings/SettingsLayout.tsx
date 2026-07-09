@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions, I18nManager } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../app/providers';
 import { ResponsiveContainer } from '../../shared/components';
+import { useSidebarState } from '../../shared/utils/sidebarState';
 
 export type SettingsTab = 'profile' | 'preferences' | 'security' | 'subscription' | 'terms' | 'about';
 
@@ -31,6 +32,8 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   const { width, height } = useWindowDimensions();
   const isDesktop = width >= 768;
 
+  const [collapsed, toggle] = useSidebarState('settings');
+
   if (!isDesktop) {
     return <>{children}</>;
   }
@@ -52,14 +55,47 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
           <View style={[
             styles.sidebar,
             {
+              width: collapsed ? 76 : 280,
+              paddingHorizontal: collapsed ? 12 : 20,
               borderRightWidth: isRTL ? 0 : 1,
               borderLeftWidth: isRTL ? 1 : 0,
               borderColor: theme.border.main
             }
           ]}>
-            <Text style={[styles.sidebarTitle, { color: theme.text.primary, textAlign: isRTL ? 'right' : 'left' }]}>
-              {t('common.settings')}
-            </Text>
+            {/* Sidebar Header with Toggle button */}
+            <View style={{ 
+                flexDirection: isRTL ? 'row' : 'row-reverse', 
+                alignItems: 'center',
+                justifyContent: collapsed ? 'center' : 'space-between',
+                marginBottom: 32,
+                paddingHorizontal: collapsed ? 0 : 12,
+            }}>
+              {!collapsed && (
+                <Text style={[styles.sidebarTitle, { color: theme.text.primary, marginBottom: 0, paddingHorizontal: 0, fontSize: 20 }]}>
+                  {t('common.settings')}
+                </Text>
+              )}
+              <TouchableOpacity 
+                onPress={toggle}
+                activeOpacity={0.7}
+                style={{
+                  padding: 6,
+                  borderRadius: 8,
+                  backgroundColor: theme.background.secondary,
+                  borderWidth: 1,
+                  borderColor: theme.border.main,
+                }}
+              >
+                <Ionicons 
+                  name={collapsed 
+                    ? (isRTL ? "chevron-back-outline" : "chevron-forward-outline") 
+                    : (isRTL ? "chevron-forward-outline" : "chevron-back-outline")
+                  } 
+                  size={20} 
+                  color={theme.text.primary} 
+                />
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.menuItemsContainer}>
               {menuItems.map((item) => {
@@ -71,7 +107,8 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
                     style={[
                       styles.menuItem,
                       { flexDirection: isRTL ? 'row-reverse' : 'row' },
-                      isActive && { backgroundColor: theme.primary.main + '10' }
+                      isActive && { backgroundColor: theme.primary.main + '10' },
+                      collapsed && { justifyContent: 'center', paddingHorizontal: 0, gap: 0 }
                     ]}
                     onPress={() => onTabChange(item.id as SettingsTab)}
                   >
@@ -80,16 +117,18 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
                       size={20}
                       color={isActive ? theme.primary.main : theme.text.secondary}
                     />
-                    <Text style={[
-                      styles.menuItemText,
-                      {
-                        color: isActive ? theme.primary.main : theme.text.secondary,
-                        fontWeight: isActive ? '700' : '500',
-                        textAlign: isRTL ? 'right' : 'left'
-                      }
-                    ]}>
-                      {item.label}
-                    </Text>
+                    {!collapsed && (
+                      <Text style={[
+                        styles.menuItemText,
+                        {
+                          color: isActive ? theme.primary.main : theme.text.secondary,
+                          fontWeight: isActive ? '700' : '500',
+                          textAlign: isRTL ? 'right' : 'left'
+                        }
+                      ]}>
+                        {item.label}
+                      </Text>
+                    )}
                     {isActive && (
                       <View style={[
                         styles.activeIndicator,
@@ -114,14 +153,17 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
                 {
                   backgroundColor: theme.error.main + '10',
                   flexDirection: isRTL ? 'row-reverse' : 'row'
-                }
+                },
+                collapsed && { justifyContent: 'center', paddingHorizontal: 0 }
               ]}
               onPress={onLogout}
             >
               <Ionicons name="log-out-outline" size={20} color={theme.error.main} />
-              <Text style={[styles.logoutText, { color: theme.error.main, textAlign: isRTL ? 'right' : 'left' }]}>
-                {t('profile.logout')}
-              </Text>
+              {!collapsed && (
+                <Text style={[styles.logoutText, { color: theme.error.main, textAlign: isRTL ? 'right' : 'left' }]}>
+                  {t('profile.logout')}
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
 

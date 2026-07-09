@@ -119,7 +119,12 @@ export const useSubscriptionPlans = () => {
       const response = await apiClient.get(API_ENDPOINTS.SUBSCRIPTION_PLANS) as any;
 
       if (response.success && response.data.plans) {
-        const mappedPlans = response.data.plans.map(mapPlanResponse);
+        let mappedPlans = response.data.plans.map(mapPlanResponse);
+        if (Platform.OS === 'ios') {
+          mappedPlans = mappedPlans.filter(
+            (p: SubscriptionPlan) => p.appleProductId && p.appleProductId.trim() !== ''
+          );
+        }
         setPlans(mappedPlans);
       }
     } catch (err: any) {
