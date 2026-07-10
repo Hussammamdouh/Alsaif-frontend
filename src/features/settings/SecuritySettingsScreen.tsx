@@ -361,15 +361,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                         onLogout={authLogout}
                         showSubscription={!isAdmin}
                     >
-                        <ScrollView
-                            style={{ flex: 1 }}
-                            contentContainerStyle={styles.content}
-                            refreshControl={
-                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                            }
-                        >
-                            {renderSecurityContent()}
-                        </ScrollView>
+                        {renderSecurityContent()}
                     </SettingsLayout>
                 ) : (
                     <>
@@ -433,7 +425,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     content: {
-        flex: 1,
+        flexGrow: 1,
         padding: 16,
     },
     sectionHeader: {

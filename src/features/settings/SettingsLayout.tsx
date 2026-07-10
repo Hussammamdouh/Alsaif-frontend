@@ -49,8 +49,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-      <ResponsiveContainer maxWidth={1200}>
-        <View style={[styles.layoutWrapper, { flexDirection: isRTL ? 'row-reverse' : 'row', minHeight: height * 0.8 }]}>
+      <View style={[styles.layoutWrapper, { flexDirection: isRTL ? 'row-reverse' : 'row', minHeight: height * 0.8 }]}>
           {/* Sidebar */}
           <View style={[
             styles.sidebar,
@@ -173,12 +172,11 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
             contentContainerStyle={styles.contentScroll}
             showsVerticalScrollIndicator={false}
           >
-            <View style={[styles.contentInner, isRTL && { alignItems: 'flex-end' }]}>
+            <View style={styles.contentInner}>
               {children}
             </View>
           </ScrollView>
         </View>
-      </ResponsiveContainer>
     </View>
   );
 };

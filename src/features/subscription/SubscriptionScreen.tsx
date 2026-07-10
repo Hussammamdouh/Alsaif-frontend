@@ -443,15 +443,7 @@ export const SubscriptionScreen: React.FC = () => {
         onTabChange={handleTabChange}
         onLogout={authLogout}
       >
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1 }}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-        >
-          {renderSubscriptionContent()}
-        </ScrollView>
+        {renderSubscriptionContent()}
       </SettingsLayout>
     );
   }
