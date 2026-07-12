@@ -65,6 +65,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
   const [formValidUntil, setFormValidUntil] = useState('');
   const [formApplicableTiers, setFormApplicableTiers] = useState<string[]>([]);
   const [formIsActive, setFormIsActive] = useState(true);
+  const [formPlatform, setFormPlatform] = useState<'stripe' | 'ios'>('stripe');
+  const [formIosCodeType, setFormIosCodeType] = useState<'custom' | 'one_time'>('custom');
+  const [formIosCodesInput, setFormIosCodesInput] = useState('');
   const [selectedCode, setSelectedCode] = useState<any | null>(null);
   const [showUsageModal, setShowUsageModal] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
@@ -122,6 +125,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     setFormValidUntil('');
     setFormApplicableTiers([]);
     setFormIsActive(true);
+    setFormPlatform('stripe');
+    setFormIosCodeType('custom');
+    setFormIosCodesInput('');
     setSelectedCode(null);
   }, []);
 
@@ -141,6 +147,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     setFormValidUntil(code.validUntil ? new Date(code.validUntil).toISOString().split('T')[0] : '');
     setFormApplicableTiers(code.applicableTiers || []);
     setFormIsActive(code.isActive !== false);
+    setFormPlatform(code.platform || 'stripe');
+    setFormIosCodeType(code.iosCodeType || 'custom');
+    setFormIosCodesInput(code.iosCodesList ? code.iosCodesList.join('\n') : '');
     setShowFormModal(true);
   }, []);
 
@@ -155,6 +164,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
     setFormValidUntil(code.validUntil ? new Date(code.validUntil).toISOString().split('T')[0] : '');
     setFormApplicableTiers(code.applicableTiers || []);
     setFormIsActive(code.isActive !== false);
+    setFormPlatform(code.platform || 'stripe');
+    setFormIosCodeType(code.iosCodeType || 'custom');
+    setFormIosCodesInput(code.iosCodesList ? code.iosCodesList.join('\n') : '');
     setShowActionSheet(false);
     setShowFormModal(true);
   }, [resetForm]);
@@ -237,9 +249,14 @@ export const AdminDiscountCodesScreen: React.FC = () => {
 
   const handleSave = async () => {
     if (!formCode || (formType !== 'free_trial' && !formValue) || (formType === 'free_trial' && !formTrialDays)) return;
+    if (formPlatform === 'ios' && formIosCodeType === 'one_time' && !formIosCodesInput.trim()) return;
 
     setIsSaving(true);
     try {
+      const iosCodesList = formPlatform === 'ios' && formIosCodeType === 'one_time'
+        ? formIosCodesInput.split('\n').map(c => c.trim()).filter(Boolean)
+        : [];
+
       const codeData: any = {
         code: formCode,
         description: formDescription,
@@ -251,6 +268,9 @@ export const AdminDiscountCodesScreen: React.FC = () => {
         validUntil: formValidUntil ? new Date(formValidUntil).toISOString() : undefined,
         applicableTiers: formApplicableTiers,
         isActive: formIsActive,
+        platform: formPlatform,
+        iosCodeType: formPlatform === 'ios' ? formIosCodeType : null,
+        iosCodesList,
       };
 
       if (selectedCode) {
@@ -686,13 +706,43 @@ export const AdminDiscountCodesScreen: React.FC = () => {
               </View>
 
               <ScrollView style={localStyles.formScroll} showsVerticalScrollIndicator={false}>
+                {/* Tab Selector for Stripe / iOS */}
+                {!selectedCode ? (
+                  <View style={localStyles.tabContainer}>
+                    <TouchableOpacity
+                      style={[localStyles.tab, formPlatform === 'stripe' && localStyles.tabActive]}
+                      onPress={() => setFormPlatform('stripe')}
+                    >
+                      <Text style={[localStyles.tabText, formPlatform === 'stripe' && localStyles.tabTextActive]}>
+                        Stripe Promo
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[localStyles.tab, formPlatform === 'ios' && localStyles.tabActive]}
+                      onPress={() => setFormPlatform('ios')}
+                    >
+                      <Text style={[localStyles.tabText, formPlatform === 'ios' && localStyles.tabTextActive]}>
+                        App Store Offer
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={[localStyles.platformBadge, { backgroundColor: formPlatform === 'ios' ? `${theme.primary.main}15` : `${theme.accent?.warning || '#f0ad4e'}15` }]}>
+                    <Text style={[localStyles.platformBadgeText, { color: formPlatform === 'ios' ? theme.primary.main : theme.accent?.warning || '#f0ad4e' }]}>
+                      {formPlatform === 'ios' ? 'Platform: iOS App Store' : 'Platform: Stripe'}
+                    </Text>
+                  </View>
+                )}
+
                 <View style={localStyles.formGroup}>
-                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.codeLabel')} *</Text>
+                  <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    {formPlatform === 'ios' && formIosCodeType === 'one_time' ? 'Campaign Reference Code *' : `${t('admin.codeLabel')} *`}
+                  </Text>
                   <TextInput
                     style={[localStyles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                     value={formCode}
                     onChangeText={setFormCode}
-                    placeholder="PROMO2024"
+                    placeholder={formPlatform === 'ios' && formIosCodeType === 'one_time' ? 'SUMMER2026_IOS' : 'PROMO2024'}
                     placeholderTextColor={theme.text.tertiary}
                     autoCapitalize="characters"
                   />
@@ -710,6 +760,64 @@ export const AdminDiscountCodesScreen: React.FC = () => {
                     numberOfLines={3}
                   />
                 </View>
+
+                {formPlatform === 'ios' && (
+                  <>
+                    <View style={localStyles.formGroup}>
+                      <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>Offer Code Redemption Type *</Text>
+                      <View style={[localStyles.typeContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                        <TouchableOpacity
+                          style={[
+                            localStyles.typeChip,
+                            formIosCodeType === 'custom' && localStyles.typeChipActive,
+                          ]}
+                          onPress={() => setFormIosCodeType('custom')}
+                        >
+                          <Text
+                            style={[
+                              localStyles.typeChipText,
+                              formIosCodeType === 'custom' && localStyles.typeChipTextActive,
+                            ]}
+                          >
+                            Custom Single Code
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[
+                            localStyles.typeChip,
+                            formIosCodeType === 'one_time' && localStyles.typeChipActive,
+                          ]}
+                          onPress={() => setFormIosCodeType('one_time')}
+                        >
+                          <Text
+                            style={[
+                              localStyles.typeChipText,
+                              formIosCodeType === 'one_time' && localStyles.typeChipTextActive,
+                            ]}
+                          >
+                            One-Time Codes List
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    {formIosCodeType === 'one_time' && (
+                      <View style={localStyles.formGroup}>
+                        <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>Paste iOS One-Time Codes * (One code per line)</Text>
+                        <TextInput
+                          style={[localStyles.input, localStyles.codesTextArea, { textAlign: 'left' }]}
+                          value={formIosCodesInput}
+                          onChangeText={setFormIosCodesInput}
+                          placeholder={`X97FJSK2\nY8D7D9A2\nZ6F7S8D1`}
+                          placeholderTextColor={theme.text.tertiary}
+                          multiline
+                          numberOfLines={6}
+                          autoCapitalize="characters"
+                        />
+                      </View>
+                    )}
+                  </>
+                )}
 
                 <View style={localStyles.formGroup}>
                   <Text style={[localStyles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('admin.codeType')} *</Text>
@@ -1154,5 +1262,50 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     marginVertical: 'auto',
     borderRadius: 24,
     maxHeight: '90%',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.background.secondary,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 24,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  tabActive: {
+    backgroundColor: theme.background.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.text.secondary,
+  },
+  tabTextActive: {
+    color: theme.primary.main,
+  },
+  codesTextArea: {
+    minHeight: 120,
+    textAlignVertical: 'top',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  platformBadge: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+  },
+  platformBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

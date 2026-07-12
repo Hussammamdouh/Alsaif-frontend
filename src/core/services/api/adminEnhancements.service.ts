@@ -411,6 +411,8 @@ export interface SubscriptionPlanData {
   description?: string;
   stripeProductId?: string;
   stripePriceId?: string;
+  platform?: 'stripe' | 'ios';
+  appleProductId?: string;
 }
 
 export const subscriptionPlansService = {
@@ -498,6 +500,9 @@ export interface DiscountCodeData {
   minimumPurchaseAmount?: number;
   firstTimeUsersOnly?: boolean;
   stackable?: boolean;
+  platform?: 'stripe' | 'ios';
+  iosCodeType?: 'custom' | 'one_time' | null;
+  iosCodesList?: string[];
 }
 
 export const discountCodesService = {

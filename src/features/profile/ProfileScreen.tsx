@@ -246,20 +246,19 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
   }
 
   const renderProfileContent = () => (
-    <View style={isDesktop ? { width: '100%' } : null}>
-      <ResponsiveContainer maxWidth={isDesktop ? 800 : undefined}>
-        <View style={isDesktop ? {
-          backgroundColor: theme.background.secondary,
-          borderRadius: 24,
-          padding: 32,
-          borderWidth: 1,
-          borderColor: theme.border.main,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 12,
-          elevation: 5,
-        } : null}>
+      <View style={isDesktop ? {
+        backgroundColor: theme.background.secondary,
+        borderRadius: 24,
+        padding: 32,
+        borderWidth: 1,
+        borderColor: theme.border.main,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 5,
+        width: '100%',
+      } : null}>
           {/* Profile Info Section */}
           <View style={[styles.profileSection, { borderBottomColor: theme.border.main }]}>
             <TouchableOpacity
@@ -591,8 +590,6 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
 
           <View style={styles.bottomSpacer} />
         </View>
-      </ResponsiveContainer>
-    </View>
   );
 
   if (isDesktop) {
@@ -607,6 +604,7 @@ const ProfileScreenComponent: React.FC<ProfileScreenProps> = ({
           onTabChange={handleTabChange}
           onLogout={handleLogoutPress}
           showSubscription={!isAdmin}
+          hideNavbar={true}
         >
           {renderProfileContent()}
         </SettingsLayout>

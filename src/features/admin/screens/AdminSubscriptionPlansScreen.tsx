@@ -66,6 +66,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
   const [formIsActive, setFormIsActive] = useState(true);
   const [formIsFeatured, setFormIsFeatured] = useState(false);
   const [formCurrency, setFormCurrency] = useState('AED');
+  const [formPlatform, setFormPlatform] = useState<'stripe' | 'ios'>('stripe');
+  const [formAppleProductId, setFormAppleProductId] = useState('');
 
   const {
     plans,
@@ -88,6 +90,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
     setFormIsActive(true);
     setFormIsFeatured(false);
     setFormCurrency('AED');
+    setFormPlatform('stripe');
+    setFormAppleProductId('');
     setSelectedPlan(null);
   };
 
@@ -111,11 +115,14 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
     setFormIsActive(plan.isActive !== false);
     setFormIsFeatured(plan.isFeatured === true);
     setFormCurrency(plan.currency || 'AED');
+    setFormPlatform(plan.platform || 'stripe');
+    setFormAppleProductId(plan.appleProductId || '');
     setShowFormModal(true);
   };
 
   const handleSave = async () => {
     if (!formName || !formPrice) return;
+    if (formPlatform === 'ios' && !formAppleProductId.trim()) return;
 
     setIsSaving(true);
     try {
@@ -129,6 +136,8 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
         isActive: formIsActive,
         isFeatured: formIsFeatured,
         currency: formCurrency,
+        platform: formPlatform,
+        appleProductId: formPlatform === 'ios' ? formAppleProductId.trim() : undefined,
       };
 
       if (selectedPlan) {
@@ -412,6 +421,34 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
               </View>
 
               <ScrollView style={localStyles.formScroll} showsVerticalScrollIndicator={false}>
+                {/* Tab Selector for Stripe / iOS */}
+                {!selectedPlan ? (
+                  <View style={localStyles.tabContainer}>
+                    <TouchableOpacity
+                      style={[localStyles.tab, formPlatform === 'stripe' && localStyles.tabActive]}
+                      onPress={() => setFormPlatform('stripe')}
+                    >
+                      <Text style={[localStyles.tabText, formPlatform === 'stripe' && localStyles.tabTextActive]}>
+                        Stripe Plan
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[localStyles.tab, formPlatform === 'ios' && localStyles.tabActive]}
+                      onPress={() => setFormPlatform('ios')}
+                    >
+                      <Text style={[localStyles.tabText, formPlatform === 'ios' && localStyles.tabTextActive]}>
+                        App Store Plan
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={[localStyles.platformBadge, { backgroundColor: formPlatform === 'ios' ? `${theme.primary.main}15` : `${theme.accent?.warning || '#f0ad4e'}15` }]}>
+                    <Text style={[localStyles.platformBadgeText, { color: formPlatform === 'ios' ? theme.primary.main : theme.accent?.warning || '#f0ad4e' }]}>
+                      {formPlatform === 'ios' ? 'Platform: iOS App Store' : 'Platform: Stripe'}
+                    </Text>
+                  </View>
+                )}
+
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.planName')} *</Text>
                   <TextInput
@@ -422,6 +459,20 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
                     placeholderTextColor={theme.text.tertiary}
                   />
                 </View>
+
+                {formPlatform === 'ios' && (
+                  <View style={localStyles.formGroup}>
+                    <Text style={localStyles.label}>Apple Product ID *</Text>
+                    <TextInput
+                      style={localStyles.input}
+                      value={formAppleProductId}
+                      onChangeText={setFormAppleProductId}
+                      placeholder="com.alsaifanalysis.pro.monthly"
+                      placeholderTextColor={theme.text.tertiary}
+                      autoCapitalize="none"
+                    />
+                  </View>
+                )}
 
                 <View style={localStyles.formGroup}>
                   <Text style={localStyles.label}>{t('admin.description')}</Text>
@@ -583,9 +634,9 @@ export const AdminSubscriptionPlansScreen: React.FC = () => {
               </ScrollView>
 
               <TouchableOpacity
-                style={[localStyles.saveButton, (!formName || !formPrice) && localStyles.saveButtonDisabled]}
+                style={[localStyles.saveButton, (!formName || !formPrice || (formPlatform === 'ios' && !formAppleProductId.trim())) && localStyles.saveButtonDisabled]}
                 onPress={handleSave}
-                disabled={isSaving || !formName || !formPrice}
+                disabled={isSaving || !formName || !formPrice || (formPlatform === 'ios' && !formAppleProductId.trim())}
               >
                 {isSaving ? (
                   <ActivityIndicator color={theme.primary.contrast} />
@@ -920,5 +971,45 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     fontSize: 12,
     color: theme.text.primary,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.background.secondary,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 24,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  tabActive: {
+    backgroundColor: theme.background.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.text.secondary,
+  },
+  tabTextActive: {
+    color: theme.primary.main,
+  },
+  platformBadge: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+  },
+  platformBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

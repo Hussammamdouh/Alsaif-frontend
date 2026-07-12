@@ -140,3 +140,22 @@ export const restoreApplePurchases = async (): Promise<boolean> => {
     throw error;
   }
 };
+
+/**
+ * Present Apple's native Promo/Offer Code redemption sheet
+ */
+export const presentRedemptionSheet = async (): Promise<void> => {
+  if (Platform.OS !== 'ios') return;
+  try {
+    const { presentCodeRedemptionSheetIOS } = require('react-native-iap');
+    if (presentCodeRedemptionSheetIOS) {
+      await presentCodeRedemptionSheetIOS();
+      console.log('[IAP] Native code redemption sheet presented');
+    } else {
+      console.warn('[IAP] presentCodeRedemptionSheetIOS is not available in react-native-iap');
+    }
+  } catch (error) {
+    console.error('[IAP] Present code redemption sheet failed:', error);
+    throw error;
+  }
+};

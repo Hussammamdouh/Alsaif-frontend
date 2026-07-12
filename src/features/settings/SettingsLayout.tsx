@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../app/providers';
 import { ResponsiveContainer } from '../../shared/components';
 import { useSidebarState } from '../../shared/utils/sidebarState';
+import { DesktopTopNav } from '../home/components/DesktopTopNav';
 
 export type SettingsTab = 'profile' | 'preferences' | 'security' | 'subscription' | 'terms' | 'about';
 
@@ -14,6 +15,7 @@ interface SettingsLayoutProps {
   onTabChange: (tab: SettingsTab) => void;
   onLogout: () => void;
   showSubscription?: boolean;
+  hideNavbar?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   onTabChange,
   onLogout,
   showSubscription = true,
+  hideNavbar = false,
 }) => {
   const { theme } = useTheme();
   const { t, isRTL } = useLocalization();
@@ -49,16 +52,23 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+      {isDesktop && !hideNavbar && <DesktopTopNav />}
       <View style={[styles.layoutWrapper, { flexDirection: isRTL ? 'row-reverse' : 'row', minHeight: height * 0.8 }]}>
           {/* Sidebar */}
           <View style={[
             styles.sidebar,
             {
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              zIndex: 100,
+              [isRTL ? 'right' : 'left']: 0,
               width: collapsed ? 76 : 280,
               paddingHorizontal: collapsed ? 12 : 20,
               borderRightWidth: isRTL ? 0 : 1,
               borderLeftWidth: isRTL ? 1 : 0,
-              borderColor: theme.border.main
+              borderColor: theme.border.main,
+              backgroundColor: theme.background.secondary,
             }
           ]}>
             {/* Sidebar Header with Toggle button */}
@@ -168,7 +178,12 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
 
           {/* Main Content */}
           <ScrollView
-            style={styles.contentArea}
+            style={[
+              styles.contentArea,
+              {
+                [isRTL ? 'marginRight' : 'marginLeft']: 76,
+              }
+            ]}
             contentContainerStyle={styles.contentScroll}
             showsVerticalScrollIndicator={false}
           >
@@ -187,11 +202,10 @@ const styles = StyleSheet.create({
   },
   layoutWrapper: {
     flex: 1,
-    marginTop: 20,
   },
   sidebar: {
     width: 280,
-    paddingVertical: 40,
+    paddingVertical: 24,
     paddingHorizontal: 20,
   },
   sidebarTitle: {
@@ -241,7 +255,7 @@ const styles = StyleSheet.create({
   contentArea: {
     flex: 1,
     paddingHorizontal: 40,
-    paddingVertical: 40,
+    paddingTop: 0,
   },
   contentScroll: {
     paddingBottom: 100,

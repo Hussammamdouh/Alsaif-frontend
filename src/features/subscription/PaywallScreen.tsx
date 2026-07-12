@@ -72,6 +72,19 @@ export const PaywallScreen: React.FC = () => {
     }
   };
 
+  const handleRedeemCode = async () => {
+    try {
+      const { initIAP, endIAP, presentRedemptionSheet } = require('./subscription.iap');
+      await initIAP();
+      await presentRedemptionSheet();
+    } catch (error: any) {
+      console.error('[RedeemCode] Failed:', error);
+    } finally {
+      const { endIAP } = require('./subscription.iap');
+      await endIAP();
+    }
+  };
+
   const features = [
     {
       icon: 'sparkles-outline',
@@ -280,6 +293,14 @@ export const PaywallScreen: React.FC = () => {
               <>
                 <TouchableOpacity onPress={handleRestorePurchases}>
                   <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
+                </TouchableOpacity>
+                <Text style={styles.linkDot}>•</Text>
+              </>
+            )}
+            {Platform.OS === 'ios' && (
+              <>
+                <TouchableOpacity onPress={handleRedeemCode}>
+                  <Text style={styles.footerLink}>{t('paywall.redeemCode') || 'Redeem Code'}</Text>
                 </TouchableOpacity>
                 <Text style={styles.linkDot}>•</Text>
               </>

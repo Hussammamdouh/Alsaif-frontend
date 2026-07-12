@@ -741,32 +741,40 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
 
 
 
-    const renderSettingsContent = () => (
-      <View style={isDesktop ? { width: '100%' } : null}>
+    const renderSettingsContent = () => {
+      const ContentWrapper = isDesktop ? View : ScrollView;
+      const wrapperProps = isDesktop
+        ? { style: null }
+        : {
+            style: [styles.scrollView, { backgroundColor: theme.background.primary }],
+            showsVerticalScrollIndicator: false,
+          };
 
-        {/* Deletion Status Banner */}
-        {profile?.deletionRequestedAt && daysUntilDeletion !== null && daysUntilDeletion > 0 && (
-          <View style={[styles.deletionBanner, { backgroundColor: theme.error.light }]}>
-            <View style={styles.deletionBannerContent}>
-              <Icon name="warning-outline" size={24} color={theme.error.main} style={styles.deletionIcon} />
-              <View style={styles.deletionText}>
-                <Text style={[styles.deletionTitle, { color: theme.text.primary }]}>{t('settings.accountDeletionScheduled')}</Text>
-                <Text style={[styles.deletionDescription, { color: theme.text.secondary }]}>
-                  {t('settings.accountWillBeDeleted')
-                    .replace('{days}', daysUntilDeletion.toString())
-                    .replace('{date}', new Date(profile.scheduledDeletionDate!).toLocaleDateString())}
-                </Text>
+      return (
+        <View style={isDesktop ? { width: '100%' } : null}>
+
+          {/* Deletion Status Banner */}
+          {profile?.deletionRequestedAt && daysUntilDeletion !== null && daysUntilDeletion > 0 && (
+            <View style={[styles.deletionBanner, { backgroundColor: theme.error.light }]}>
+              <View style={styles.deletionBannerContent}>
+                <Icon name="warning-outline" size={24} color={theme.error.main} style={styles.deletionIcon} />
+                <View style={styles.deletionText}>
+                  <Text style={[styles.deletionTitle, { color: theme.text.primary }]}>{t('settings.accountDeletionScheduled')}</Text>
+                  <Text style={[styles.deletionDescription, { color: theme.text.secondary }]}>
+                    {t('settings.accountWillBeDeleted')
+                      .replace('{days}', daysUntilDeletion.toString())
+                      .replace('{date}', new Date(profile.scheduledDeletionDate!).toLocaleDateString())}
+                  </Text>
+                </View>
               </View>
+              <TouchableOpacity style={[styles.cancelDeletionButton, { backgroundColor: theme.error.main }]} onPress={handleCancelDeletion}>
+                <Text style={styles.cancelDeletionText}>{t('settings.cancelDeletion')}</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={[styles.cancelDeletionButton, { backgroundColor: theme.error.main }]} onPress={handleCancelDeletion}>
-              <Text style={styles.cancelDeletionText}>{t('settings.cancelDeletion')}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          )}
 
-        <ScrollView style={[styles.scrollView, { backgroundColor: theme.background.primary }]} showsVerticalScrollIndicator={false} contentContainerStyle={isDesktop && { flexGrow: 1, justifyContent: 'center' }}>
-          <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
-            <ResponsiveContainer maxWidth={isDesktop ? 900 : undefined}>
+          <ContentWrapper {...wrapperProps}>
+            <View style={isDesktop ? { alignItems: 'center' } : null}>
               <View style={isDesktop ? {
                 backgroundColor: theme.background.secondary,
                 borderRadius: 24,
@@ -778,6 +786,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
                 shadowOpacity: 0.1,
                 shadowRadius: 12,
                 elevation: 5,
+                width: '100%',
               } : null}>
                 {/* Account Section */}
                 <Animated.View
@@ -1230,11 +1239,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = React.memo(
 
                 <View style={styles.bottomSpacer} />
               </View>
-            </ResponsiveContainer>
           </View>
-        </ScrollView>
+        </ContentWrapper>
       </View>
-    );
+      );
+    };
 
     return (
       <>

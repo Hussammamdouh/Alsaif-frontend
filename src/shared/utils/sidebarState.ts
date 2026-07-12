@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 
 // Store collapsed state per sidebar type
 const collapsedStates: Record<string, boolean> = {
-  admin: false,
-  settings: false,
+  admin: true,
+  settings: true,
 };
 
 const listeners: Record<string, Set<(collapsed: boolean) => void>> = {

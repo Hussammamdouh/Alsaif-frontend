@@ -37,6 +37,11 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     borderBottomColor: theme.ui.border,
   },
   desktopSidebar: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    zIndex: 100,
+    [isRTL ? 'right' : 'left']: 0,
     width: 280,
     backgroundColor: theme.background.secondary,
     borderEndWidth: 1,
@@ -67,6 +72,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
   desktopMainContent: {
     flex: 1,
     backgroundColor: theme.background.primary,
+    [isRTL ? 'marginRight' : 'marginLeft']: 76,
   },
   headerLeft: {
     flexDirection: isManualRTL ? 'row-reverse' : 'row',

@@ -342,8 +342,7 @@ export const SubscriptionScreen: React.FC = () => {
 
   const renderSubscriptionContent = () => (
     <View style={isDesktop ? { width: '100%' } : null}>
-      <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
-        <ResponsiveContainer maxWidth={isDesktop ? 1000 : undefined}>
+      <View style={isDesktop ? { alignItems: 'center' } : null}>
           <View style={isDesktop ? {
             backgroundColor: theme.background.secondary,
             borderRadius: 24,
@@ -355,6 +354,7 @@ export const SubscriptionScreen: React.FC = () => {
             shadowOpacity: 0.1,
             shadowRadius: 12,
             elevation: 5,
+            width: '100%',
           } : null}>
             {/* Header (Desktop) */}
             {isDesktop && (
@@ -422,7 +422,6 @@ export const SubscriptionScreen: React.FC = () => {
               </>
             )}
           </View>
-        </ResponsiveContainer>
       </View>
     </View>
   );

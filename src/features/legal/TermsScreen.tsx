@@ -97,11 +97,11 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ route, onNavigateBack 
         );
     };
 
+    const ContentWrapper = isDesktop ? View : ScrollView;
+    const wrapperProps = isDesktop ? { style: styles.content } : { style: styles.content, contentContainerStyle: styles.scrollContent, showsVerticalScrollIndicator: false };
+
     const content = (
-        <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-        >
+        <ContentWrapper {...wrapperProps}>
             {/* Hero Card */}
             <View
                 style={[
@@ -228,7 +228,7 @@ export const TermsScreen: React.FC<TermsScreenProps> = ({ route, onNavigateBack 
                     © {new Date().getFullYear()} Alsaif Analysis. All rights reserved.
                 </Text>
             </View>
-        </ScrollView>
+        </ContentWrapper>
     );
 
     if (isDesktop) {

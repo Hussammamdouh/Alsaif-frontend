@@ -217,7 +217,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     const renderSessionItem = (session: ActiveSession) => (
         <View
             key={session.id}
-            style={[styles.sessionCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border }, isDesktop && { padding: 12, borderRadius: 16 }]}
+            style={[styles.sessionCard, { backgroundColor: theme.background.tertiary, borderColor: theme.border.main }, isDesktop && { padding: 12, borderRadius: 16 }]}
         >
             <View style={styles.sessionInfo}>
                 <View style={[styles.iconContainer, { backgroundColor: `${theme.primary.main}15` }, isDesktop && { width: 40, height: 40 }]}>
@@ -264,19 +264,19 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
 
     const renderSecurityContent = () => (
         <View style={isDesktop ? { width: '100%' } : null}>
-            <View style={isDesktop ? { padding: 40, alignItems: 'center' } : null}>
-                <ResponsiveContainer maxWidth={isDesktop ? 800 : undefined}>
+            <View style={isDesktop ? { alignItems: 'center' } : null}>
                     <View style={isDesktop ? {
-                        backgroundColor: theme.ui.card,
+                        backgroundColor: theme.background.secondary,
                         borderRadius: 24,
                         padding: 32,
                         borderWidth: 1,
-                        borderColor: theme.ui.border,
+                        borderColor: theme.border.main,
                         shadowColor: "#000",
                         shadowOffset: { width: 0, height: 4 },
                         shadowOpacity: 0.1,
                         shadowRadius: 12,
                         elevation: 5,
+                        width: '100%',
                     } : null}>
                         {/* App Lock Settings Section */}
                         <View style={{ marginBottom: 32 }}>
@@ -286,7 +286,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                                     {t('settings.appSecuritySubtitle') || 'Protect your account using local device security.'}
                                 </Text>
                             </View>
-                            <View style={[styles.toggleCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border }]}>
+                            <View style={[styles.toggleCard, { backgroundColor: theme.background.tertiary, borderColor: theme.border.main }]}>
                                 <View style={{ flex: 1, paddingRight: 16 }}>
                                     <Text style={[styles.toggleTitle, { color: theme.text.primary }]}>
                                         {t('settings.biometricLock') || 'Biometric App Lock'}
@@ -298,7 +298,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                                 <Switch
                                     value={appLockEnabled}
                                     onValueChange={handleToggleAppLock}
-                                    trackColor={{ false: theme.ui.border, true: theme.primary.main }}
+                                    trackColor={{ false: theme.border.main, true: theme.primary.main }}
                                     thumbColor={Platform.OS === 'android' ? '#FFFFFF' : undefined}
                                 />
                             </View>
@@ -315,7 +315,7 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                             <ActivityIndicator style={{ marginTop: 40 }} color={theme.primary.main} />
                         ) : sessions.length === 0 ? (
                             <View style={styles.emptyState}>
-                                <Icon name="shield-outline" size={64} color={theme.ui.border} />
+                                <Icon name="shield-outline" size={64} color={theme.border.main} />
                                 <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No other active sessions found.</Text>
                             </View>
                         ) : (
@@ -342,10 +342,28 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                             </Text>
                         </View>
                     </View>
-                </ResponsiveContainer>
+                </View>
             </View>
-        </View>
     );
+
+    if (isDesktop) {
+        return (
+            <AuthRequiredGate
+                title={t('settings.security') || 'Security Settings'}
+                message={t('settings.securityLoginMessage') || 'Please log in to manage your active sessions and account security.'}
+                icon="shield-checkmark-outline"
+            >
+                <SettingsLayout
+                    activeTab="security"
+                    onTabChange={handleTabChange}
+                    onLogout={authLogout}
+                    showSubscription={!isAdmin}
+                >
+                    {renderSecurityContent()}
+                </SettingsLayout>
+            </AuthRequiredGate>
+        );
+    }
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]} edges={['top']}>
@@ -354,49 +372,38 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
                 message={t('settings.securityLoginMessage') || 'Please log in to manage your active sessions and account security.'}
                 icon="shield-checkmark-outline"
             >
-                {isDesktop ? (
-                    <SettingsLayout
-                        activeTab="security"
-                        onTabChange={handleTabChange}
-                        onLogout={authLogout}
-                        showSubscription={!isAdmin}
+                <>
+                    {/* Header */}
+                    <Animated.View
+                        style={[
+                            styles.header,
+                            {
+                                opacity: headerOpacity,
+                                transform: [{ translateY: headerTranslateY }],
+                            },
+                        ]}
                     >
-                        {renderSecurityContent()}
-                    </SettingsLayout>
-                ) : (
-                    <>
-                        {/* Header */}
-                        <Animated.View
-                            style={[
-                                styles.header,
-                                {
-                                    opacity: headerOpacity,
-                                    transform: [{ translateY: headerTranslateY }],
-                                },
-                            ]}
-                        >
-                            <TouchableOpacity onPress={onNavigateBack} style={styles.backButton}>
-                                <Icon
-                                    name={isRTL ? 'chevron-forward' : 'chevron-back'}
-                                    size={28}
-                                    color={theme.text.primary}
-                                />
-                            </TouchableOpacity>
-                            <Text style={styles.title}>{t('settings.security')}</Text>
-                            <View style={{ width: 40 }} />
-                        </Animated.View>
+                        <TouchableOpacity onPress={onNavigateBack} style={styles.backButton}>
+                            <Icon
+                                name={isRTL ? 'chevron-forward' : 'chevron-back'}
+                                size={28}
+                                color={theme.text.primary}
+                            />
+                        </TouchableOpacity>
+                        <Text style={styles.title}>{t('settings.security')}</Text>
+                        <View style={{ width: 40 }} />
+                    </Animated.View>
 
-                        <ScrollView
-                            style={styles.content}
-                            showsVerticalScrollIndicator={false}
-                            refreshControl={
-                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                            }
-                        >
-                            <ResponsiveContainer>{renderSecurityContent()}</ResponsiveContainer>
-                        </ScrollView>
-                    </>
-                )}
+                    <ScrollView
+                        style={styles.content}
+                        showsVerticalScrollIndicator={false}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        }
+                    >
+                        <ResponsiveContainer>{renderSecurityContent()}</ResponsiveContainer>
+                    </ScrollView>
+                </>
             </AuthRequiredGate>
         </SafeAreaView>
     );

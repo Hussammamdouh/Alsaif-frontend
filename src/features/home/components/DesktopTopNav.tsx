@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useLocalization } from '../../../app/providers';
 import { useUser, useIsAdmin, useIsAuthenticated } from '../../../app/auth/auth.hooks';
 import { spacing } from '../../../core/theme/spacing';
+import { useProfile } from '../../profile/profile.hooks';
 
 const NAV_ITEMS = [
     { key: 'HomeTab', label: 'tabs.home', icon: 'home-outline' },
@@ -102,24 +103,38 @@ export const DesktopTopNav: React.FC = () => {
         return names[0][0].toUpperCase();
     };
 
-    const renderLogo = () => (
-        <TouchableOpacity
-            style={[styles.logoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1 }]}
-            onPress={() => navigation.navigate('HomeTab')}
-        >
-            <Image
-                source={require('../../../../assets/Logo Secondry.jpg')}
-                style={styles.logo}
-                resizeMode="contain"
-            />
-            {!isSmallDesktop && (
-                <Text style={[styles.logoText, { color: theme.text.primary }]}>{t('common.appName')}</Text>
-            )}
-            <View style={[styles.premiumBadge, { backgroundColor: `${theme.primary.main}15` }]}>
-                <Text style={[styles.premiumBadgeText, { color: theme.primary.main }]}>PRO</Text>
+    const renderLogo = () => {
+        const { subscription } = useProfile();
+        const isSubscribed = subscription?.tier === 'premium' && subscription?.status === 'active';
+
+        const handleProPress = () => {
+            navigation.navigate(isSubscribed ? 'Subscription' : 'Paywall');
+        };
+
+        return (
+            <View style={[styles.logoContainer, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1, alignItems: 'center' }]}>
+                <TouchableOpacity
+                    style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}
+                    onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
+                >
+                    <Image
+                        source={require('../../../../assets/Logo Secondry.jpg')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
+                    {!isSmallDesktop && (
+                        <Text style={[styles.logoText, { color: theme.text.primary, [isRTL ? 'marginRight' : 'marginLeft']: 8 }]}>{t('common.appName')}</Text>
+                    )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={handleProPress}
+                    style={[styles.premiumBadge, { backgroundColor: `${theme.primary.main}15`, marginLeft: 8 }]}
+                >
+                    <Text style={[styles.premiumBadgeText, { color: theme.primary.main }]}>PRO</Text>
+                </TouchableOpacity>
             </View>
-        </TouchableOpacity>
-    );
+        );
+    };
 
     const renderActions = () => (
         <View style={[styles.actions, { flexDirection: isRTL ? 'row-reverse' : 'row', flex: 1, justifyContent: 'flex-end', gap: actionGap }]}>

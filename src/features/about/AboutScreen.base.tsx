@@ -49,12 +49,11 @@ export const AboutScreen = () => {
         alert(t('about.pdfViewerComingSoon'));
     };
 
+    const ContentWrapper = isDesktop ? View : ScrollView;
+    const wrapperProps = isDesktop ? { style: styles.content } : { style: styles.content, contentContainerStyle: styles.contentContainer, showsVerticalScrollIndicator: false };
+
     const content = (
-        <ScrollView
-            style={styles.content}
-            contentContainerStyle={styles.contentContainer}
-            showsVerticalScrollIndicator={false}
-        >
+        <ContentWrapper {...wrapperProps}>
             {/* App Logo/Name */}
             <View style={styles.logoSection}>
                 <Text style={[styles.appName, { color: theme.primary.main }]}>Alsaif Analysis</Text>
@@ -124,7 +123,7 @@ export const AboutScreen = () => {
                     © 2026 Alsaif Analysis
                 </Text>
             </View>
-        </ScrollView>
+        </ContentWrapper>
     );
 
     if (isDesktop) {

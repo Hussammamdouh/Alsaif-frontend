@@ -56,7 +56,13 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const loading = plansLoading || settingsLoading;
-  const plans = allPlans.filter(p => p.billingCycle === billingCycle);
+  
+  const targetPlatform = Platform.OS === 'ios' ? 'ios' : 'stripe';
+  const plans = allPlans.filter(
+    (p) =>
+      p.billingCycle === billingCycle &&
+      (p.platform === targetPlatform || (!p.platform && targetPlatform === 'stripe'))
+  );
 
   const handleClose = () => {
     if (navigation.canGoBack()) {
@@ -122,6 +128,19 @@ export const SubscriptionPlansScreen: React.FC = () => {
       Alert.alert('Error', MESSAGES.PROMO_INVALID);
     } finally {
       setValidatingPromo(false);
+    }
+  };
+
+  const handleRedeemAppleCode = async () => {
+    try {
+      const { initIAP, endIAP, presentRedemptionSheet } = require('./subscription.iap');
+      await initIAP();
+      await presentRedemptionSheet();
+    } catch (error: any) {
+      console.error('[RedeemAppleCode] Failed:', error);
+    } finally {
+      const { endIAP } = require('./subscription.iap');
+      await endIAP();
     }
   };
 
@@ -362,36 +381,52 @@ export const SubscriptionPlansScreen: React.FC = () => {
             </Animated.View>
 
             {/* Promo Section */}
-            <View style={styles.promoSection}>
-              <ResponsiveContainer maxWidth={600}>
-                <View style={styles.promoCard}>
-                  <Text style={styles.promoTitle}>{t('plans.havePromoCode')}</Text>
-                  <View style={styles.promoInputGroup}>
-                    <TextInput
-                      style={styles.promoInput}
-                      placeholder={t('plans.promoPlaceholder')}
-                      placeholderTextColor={theme.text.hint}
-                      value={promoCode}
-                      onChangeText={setPromoCode}
-                      autoCapitalize="characters"
-                      editable={!appliedPromo && !validatingPromo}
-                    />
+            {Platform.OS !== 'ios' ? (
+              <View style={styles.promoSection}>
+                <ResponsiveContainer maxWidth={600}>
+                  <View style={styles.promoCard}>
+                    <Text style={styles.promoTitle}>{t('plans.havePromoCode')}</Text>
+                    <View style={styles.promoInputGroup}>
+                      <TextInput
+                        style={styles.promoInput}
+                        placeholder={t('plans.promoPlaceholder')}
+                        placeholderTextColor={theme.text.hint}
+                        value={promoCode}
+                        onChangeText={setPromoCode}
+                        autoCapitalize="characters"
+                        editable={!appliedPromo && !validatingPromo}
+                      />
+                      <TouchableOpacity
+                        style={styles.promoApplyBtn}
+                        onPress={handleApplyPromo}
+                        disabled={!promoCode.trim() || validatingPromo || !!appliedPromo}
+                      >
+                        {validatingPromo ? <ActivityIndicator size="small" /> : <Text style={styles.promoApplyText}>{appliedPromo ? 'Applied' : t('plans.apply')}</Text>}
+                      </TouchableOpacity>
+                    </View>
+                    {appliedPromo && (
+                      <TouchableOpacity style={styles.removePromo} onPress={() => setAppliedPromo(null)}>
+                        <Text style={styles.removePromoText}>Remove code</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </ResponsiveContainer>
+              </View>
+            ) : (
+              <View style={styles.promoSection}>
+                <ResponsiveContainer maxWidth={600}>
+                  <View style={styles.promoCard}>
+                    <Text style={styles.promoTitle}>Have an Apple Offer Code?</Text>
                     <TouchableOpacity
-                      style={styles.promoApplyBtn}
-                      onPress={handleApplyPromo}
-                      disabled={!promoCode.trim() || validatingPromo || !!appliedPromo}
+                      style={[styles.promoApplyBtn, { width: '100%', marginTop: 8, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' }]}
+                      onPress={handleRedeemAppleCode}
                     >
-                      {validatingPromo ? <ActivityIndicator size="small" /> : <Text style={styles.promoApplyText}>{appliedPromo ? 'Applied' : t('plans.apply')}</Text>}
+                      <Text style={styles.promoApplyText}>Redeem Code</Text>
                     </TouchableOpacity>
                   </View>
-                  {appliedPromo && (
-                    <TouchableOpacity style={styles.removePromo} onPress={() => setAppliedPromo(null)}>
-                      <Text style={styles.removePromoText}>Remove code</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </ResponsiveContainer>
-            </View>
+                </ResponsiveContainer>
+              </View>
+            )}
 
             <View style={styles.trustFooter}>
               <View style={styles.trustFooterItem}>
