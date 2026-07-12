@@ -29,6 +29,7 @@ export interface SubscriptionPlan {
   stripeProductId?: string;
   stripePriceId?: string;
   appleProductId?: string;
+  platform?: 'stripe' | 'ios';
 }
 
 export interface UserSubscription {

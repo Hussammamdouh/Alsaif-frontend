@@ -56,13 +56,9 @@ export const SubscriptionPlansScreen: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const loading = plansLoading || settingsLoading;
-  
-  const targetPlatform = Platform.OS === 'ios' ? 'ios' : 'stripe';
-  const plans = allPlans.filter(
-    (p) =>
-      p.billingCycle === billingCycle &&
-      (p.platform === targetPlatform || (!p.platform && targetPlatform === 'stripe'))
-  );
+
+  // Hook already handles platform filtering (iOS vs Stripe) with fallback support
+  const plans = allPlans.filter((p) => p.billingCycle === billingCycle);
 
   const handleClose = () => {
     if (navigation.canGoBack()) {

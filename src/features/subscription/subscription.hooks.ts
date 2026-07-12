@@ -120,11 +120,24 @@ export const useSubscriptionPlans = () => {
 
       if (response.success && response.data.plans) {
         let mappedPlans = response.data.plans.map(mapPlanResponse);
+
         if (Platform.OS === 'ios') {
+          // On iOS: strictly show only plans tagged for iOS (platform === 'ios' OR has appleProductId)
+          // Never fall back to Stripe plans — those cannot be purchased via IAP
           mappedPlans = mappedPlans.filter(
-            (p: SubscriptionPlan) => p.appleProductId && p.appleProductId.trim() !== ''
+            (p: SubscriptionPlan) =>
+              p.platform === 'ios' || (p.appleProductId && p.appleProductId.trim() !== '')
           );
+        } else {
+          // On web/Android: only show Stripe plans when platform info is available
+          const hasAnyPlatformInfo = mappedPlans.some((p: SubscriptionPlan) => p.platform);
+          if (hasAnyPlatformInfo) {
+            mappedPlans = mappedPlans.filter(
+              (p: SubscriptionPlan) => !p.platform || p.platform === 'stripe'
+            );
+          }
         }
+
         setPlans(mappedPlans);
       }
     } catch (err: any) {
