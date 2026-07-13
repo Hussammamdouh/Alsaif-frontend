@@ -54,15 +54,10 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {isDesktop && !hideNavbar && <DesktopTopNav />}
       <View style={[styles.layoutWrapper, { flexDirection: isRTL ? 'row-reverse' : 'row', minHeight: height * 0.8 }]}>
-          {/* Sidebar */}
+          {/* Sidebar — sits in the flex row, content never hidden behind it */}
           <View style={[
             styles.sidebar,
             {
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              zIndex: 100,
-              [isRTL ? 'right' : 'left']: 0,
               width: collapsed ? 76 : 280,
               paddingHorizontal: collapsed ? 12 : 20,
               borderRightWidth: isRTL ? 0 : 1,
@@ -176,14 +171,9 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Main Content */}
+          {/* Main Content — flex: 1 fills all remaining space beside the sidebar */}
           <ScrollView
-            style={[
-              styles.contentArea,
-              {
-                [isRTL ? 'marginRight' : 'marginLeft']: 76,
-              }
-            ]}
+            style={styles.contentArea}
             contentContainerStyle={styles.contentScroll}
             showsVerticalScrollIndicator={false}
           >
