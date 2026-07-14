@@ -44,8 +44,17 @@ export const purchaseAppleSubscription = async (
 ): Promise<boolean> => {
   if (Platform.OS !== 'ios') return false;
 
+  let purchaseUpdateSubscription: any;
+  let purchaseErrorSubscription: any;
+
   try {
-    const { fetchProducts, requestPurchase, finishTransaction } = require('react-native-iap');
+    const { 
+      fetchProducts, 
+      requestPurchase, 
+      finishTransaction,
+      purchaseUpdateListener,
+      purchaseErrorListener 
+    } = require('react-native-iap');
 
     // 1. Ensure connection is active
     await initIAP();
@@ -58,20 +67,30 @@ export const purchaseAppleSubscription = async (
       throw new Error(`Product ${appleProductId} is not available on the App Store.`);
     }
 
-    // 3. Trigger purchase
-    const purchase = await requestPurchase({
+    // 3. Set up listeners to wait for the purchase update/error asynchronously
+    const purchasePromise = new Promise<any>((resolve, reject) => {
+      purchaseUpdateSubscription = purchaseUpdateListener(async (purchase: any) => {
+        const actualPurchase = Array.isArray(purchase) ? purchase[0] : purchase;
+        if (actualPurchase && actualPurchase.productId === appleProductId) {
+          resolve(actualPurchase);
+        }
+      });
+
+      purchaseErrorSubscription = purchaseErrorListener((error: any) => {
+        reject(error);
+      });
+    });
+
+    // 4. Trigger purchase UI dialog
+    await requestPurchase({
       type: 'subs',
       request: {
         apple: { sku: appleProductId }
       }
     });
-    
-    if (!purchase) {
-      throw new Error('Purchase request returned empty response.');
-    }
 
-    // Handle array response or single object depending on react-native-iap version
-    const actualPurchase = Array.isArray(purchase) ? purchase[0] : purchase;
+    // 5. Wait for the purchase update to resolve via listeners
+    const actualPurchase = await purchasePromise;
     const transactionId = actualPurchase.transactionId;
     if (!transactionId) {
       throw new Error('No transaction ID returned for purchase.');
@@ -79,7 +98,7 @@ export const purchaseAppleSubscription = async (
 
     console.log(`[IAP] Purchase succeeded. Transaction ID: ${transactionId}. Verifying with backend...`);
 
-    // 4. Send transaction ID to backend for server-to-server validation
+    // 6. Send transaction ID to backend for server-to-server validation
     const response = await apiClient.post('/api/subscriptions/apple/verify', {
       transactionId
     }) as any;
@@ -87,7 +106,7 @@ export const purchaseAppleSubscription = async (
     if (response && response.success) {
       console.log('[IAP] Backend verification successful!');
       
-      // 5. Acknowledge and finish transaction on Apple side
+      // 7. Acknowledge and finish transaction on Apple side
       await finishTransaction({ purchase: actualPurchase });
       
       Alert.alert('Success', 'Your premium subscription has been activated successfully!');
@@ -108,6 +127,13 @@ export const purchaseAppleSubscription = async (
     Alert.alert('Subscription Error', error.message || 'An error occurred during purchase.');
     return false;
   } finally {
+    // Clean up listeners
+    if (purchaseUpdateSubscription) {
+      purchaseUpdateSubscription.remove();
+    }
+    if (purchaseErrorSubscription) {
+      purchaseErrorSubscription.remove();
+    }
     await endIAP();
   }
 };
