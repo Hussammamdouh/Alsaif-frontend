@@ -52,7 +52,7 @@ export const purchaseAppleSubscription = async (
       fetchProducts, 
       requestPurchase, 
       finishTransaction,
-      purchaseUpdateListener,
+      purchaseUpdatedListener,
       purchaseErrorListener 
     } = require('react-native-iap');
 
@@ -69,7 +69,7 @@ export const purchaseAppleSubscription = async (
 
     // 3. Set up listeners to wait for the purchase update/error asynchronously
     const purchasePromise = new Promise<any>((resolve, reject) => {
-      purchaseUpdateSubscription = purchaseUpdateListener(async (purchase: any) => {
+      purchaseUpdateSubscription = purchaseUpdatedListener(async (purchase: any) => {
         const actualPurchase = Array.isArray(purchase) ? purchase[0] : purchase;
         if (actualPurchase && actualPurchase.productId === appleProductId) {
           resolve(actualPurchase);
