@@ -22,6 +22,7 @@ import {
 import { API_ENDPOINTS, MESSAGES } from './subscription.constants';
 import { mapStripeError } from './subscription.utils';
 import { purchaseAppleSubscription } from './subscription.iap';
+import { useAuth } from '../../app/auth/auth.hooks';
 
 /**
  * Hook to manage current user's subscription
@@ -111,6 +112,8 @@ export const useSubscriptionPlans = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { state: authState } = useAuth();
+
   const fetchPlans = useCallback(async () => {
     try {
       setLoading(true);
@@ -150,7 +153,7 @@ export const useSubscriptionPlans = () => {
 
   useEffect(() => {
     fetchPlans();
-  }, [fetchPlans]);
+  }, [fetchPlans, authState.isAuthenticated]);
 
   return {
     plans,

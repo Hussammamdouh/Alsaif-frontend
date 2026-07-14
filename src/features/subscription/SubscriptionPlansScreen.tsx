@@ -377,7 +377,8 @@ export const SubscriptionPlansScreen: React.FC = () => {
             </Animated.View>
 
             {/* Promo Section */}
-            {Platform.OS !== 'ios' ? (
+            {/* Commented out promo/redeem code sections to satisfy Apple review guidelines for initial release
+            Platform.OS !== 'ios' ? (
               <View style={styles.promoSection}>
                 <ResponsiveContainer maxWidth={600}>
                   <View style={styles.promoCard}>
@@ -422,7 +423,8 @@ export const SubscriptionPlansScreen: React.FC = () => {
                   </View>
                 </ResponsiveContainer>
               </View>
-            )}
+            )
+            */}
 
             <View style={styles.trustFooter}>
               <View style={styles.trustFooterItem}>
