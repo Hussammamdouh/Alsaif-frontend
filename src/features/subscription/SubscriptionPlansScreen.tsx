@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, StatusBar, useWindowDimensions, Alert, Animated, TextInput, Easing } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, StatusBar, useWindowDimensions, Alert, Animated, TextInput, Easing, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -437,6 +437,16 @@ export const SubscriptionPlansScreen: React.FC = () => {
               </View>
             </View>
 
+            <View style={styles.legalLinksContainer}>
+              <TouchableOpacity onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
+                <Text style={styles.legalLinkText}>Terms of Use (EULA)</Text>
+              </TouchableOpacity>
+              <Text style={styles.legalLinkSeparator}>|</Text>
+              <TouchableOpacity onPress={() => Linking.openURL('https://alsaifanalysis.com/privacy-policy')}>
+                <Text style={styles.legalLinkText}>Privacy Policy</Text>
+              </TouchableOpacity>
+            </View>
+
           </AuthRequiredGate>
         </ResponsiveContainer>
       </ScrollView>
@@ -785,5 +795,22 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
     fontSize: 14,
     color: theme.text.hint,
     fontWeight: '500',
+  },
+  legalLinksContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+    gap: 8,
+  },
+  legalLinkText: {
+    fontSize: 13,
+    color: theme.primary.main,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  legalLinkSeparator: {
+    color: theme.text.hint,
+    fontSize: 13,
   },
 });

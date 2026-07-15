@@ -16,6 +16,7 @@ import {
     useWindowDimensions,
     NativeSyntheticEvent,
     NativeScrollEvent,
+    Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons as Icon } from '@expo/vector-icons';
@@ -234,6 +235,15 @@ export const SubscriptionTermsModal: React.FC<SubscriptionTermsModalProps> = ({
                             loading={loading}
                             style={styles.acceptButton}
                         />
+                        <View style={styles.linksContainer}>
+                            <TouchableOpacity onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
+                                <Text style={[styles.linkText, { color: theme.primary.main }]}>Terms of Use (EULA)</Text>
+                            </TouchableOpacity>
+                            <Text style={{ color: theme.text.tertiary, marginHorizontal: 8 }}>|</Text>
+                            <TouchableOpacity onPress={() => Linking.openURL('https://alsaifanalysis.com/privacy-policy')}>
+                                <Text style={[styles.linkText, { color: theme.primary.main }]}>Privacy Policy</Text>
+                            </TouchableOpacity>
+                        </View>
 
                     </View>
                 </SafeAreaView>
@@ -370,5 +380,17 @@ const styles = StyleSheet.create({
     },
     acceptButton: {
         height: 56,
+    },
+    linksContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12,
+        marginBottom: 4,
+    },
+    linkText: {
+        fontSize: 13,
+        fontWeight: '600',
+        textDecorationLine: 'underline',
     },
 });
