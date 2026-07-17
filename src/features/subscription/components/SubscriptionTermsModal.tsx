@@ -41,7 +41,7 @@ export const SubscriptionTermsModal: React.FC<SubscriptionTermsModalProps> = ({
     const { theme, isDark } = useTheme();
     const { t, isRTL } = useLocalization();
     const [accepted, setAccepted] = useState(false);
-    const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+    const [hasScrolledToBottom, setHasScrolledToBottom] = useState(true);
     const { width } = useWindowDimensions();
     const isDesktop = width > DESKTOP_BREAKPOINT;
 
@@ -49,7 +49,7 @@ export const SubscriptionTermsModal: React.FC<SubscriptionTermsModalProps> = ({
     React.useEffect(() => {
         if (visible) {
             setAccepted(false);
-            setHasScrolledToBottom(false);
+            setHasScrolledToBottom(true);
         }
     }, [visible]);
 

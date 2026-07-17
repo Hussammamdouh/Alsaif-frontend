@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     useWindowDimensions,
     Platform,
+    Linking,
 } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -134,6 +135,16 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
                                     style={styles.desktopButton}
                                 />
                             </View>
+
+                            <View style={styles.gateLinksContainer}>
+                                <TouchableOpacity onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
+                                    <Text style={[styles.gateLinkText, { color: theme.primary.main }]}>Terms of Use (EULA)</Text>
+                                </TouchableOpacity>
+                                <Text style={{ color: theme.text.hint, marginHorizontal: 8 }}>|</Text>
+                                <TouchableOpacity onPress={() => Linking.openURL('https://alsaifanalysis.com/privacy-policy')}>
+                                    <Text style={[styles.gateLinkText, { color: theme.primary.main }]}>Privacy Policy</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
                 ) : (
@@ -182,6 +193,16 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
                                     variant="secondary"
                                     style={styles.mobileButton}
                                 />
+                            </View>
+
+                            <View style={styles.gateLinksContainer}>
+                                <TouchableOpacity onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
+                                    <Text style={[styles.gateLinkText, { color: theme.primary.main }]}>Terms of Use (EULA)</Text>
+                                </TouchableOpacity>
+                                <Text style={{ color: theme.text.hint, marginHorizontal: 8 }}>|</Text>
+                                <TouchableOpacity onPress={() => Linking.openURL('https://alsaifanalysis.com/privacy-policy')}>
+                                    <Text style={[styles.gateLinkText, { color: theme.primary.main }]}>Privacy Policy</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>
@@ -337,5 +358,16 @@ const styles = StyleSheet.create({
         zIndex: 10,
         padding: 8,
         borderRadius: 8,
+    },
+    gateLinksContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    gateLinkText: {
+        fontSize: 13,
+        fontWeight: '600',
+        textDecorationLine: 'underline',
     },
 });
