@@ -265,7 +265,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = React.memo(
               showsVerticalScrollIndicator={false}
             >
               <View style={isDesktop ? [styles.desktopWrapper, { flex: 0, minHeight: '100%', paddingVertical: 20 }] : null}>
-                <ResponsiveContainer maxWidth={isDesktop ? 1200 : 480}>
+                <ResponsiveContainer maxWidth={isDesktop ? 1200 : 480} style={isDesktop ? { justifyContent: 'center' } : undefined}>
                   <View style={isDesktop ? [styles.loginCard, { backgroundColor: theme.ui.card, borderColor: theme.ui.border, alignSelf: 'center' }] : null}>
                     {/* Header Section */}
                     <Animated.View
