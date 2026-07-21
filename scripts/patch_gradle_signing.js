@@ -8,7 +8,8 @@ if (!keystoreBase64) {
   console.warn('WARNING: Environment variable CM_KEYSTORE is not set. Looking for existing release.keystore...');
 } else {
   const targetKeystorePath = path.join(__dirname, '../android/app/release.keystore');
-  const buffer = Buffer.from(keystoreBase64.trim(), 'base64');
+  const cleanBase64 = keystoreBase64.replace(/[\r\n\s]/g, '');
+  const buffer = Buffer.from(cleanBase64, 'base64');
   fs.writeFileSync(targetKeystorePath, buffer);
   console.log(`Successfully decoded release.keystore (${buffer.length} bytes)`);
 
