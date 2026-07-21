@@ -429,7 +429,7 @@ export const MarketScreen = () => {
                                             style: { borderRadius: 16 },
                                             propsForDots: { r: "3", strokeWidth: "1", stroke: curatedChartData.color },
                                             propsForBackgroundLines: { strokeDasharray: "", strokeWidth: 0.5, stroke: isDark ? '#2A2A2A' : '#E5E7EB' },
-                                            paddingRight: 16,
+                                            paddingRight: 55,
                                             propsForLabels: { fontSize: 10, fontWeight: '600' }
                                         }}
                                         bezier
