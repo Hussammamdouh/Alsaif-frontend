@@ -47,6 +47,7 @@ const releaseSigningBlock = `    signingConfigs {
         }
         release {
             storeFile file('release.keystore')
+            storeType 'jks'
             storePassword System.getenv("CM_KEYSTORE_PASSWORD")
             keyAlias System.getenv("CM_KEY_ALIAS")
             keyPassword System.getenv("CM_KEY_PASSWORD") ?: System.getenv("CM_KEYSTORE_PASSWORD")
