@@ -36,7 +36,11 @@ export const MarketScreen = () => {
     // Memoized chart configuration to prevent flickering/jumping on every re-render
     const curatedChartData = useMemo(() => {
         if (!selectedSymbol) return null;
-        const hasData = selectedSymbol.chartData && selectedSymbol.chartData.length > 0;
+        const rawChartData = selectedSymbol.chartData;
+        const hasData = rawChartData && rawChartData.length > 0;
+        const sortedChartData = hasData 
+            ? [...rawChartData].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+            : [];
         const isPositive = (selectedSymbol.change ?? selectedSymbol.changePercent ?? 0) >= 0;
         const color = isPositive ? '#22c55e' : '#ef4444';
 
@@ -45,11 +49,11 @@ export const MarketScreen = () => {
             isPositive,
             data: {
                 labels: hasData
-                    ? getChartLabels(selectedSymbol.chartData!)
-                    : getFallbackLabels(12),
+                    ? getChartLabels(sortedChartData, t)
+                    : getFallbackLabels(12, t),
                 datasets: [{
                     data: hasData
-                        ? selectedSymbol.chartData!.map(p => p.price)
+                        ? sortedChartData.map(p => p.price)
                         : generateChartData(
                             selectedSymbol.price,
                             selectedSymbol.changePercent,
@@ -62,7 +66,7 @@ export const MarketScreen = () => {
                 }]
             }
         };
-    }, [selectedSymbol?.symbol, selectedSymbol?.price, selectedSymbol?.chartData]);
+    }, [selectedSymbol?.symbol, selectedSymbol?.price, selectedSymbol?.chartData, t]);
 
     // Polling Interval
     useEffect(() => {
@@ -673,27 +677,30 @@ const generateChartData = (currentPrice: number, changePercent: number, symbol: 
     return points;
 };
 
-const getFallbackLabels = (count: number): string[] => {
+const getFallbackLabels = (count: number, t?: any): string[] => {
     const labels = [];
+    const openLabel = t ? t('market.open') : 'Open';
+    const noonLabel = t ? t('market.noon') : 'Noon';
+    const nowCloseLabel = t ? t('market.nowClose') : 'Now/Close';
     for (let i = 0; i < count; i++) {
-        if (i === 0) labels.push('Open');
-        else if (i === Math.floor(count / 2)) labels.push('Noon');
-        else if (i === count - 1) labels.push('Now');
+        if (i === 0) labels.push(openLabel);
+        else if (i === Math.floor(count / 2)) labels.push(noonLabel);
+        else if (i === count - 1) labels.push(nowCloseLabel);
         else labels.push('');
     }
     return labels;
 };
 
-const getChartLabels = (data: { timestamp: any }[]): string[] => {
+const getChartLabels = (data: { timestamp: any }[], t?: any): string[] => {
     if (!data || data.length === 0) return [];
-
-    // For 1 day, show time every few points
-    const step = Math.max(1, Math.floor(data.length / 5));
+    const count = data.length;
+    const openLabel = t ? t('market.open') : 'Open';
+    const noonLabel = t ? t('market.noon') : 'Noon';
+    const nowCloseLabel = t ? t('market.nowClose') : 'Now/Close';
     return data.map((p, i) => {
-        if (i % step === 0) {
-            const date = new Date(p.timestamp);
-            return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
-        }
+        if (i === 0) return openLabel;
+        if (i === Math.floor(count / 2)) return noonLabel;
+        if (i === count - 1) return nowCloseLabel;
         return '';
     });
 };
