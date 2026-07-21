@@ -6,7 +6,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/Logo Secondry.jpg",
     userInterfaceStyle: "automatic",
-    newArchEnabled: false,
+    newArchEnabled: true,
     scheme: "alsaif-analysis",
     updates: {
       enabled: false
