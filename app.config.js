@@ -2,11 +2,11 @@ export default {
   expo: {
     name: "Alsaif Analysis",
     slug: "elsaif-analysis",
-    version: "1.0.5",
+    version: "1.0.6",
     orientation: "portrait",
     icon: "./assets/Logo Secondry.jpg",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    newArchEnabled: false,
     scheme: "alsaif-analysis",
     updates: {
       enabled: false
@@ -44,7 +44,7 @@ export default {
       }
     },
     android: {
-      versionCode: 33,
+      versionCode: 34,
       adaptiveIcon: {
         foregroundImage: "./assets/Logo Secondry.jpg",
         backgroundColor: "#ffffff"
