@@ -553,7 +553,8 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2,
+    zIndex: 10,
+    elevation: 5,
   },
   toggleText: {
     fontSize: 16,
@@ -562,6 +563,7 @@ const getStyles = (theme: any, isDesktop: boolean, width: number) => StyleSheet.
   },
   toggleTextActive: {
     color: theme.text.primary,
+    fontWeight: '800',
   },
   saveBadgePill: {
     position: 'absolute',

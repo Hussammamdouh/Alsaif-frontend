@@ -984,6 +984,8 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 8,
+    zIndex: 10,
+    elevation: 3,
   },
   tabActive: {
     backgroundColor: theme.background.primary,
@@ -1000,6 +1002,7 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
   },
   tabTextActive: {
     color: theme.primary.main,
+    fontWeight: '800',
   },
   platformBadge: {
     paddingVertical: 8,
