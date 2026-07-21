@@ -110,7 +110,6 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       node: latest
-      android: latest
       groups:
         - android-credentials
       vars:
