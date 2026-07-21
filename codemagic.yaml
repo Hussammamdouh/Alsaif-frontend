@@ -133,28 +133,12 @@ workflows:
       - name: Run Expo Prebuild
         script: |
           npx expo prebuild --platform android --no-install
-      - name: Configure Android Release Signing in Gradle
+      - name: Configure Android Release Signing & Decode Keystore
         script: |
-          node -e "
-          const fs = require('fs');
-          const p = 'android/app/build.gradle';
-          let c = fs.readFileSync(p, 'utf8');
-          c = c.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release');
-          c = c.replace(/signingConfigs\s*\{[\s\S]*?\n    \}/, 'signingConfigs {\n        debug {\n            storeFile file(\"debug.keystore\")\n            storePassword \"android\"\n            keyAlias \"androiddebugkey\"\n            keyPassword \"android\"\n        }\n        release {\n            if (System.getenv(\"CM_KEYSTORE_PASSWORD\") != null) {\n                storeFile file(\"release.keystore\")\n                storePassword System.getenv(\"CM_KEYSTORE_PASSWORD\")\n                keyAlias System.getenv(\"CM_KEY_ALIAS\")\n                keyPassword System.getenv(\"CM_KEY_PASSWORD\")\n            } else {\n                storeFile file(\"debug.keystore\")\n                storePassword \"android\"\n                keyAlias \"androiddebugkey\"\n                keyPassword \"android\"\n            }\n        }\n    }');
-          fs.writeFileSync(p, c, 'utf8');
-          console.log('Gradle release signing configured successfully');
-          "
+          node scripts/patch_gradle_signing.js
       - name: Set Android SDK location
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
-      - name: Decode Android Release Keystore
-        script: |
-          if [ -n "$CM_KEYSTORE" ]; then
-            echo "Decoding release keystore from CM_KEYSTORE..."
-            echo "$CM_KEYSTORE" | base64 --decode > android/app/release.keystore
-          else
-            echo "WARNING: CM_KEYSTORE environment variable is missing!"
-          fi
       - name: Build Android Release App Bundle (.aab)
         script: |
           cd android
