@@ -199,9 +199,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           if (val) {
                             const parts = val.split('-');
                             if (parts.length === 3) {
-                              const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-                              if (!isNaN(date.getTime())) {
-                                setTempStartDate(date);
+                              const year = parseInt(parts[0]);
+                              const month = parseInt(parts[1]) - 1;
+                              const day = parseInt(parts[2]);
+                              if (year >= 1000 && year <= 9999) {
+                                const date = new Date(year, month, day);
+                                if (!isNaN(date.getTime())) {
+                                  setTempStartDate(date);
+                                }
                               }
                             }
                           }
@@ -243,9 +248,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           if (val) {
                             const parts = val.split('-');
                             if (parts.length === 3) {
-                              const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-                              if (!isNaN(date.getTime())) {
-                                setTempEndDate(date);
+                              const year = parseInt(parts[0]);
+                              const month = parseInt(parts[1]) - 1;
+                              const day = parseInt(parts[2]);
+                              if (year >= 1000 && year <= 9999) {
+                                const date = new Date(year, month, day);
+                                if (!isNaN(date.getTime())) {
+                                  setTempEndDate(date);
+                                }
                               }
                             }
                           }

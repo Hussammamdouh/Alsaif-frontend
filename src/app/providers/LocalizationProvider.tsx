@@ -1722,7 +1722,7 @@ const translations = {
     'market.selectMarketPrompt': 'اختر سوقاً للاستكشاف',
     'market.noData': 'لا توجد بيانات متاحة',
     'market.open': 'الافتتاح',
-    'market.start': 'البداية',
+    'market.start': 'الافتتاح',
     'market.now': 'الآن',
     'market.close': 'الإغلاق',
     'market.high': 'الأعلى',
