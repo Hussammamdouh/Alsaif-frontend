@@ -191,12 +191,11 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   <Text style={styles.dateInputLabel}>From</Text>
                   {Platform.OS === 'web' ? (
                     <View style={styles.dateInput}>
-                      <TextInput
-                        style={[styles.dateInputText, { width: '100%', borderWidth: 0, outline: 'none', backgroundColor: 'transparent' }]}
-                        {...({ type: 'date' } as any)}
-                        value={formatLocalDate(tempStartDate)}
-                        onChange={(e: any) => {
-                          const val = e.nativeEvent?.target?.value || e.target?.value;
+                      {React.createElement('input', {
+                        type: 'date',
+                        value: formatLocalDate(tempStartDate),
+                        onChange: (e: any) => {
+                          const val = e.target.value;
                           if (val) {
                             const parts = val.split('-');
                             if (parts.length === 3) {
@@ -206,8 +205,19 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                               }
                             }
                           }
-                        }}
-                      />
+                        },
+                        style: {
+                          width: '100%',
+                          border: 'none',
+                          outline: 'none',
+                          backgroundColor: 'transparent',
+                          color: theme.text.primary,
+                          fontSize: '15px',
+                          fontWeight: '600',
+                          fontFamily: 'inherit',
+                          padding: 0,
+                        }
+                      })}
                     </View>
                   ) : (
                     <TouchableOpacity
@@ -225,12 +235,11 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   <Text style={styles.dateInputLabel}>To</Text>
                   {Platform.OS === 'web' ? (
                     <View style={styles.dateInput}>
-                      <TextInput
-                        style={[styles.dateInputText, { width: '100%', borderWidth: 0, outline: 'none', backgroundColor: 'transparent' }]}
-                        {...({ type: 'date' } as any)}
-                        value={formatLocalDate(tempEndDate)}
-                        onChange={(e: any) => {
-                          const val = e.nativeEvent?.target?.value || e.target?.value;
+                      {React.createElement('input', {
+                        type: 'date',
+                        value: formatLocalDate(tempEndDate),
+                        onChange: (e: any) => {
+                          const val = e.target.value;
                           if (val) {
                             const parts = val.split('-');
                             if (parts.length === 3) {
@@ -240,8 +249,19 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                               }
                             }
                           }
-                        }}
-                      />
+                        },
+                        style: {
+                          width: '100%',
+                          border: 'none',
+                          outline: 'none',
+                          backgroundColor: 'transparent',
+                          color: theme.text.primary,
+                          fontSize: '15px',
+                          fontWeight: '600',
+                          fontFamily: 'inherit',
+                          padding: 0,
+                        }
+                      })}
                     </View>
                   ) : (
                     <TouchableOpacity
