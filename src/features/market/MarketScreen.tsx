@@ -556,7 +556,7 @@ export const MarketScreen = () => {
                                             pointerEvents="none"
                                             style={{
                                                 position: 'absolute',
-                                                bottom: isDesktop ? 72 : 42,
+                                                bottom: isDesktop ? 72 : 32,
                                                 left: 0,
                                                 width: isDesktop ? (width >= 1200 ? 450 : 350) : width - 80,
                                                 flexDirection: 'row',
