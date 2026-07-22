@@ -37,13 +37,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const { isRTL } = useLocalization();
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
-  // Sync temp dates with props when modal opens or props change
+  // Sync temp dates with props only when the modal opens
   React.useEffect(() => {
     if (showModal) {
       setTempStartDate(startDate);
       setTempEndDate(endDate);
     }
-  }, [showModal, startDate, endDate]);
+  }, [showModal]);
 
   const formatDate = (date: Date): string => {
     const month = date.getMonth() + 1;
@@ -207,12 +207,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                             }
                           }
                         }}
-                        onChangeText={(text) => {
-                          const date = new Date(text);
-                          if (!isNaN(date.getTime())) {
-                            setTempStartDate(date);
-                          }
-                        }}
                       />
                     </View>
                   ) : (
@@ -245,12 +239,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                                 setTempEndDate(date);
                               }
                             }
-                          }
-                        }}
-                        onChangeText={(text) => {
-                          const date = new Date(text);
-                          if (!isNaN(date.getTime())) {
-                            setTempEndDate(date);
                           }
                         }}
                       />
