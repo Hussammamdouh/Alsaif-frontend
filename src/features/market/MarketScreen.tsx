@@ -32,6 +32,18 @@ export const MarketScreen = () => {
     const [manualPrice, setManualPrice] = useState<string>('');
     const [favorites, setFavorites] = useState<string[]>([]);
     const [transactionType, setTransactionType] = useState<'buy' | 'sell'>('buy');
+    const [selectedPoint, setSelectedPoint] = useState<{
+        index: number;
+        price: number;
+        x: number;
+        y: number;
+        timestamp: string;
+    } | null>(null);
+
+    // Reset selected chart point when switching symbols
+    useEffect(() => {
+        setSelectedPoint(null);
+    }, [selectedSymbol?.symbol]);
 
     // Memoized chart configuration to prevent flickering/jumping on every re-render
     const curatedChartData = useMemo(() => {
@@ -44,26 +56,38 @@ export const MarketScreen = () => {
         const isPositive = (selectedSymbol.change ?? selectedSymbol.changePercent ?? 0) >= 0;
         const color = isPositive ? '#22c55e' : '#ef4444';
 
+        const prevClose = selectedSymbol.prevClose || selectedSymbol.price;
+        const mainDataset = hasData
+            ? sortedChartData.map(p => p.price)
+            : generateChartData(
+                selectedSymbol.price,
+                selectedSymbol.changePercent,
+                selectedSymbol.symbol,
+                selectedSymbol.open,
+                selectedSymbol.prevClose
+            );
+
         return {
             color,
             isPositive,
             data: {
                 labels: hasData
-                    ? getChartLabels(sortedChartData, t)
-                    : getFallbackLabels(12, t),
-                datasets: [{
-                    data: hasData
-                        ? sortedChartData.map(p => p.price)
-                        : generateChartData(
-                            selectedSymbol.price,
-                            selectedSymbol.changePercent,
-                            selectedSymbol.symbol,
-                            selectedSymbol.open,
-                            selectedSymbol.prevClose
-                        ),
-                    color: (opacity = 1) => color,
-                    strokeWidth: 3
-                }]
+                    ? Array(sortedChartData.length).fill('')
+                    : Array(12).fill(''),
+                datasets: [
+                    {
+                        data: mainDataset,
+                        color: (opacity = 1) => color,
+                        strokeWidth: 3
+                    },
+                    {
+                        data: Array(mainDataset.length).fill(prevClose),
+                        color: (opacity = 1) => 'rgba(156, 163, 175, 0.4)', // semi-transparent gray
+                        strokeWidth: 1.5,
+                        strokeDasharray: [5, 5], // dashed line
+                        withDots: false // no dots for this dataset
+                    }
+                ]
             }
         };
     }, [selectedSymbol?.symbol, selectedSymbol?.price, selectedSymbol?.chartData, t]);
@@ -401,9 +425,8 @@ export const MarketScreen = () => {
                                     <Stat label={t('market.prevClose')} value={formatStatValue(selectedSymbol.prevClose || ((selectedSymbol.price || 0) - (selectedSymbol.change || 0)))} theme={theme} styles={styles} t={t} />
                                     <Stat label={t('market.volume')} value={formatStatValue(selectedSymbol.volume, true)} theme={theme} styles={styles} t={t} />
                                 </View>
-                            </View>
+                             </View>
                         </View>
-
                         {/* Column 2: Chart (Middle) */}
                         <View style={[styles.detailCard, isDesktop ? { flex: 1.5, margin: 0, marginRight: 24 } : null]}>
                             <View style={[styles.chartContainer, { alignItems: 'center' }]}>
@@ -411,30 +434,145 @@ export const MarketScreen = () => {
                                     {t('market.priceHistory')} (1 Day)
                                 </Text>
                                 {curatedChartData && (
-                                    <LineChart
-                                        data={curatedChartData.data}
-                                        width={isDesktop ? (width >= 1200 ? 450 : 350) : width - 64}
-                                        height={isDesktop ? 350 : 250}
-                                        chartConfig={{
-                                            backgroundColor: 'transparent',
-                                            backgroundGradientFrom: theme.background.secondary,
-                                            backgroundGradientTo: theme.background.secondary,
-                                            fillShadowGradientFrom: curatedChartData.color,
-                                            fillShadowGradientTo: theme.background.secondary,
-                                            fillShadowGradientFromOpacity: 0.5,
-                                            fillShadowGradientToOpacity: 0.05,
-                                            decimalPlaces: 3,
-                                            color: (opacity = 1) => curatedChartData.color,
-                                            labelColor: (opacity = 1) => theme.text.secondary,
-                                            style: { borderRadius: 16 },
-                                            propsForDots: { r: "3", strokeWidth: "1", stroke: curatedChartData.color },
-                                            propsForBackgroundLines: { strokeDasharray: "", strokeWidth: 0.5, stroke: isDark ? '#2A2A2A' : '#E5E7EB' },
-                                            paddingRight: 55,
-                                            propsForLabels: { fontSize: 10, fontWeight: '600' }
-                                        }}
-                                        bezier
-                                        style={{ marginVertical: 8, borderRadius: 16 }}
-                                    />
+                                    <View style={{ position: 'relative', width: isDesktop ? (width >= 1200 ? 450 : 350) : width - 80, alignItems: 'center' }}>
+                                        <LineChart
+                                            data={curatedChartData.data}
+                                            width={isDesktop ? (width >= 1200 ? 450 : 350) : width - 80}
+                                            height={isDesktop ? 350 : 250}
+                                            segments={2}
+                                            chartConfig={{
+                                                backgroundColor: 'transparent',
+                                                backgroundGradientFrom: theme.background.secondary,
+                                                backgroundGradientTo: theme.background.secondary,
+                                                fillShadowGradientFrom: curatedChartData.color,
+                                                fillShadowGradientTo: theme.background.secondary,
+                                                fillShadowGradientFromOpacity: 0.5,
+                                                fillShadowGradientToOpacity: 0.05,
+                                                decimalPlaces: 3,
+                                                color: (opacity = 1) => curatedChartData.color,
+                                                labelColor: (opacity = 1) => theme.text.secondary,
+                                                style: { borderRadius: 16 },
+                                                propsForDots: { r: "3", strokeWidth: "1", stroke: curatedChartData.color },
+                                                propsForBackgroundLines: { strokeDasharray: "", strokeWidth: 0.5, stroke: isDark ? '#2A2A2A' : '#E5E7EB' },
+                                                paddingRight: 60,
+                                                propsForLabels: { fontSize: 10, fontWeight: '600' }
+                                            }}
+                                            bezier
+                                            style={{ marginVertical: 8, borderRadius: 16 }}
+                                            getDotProps={(value, index) => {
+                                                const totalPoints = curatedChartData.data.datasets[0].data.length;
+                                                const isLast = index === (totalPoints - 1);
+                                                const isSelected = selectedPoint && selectedPoint.index === index;
+                                                if (isLast || isSelected) {
+                                                    return {
+                                                        r: isSelected ? "6" : "4",
+                                                        strokeWidth: isSelected ? "3" : "2",
+                                                        stroke: curatedChartData.color,
+                                                        fill: isSelected ? theme.background.primary : curatedChartData.color,
+                                                        strokeOpacity: 1,
+                                                        fillOpacity: 1
+                                                    };
+                                                }
+                                                return {
+                                                    r: "12",
+                                                    strokeWidth: "0",
+                                                    stroke: "rgba(0,0,0,0)",
+                                                    fill: "rgba(0,0,0,0)",
+                                                    strokeOpacity: 0,
+                                                    fillOpacity: 0.01
+                                                };
+                                            }}
+                                            onDataPointClick={({ index, value, x, y }) => {
+                                                let pointTime = '';
+                                                if (selectedSymbol && selectedSymbol.chartData && selectedSymbol.chartData.length > 0) {
+                                                    const sortedData = [...selectedSymbol.chartData].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                                                    if (sortedData[index]) {
+                                                        const date = new Date(sortedData[index].timestamp);
+                                                        pointTime = `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                                                    }
+                                                } else {
+                                                    const hour = 9 + Math.floor(index / 2);
+                                                    const minute = (index % 2 === 0) ? '00' : '30';
+                                                    pointTime = `${hour}:${minute}`;
+                                                }
+                                                setSelectedPoint({
+                                                    index,
+                                                    price: value,
+                                                    x,
+                                                    y,
+                                                    timestamp: pointTime
+                                                });
+                                            }}
+                                        />
+
+                                        {/* Vertical Scrubber Line Guide */}
+                                        {selectedPoint && (
+                                            <View
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: selectedPoint.x,
+                                                    top: 20,
+                                                    bottom: 40,
+                                                    width: 1.5,
+                                                    backgroundColor: 'rgba(156, 163, 175, 0.4)',
+                                                    zIndex: 5,
+                                                    pointerEvents: 'none'
+                                                }}
+                                            />
+                                        )}
+
+                                        {/* Tooltip Card Overlay */}
+                                        {selectedPoint && (
+                                            <View
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: Math.max(10, Math.min((isDesktop ? (width >= 1200 ? 450 : 350) : width - 80) - 150, selectedPoint.x - 70)),
+                                                    top: Math.max(10, selectedPoint.y - 65),
+                                                    width: 140,
+                                                    backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
+                                                    borderRadius: 8,
+                                                    padding: 6,
+                                                    borderWidth: 1,
+                                                    borderColor: theme.ui.border,
+                                                    shadowColor: '#000',
+                                                    shadowOffset: { width: 0, height: 4 },
+                                                    shadowOpacity: 0.15,
+                                                    shadowRadius: 6,
+                                                    elevation: 6,
+                                                    zIndex: 10
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 10, color: theme.text.secondary, textAlign: 'center', marginBottom: 2 }}>
+                                                    {selectedPoint.timestamp}
+                                                </Text>
+                                                <Text style={{ fontSize: 13, fontWeight: '800', color: theme.text.primary, textAlign: 'center' }}>
+                                                    {selectedPoint.price.toFixed(3)} <Text style={{ fontSize: 9, fontWeight: 'normal' }}>AED</Text>
+                                                </Text>
+                                            </View>
+                                        )}
+
+                                        {/* Custom Predetermined X-Axis Labels */}
+                                        <View 
+                                            pointerEvents="none"
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: isDesktop ? 72 : 55,
+                                                left: 0,
+                                                width: isDesktop ? (width >= 1200 ? 450 : 350) : width - 80,
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-between',
+                                                paddingLeft: 57,
+                                                paddingRight: 2
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 10, color: theme.text.secondary, fontWeight: '600' }}>
+                                                {t ? t('market.start') : 'Start'}
+                                            </Text>
+                                            <Text style={{ fontSize: 10, color: theme.text.secondary, fontWeight: '600' }}>
+                                                {isMarketClosed() ? (t ? t('market.close') : 'Close') : (t ? t('market.now') : 'Now')}
+                                            </Text>
+                                        </View>
+                                    </View>
                                 )}
                             </View>
                         </View>
@@ -677,15 +815,46 @@ const generateChartData = (currentPrice: number, changePercent: number, symbol: 
     return points;
 };
 
+const isMarketClosed = (): boolean => {
+    const now = new Date();
+    const utcHours = now.getUTCHours();
+    const utcMinutes = now.getUTCMinutes();
+    const utcDay = now.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+
+    let uaeHours = utcHours + 4;
+    let uaeDay = utcDay;
+    if (uaeHours >= 24) {
+        uaeHours -= 24;
+        uaeDay = (uaeDay + 1) % 7;
+    }
+
+    // Weekend (Saturday or Sunday)
+    if (uaeDay === 0 || uaeDay === 6) {
+        return true;
+    }
+
+    const timeInMinutes = uaeHours * 60 + utcMinutes;
+    const startInMinutes = 10 * 60; // 10:00 AM
+    const endInMinutes = 15 * 60;   // 3:00 PM
+
+    if (timeInMinutes < startInMinutes || timeInMinutes >= endInMinutes) {
+        return true;
+    }
+
+    return false;
+};
+
+const getEndLabel = (t?: any): string => {
+    return isMarketClosed() ? (t ? t('market.close') : 'Close') : (t ? t('market.now') : 'Now');
+};
+
 const getFallbackLabels = (count: number, t?: any): string[] => {
     const labels = [];
-    const openLabel = t ? t('market.open') : 'Open';
-    const noonLabel = t ? t('market.noon') : 'Noon';
-    const nowCloseLabel = t ? t('market.nowClose') : 'Now/Close';
+    const startLabel = t ? t('market.start') : 'Start';
+    const endLabel = getEndLabel(t);
     for (let i = 0; i < count; i++) {
-        if (i === 0) labels.push(openLabel);
-        else if (i === Math.floor(count / 2)) labels.push(noonLabel);
-        else if (i === count - 1) labels.push(nowCloseLabel);
+        if (i === 0) labels.push(startLabel);
+        else if (i === count - 1) labels.push(endLabel);
         else labels.push('');
     }
     return labels;
@@ -694,13 +863,11 @@ const getFallbackLabels = (count: number, t?: any): string[] => {
 const getChartLabels = (data: { timestamp: any }[], t?: any): string[] => {
     if (!data || data.length === 0) return [];
     const count = data.length;
-    const openLabel = t ? t('market.open') : 'Open';
-    const noonLabel = t ? t('market.noon') : 'Noon';
-    const nowCloseLabel = t ? t('market.nowClose') : 'Now/Close';
+    const startLabel = t ? t('market.start') : 'Start';
+    const endLabel = getEndLabel(t);
     return data.map((p, i) => {
-        if (i === 0) return openLabel;
-        if (i === Math.floor(count / 2)) return noonLabel;
-        if (i === count - 1) return nowCloseLabel;
+        if (i === 0) return startLabel;
+        if (i === count - 1) return endLabel;
         return '';
     });
 };
