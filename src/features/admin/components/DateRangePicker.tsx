@@ -52,6 +52,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     return `${month}/${day}/${year}`;
   };
 
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getDateRangeText = (): string => {
     if (selectedPreset === 'today') return 'Today';
     if (selectedPreset === 'week') return 'This Week';
@@ -94,6 +101,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     setSelectedPreset(preset);
     setTempStartDate(newStartDate);
     setTempEndDate(newEndDate);
+    
+    // Quick presets apply immediately
+    onRangeChange(newStartDate, newEndDate);
+    setShowModal(false);
   };
 
   const handleApply = () => {
@@ -143,8 +154,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
       <Modal
         visible={showModal}
-        animationType="fade"
         transparent={true}
+        animationType="fade"
         onRequestClose={handleCancel}
       >
         <View style={styles.modalOverlay}>
@@ -181,9 +192,21 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   {Platform.OS === 'web' ? (
                     <View style={styles.dateInput}>
                       <TextInput
-                        style={[styles.dateInputText, { width: '100%', borderOpacity: 0, outline: 'none', backgroundColor: 'transparent' }]}
+                        style={[styles.dateInputText, { width: '100%', borderWidth: 0, outline: 'none', backgroundColor: 'transparent' }]}
                         {...({ type: 'date' } as any)}
-                        value={tempStartDate.toISOString().split('T')[0]}
+                        value={formatLocalDate(tempStartDate)}
+                        onChange={(e: any) => {
+                          const val = e.nativeEvent?.target?.value || e.target?.value;
+                          if (val) {
+                            const parts = val.split('-');
+                            if (parts.length === 3) {
+                              const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                              if (!isNaN(date.getTime())) {
+                                setTempStartDate(date);
+                              }
+                            }
+                          }
+                        }}
                         onChangeText={(text) => {
                           const date = new Date(text);
                           if (!isNaN(date.getTime())) {
@@ -209,9 +232,21 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   {Platform.OS === 'web' ? (
                     <View style={styles.dateInput}>
                       <TextInput
-                        style={[styles.dateInputText, { width: '100%', borderOpacity: 0, outline: 'none', backgroundColor: 'transparent' }]}
+                        style={[styles.dateInputText, { width: '100%', borderWidth: 0, outline: 'none', backgroundColor: 'transparent' }]}
                         {...({ type: 'date' } as any)}
-                        value={tempEndDate.toISOString().split('T')[0]}
+                        value={formatLocalDate(tempEndDate)}
+                        onChange={(e: any) => {
+                          const val = e.nativeEvent?.target?.value || e.target?.value;
+                          if (val) {
+                            const parts = val.split('-');
+                            if (parts.length === 3) {
+                              const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                              if (!isNaN(date.getTime())) {
+                                setTempEndDate(date);
+                              }
+                            }
+                          }
+                        }}
                         onChangeText={(text) => {
                           const date = new Date(text);
                           if (!isNaN(date.getTime())) {
@@ -236,28 +271,70 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           </View>
         </View>
 
-        {/* Date Pickers */}
-        {showStartPicker && (
+        {/* Android Date Pickers */}
+        {Platform.OS === 'android' && showStartPicker && (
           <DateTimePicker
             value={tempStartDate}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display="default"
             onChange={(event, selectedDate) => {
-              setShowStartPicker(Platform.OS === 'ios');
+              setShowStartPicker(false);
               if (selectedDate) setTempStartDate(selectedDate);
             }}
           />
         )}
-        {showEndPicker && (
+        {Platform.OS === 'android' && showEndPicker && (
           <DateTimePicker
             value={tempEndDate}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display="default"
             onChange={(event, selectedDate) => {
-              setShowEndPicker(Platform.OS === 'ios');
+              setShowEndPicker(false);
               if (selectedDate) setTempEndDate(selectedDate);
             }}
           />
+        )}
+
+        {/* iOS Date Picker Modal Sheet */}
+        {Platform.OS === 'ios' && (showStartPicker || showEndPicker) && (
+          <Modal
+            transparent={true}
+            visible={true}
+            animationType="slide"
+          >
+            <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+              <View style={{ backgroundColor: theme.background.secondary, paddingBottom: 40, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderColor: theme.border.main }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1, borderColor: theme.border.main, backgroundColor: theme.background.tertiary, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
+                  <TouchableOpacity onPress={() => {
+                    setShowStartPicker(false);
+                    setShowEndPicker(false);
+                  }}>
+                    <Text style={{ fontSize: 16, color: theme.text.tertiary, fontWeight: '600' }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <Text style={{ fontSize: 16, color: theme.text.primary, fontWeight: '700' }}>
+                    {showStartPicker ? 'Select Start Date' : 'Select End Date'}
+                  </Text>
+                  <TouchableOpacity onPress={() => {
+                    setShowStartPicker(false);
+                    setShowEndPicker(false);
+                  }}>
+                    <Text style={{ fontSize: 16, color: theme.primary.main, fontWeight: '700' }}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={showStartPicker ? tempStartDate : tempEndDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      if (showStartPicker) setTempStartDate(selectedDate);
+                      else setTempEndDate(selectedDate);
+                    }
+                  }}
+                />
+              </View>
+            </View>
+          </Modal>
         )}
       </Modal>
     </View>
