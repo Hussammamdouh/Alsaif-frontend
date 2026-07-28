@@ -377,11 +377,11 @@ export const MarketScreen = () => {
                     </View>
                 ) : (
                     <SafeAreaView style={{ flex: 1 }}>
-                        <View style={[styles.dashboardHeader, { height: 110, justifyContent: 'flex-start', backgroundColor: theme.background.secondary }]}>
-                            <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
-                        </View>
-                        {renderEmptyMarkets()}
-                    </SafeAreaView>
+                         <View style={[styles.dashboardHeader, { justifyContent: 'flex-start', backgroundColor: theme.background.secondary }]}>
+                             <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.headerTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
+                         </View>
+                         {renderEmptyMarkets()}
+                     </SafeAreaView>
                 )}
             </View>
         );
@@ -393,12 +393,12 @@ export const MarketScreen = () => {
 
         const renderSymbolDetail = () => (
             <>
-                <View style={[styles.dashboardHeader, { backgroundColor: theme.background.secondary, height: isDesktop ? 80 : 110, paddingTop: isDesktop ? 0 : 45 }]}>
-                    <TouchableOpacity onPress={() => setSelectedSymbol(null)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                        <Icon name="chevron-back" size={24} color={theme.text.primary} />
-                        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{selectedSymbol.shortName}</Text>
-                    </TouchableOpacity>
-                </View>
+                 <View style={[styles.dashboardHeader, { backgroundColor: theme.background.secondary, height: isDesktop ? 80 : undefined, paddingTop: isDesktop ? 0 : undefined }]}>
+                     <TouchableOpacity onPress={() => setSelectedSymbol(null)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                         <Icon name="chevron-back" size={24} color={theme.text.primary} />
+                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.headerTitle, { color: theme.text.primary }]}>{selectedSymbol.shortName}</Text>
+                     </TouchableOpacity>
+                 </View>
 
                 <ScrollView
                     style={styles.desktopContentWrapper}
@@ -740,8 +740,8 @@ export const MarketScreen = () => {
     const renderMarketList = () => (
         <>
             {isDesktop ? null : (
-                <View style={[styles.dashboardHeader, { backgroundColor: theme.background.secondary, height: isDesktop ? 80 : 110, paddingTop: isDesktop ? 0 : 45 }]}>
-                    <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
+                <View style={[styles.dashboardHeader, { backgroundColor: theme.background.secondary, height: isDesktop ? 80 : undefined, paddingTop: isDesktop ? 0 : undefined }]}>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.headerTitle, { color: theme.text.primary }]}>{t('market.title')}</Text>
                 </View>
             )}
 
@@ -888,11 +888,11 @@ const Stat = ({ label, value, theme, styles, t }: any) => (
 const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
     container: { flex: 1 },
     dashboardHeader: {
-        height: 110,
+        height: Platform.OS === 'ios' ? 95 : (StatusBar.currentHeight || 24) + 56,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: 45,
+        paddingTop: Platform.OS === 'ios' ? 40 : (StatusBar.currentHeight || 24),
         paddingHorizontal: spacing.lg,
         borderBottomWidth: 1,
         borderBottomColor: theme.ui.border,
@@ -906,7 +906,7 @@ const getStyles = (theme: any, isDesktop: boolean) => StyleSheet.create({
         paddingBottom: 16,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: isDesktop ? 24 : 20,
         fontWeight: '800',
         color: theme.text.primary,
         letterSpacing: -0.5,

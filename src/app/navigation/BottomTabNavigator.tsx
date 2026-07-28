@@ -26,6 +26,7 @@ import { InsightsListScreen } from '../../features/insights/InsightsListScreen';
 import { DesktopTopNav } from '../../features/home/components/DesktopTopNav';
 import { AuthRequiredGate } from '../../shared/components/AuthRequiredGate';
 import { useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -54,6 +55,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
   const { t } = useLocalization();
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isDesktop = width >= 768;
 
   // Get user from session
@@ -127,12 +129,16 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
             {
               backgroundColor: theme.background.primary,
               borderTopWidth: 0,
-              height: Platform.OS === 'ios' ? 88 : 72,
-              paddingBottom: Platform.OS === 'ios' ? 28 : 12,
-              paddingTop: 12,
+              height: Platform.OS === 'ios'
+                ? (insets.bottom > 0 ? 80 + insets.bottom : 80)
+                : (insets.bottom > 0 ? 72 + insets.bottom : 76),
+              paddingBottom: Platform.OS === 'ios'
+                ? (insets.bottom > 0 ? insets.bottom + 4 : 14)
+                : (insets.bottom > 0 ? insets.bottom + 2 : 10),
+              paddingTop: 10,
               paddingHorizontal: 8,
               position: 'absolute',
-              bottom: spacing.md,
+              bottom: insets.bottom > 0 ? insets.bottom : 16,
               left: spacing.md,
               right: spacing.md,
               borderRadius: 36,
@@ -147,9 +153,9 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
             isDesktop && { display: 'none' }
           ],
           tabBarLabelStyle: {
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: '700',
-            marginTop: 6,
+            marginTop: 2,
             letterSpacing: 0.3,
           },
           tabBarItemStyle: {

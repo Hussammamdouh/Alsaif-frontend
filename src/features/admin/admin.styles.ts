@@ -3,7 +3,7 @@
  * Shared styles for admin screens with theme support
  */
 
-import { StyleSheet, I18nManager } from 'react-native';
+import { StyleSheet, I18nManager, Platform, StatusBar } from 'react-native';
 import { ColorPalette } from '../../core/theme/colors';
 
 export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nManager.isRTL) => {
@@ -26,11 +26,11 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
 
   // Header
   header: {
-    height: 110,
+    height: Platform.OS === 'ios' ? 95 : (StatusBar.currentHeight || 24) + 56,
     flexDirection: isManualRTL ? 'row-reverse' : 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 45,
+    paddingTop: Platform.OS === 'ios' ? 40 : (StatusBar.currentHeight || 24),
     paddingHorizontal: 20,
     backgroundColor: theme.background.secondary,
     borderBottomWidth: 1,
@@ -82,7 +82,7 @@ export const createAdminStyles = (theme: ColorPalette, isRTL: boolean = I18nMana
     marginStart: 12,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: Platform.OS === 'web' ? 24 : 20,
     fontWeight: '800',
     color: theme.text.primary,
     letterSpacing: -0.5,

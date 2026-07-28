@@ -172,7 +172,12 @@ export const AuthRequiredGate: React.FC<AuthRequiredGateProps> = ({
                                 <Ionicons name={icon as any} size={32} color={theme.primary.main} />
                             </View>
 
-                            <Text style={[styles.mobileTitle, { color: theme.text.primary }]}>
+                            <Text
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.5}
+                                style={[styles.mobileTitle, { color: theme.text.primary }]}
+                            >
                                 {title || t('auth.loginRequired') || 'Authentication Required'}
                             </Text>
 
