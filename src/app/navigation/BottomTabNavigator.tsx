@@ -130,8 +130,8 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
               backgroundColor: theme.background.primary,
               borderTopWidth: 0,
               height: Platform.OS === 'ios'
-                ? (insets.bottom > 0 ? 80 + insets.bottom : 88)
-                : (insets.bottom > 0 ? 76 + insets.bottom : 82),
+                ? (insets.bottom > 0 ? 84 + insets.bottom : 94)
+                : (insets.bottom > 0 ? 80 + insets.bottom : 88),
               paddingBottom: Platform.OS === 'ios'
                 ? (insets.bottom > 0 ? insets.bottom + 2 : 12)
                 : (insets.bottom > 0 ? insets.bottom + 2 : 8),
@@ -155,7 +155,7 @@ export const BottomTabNavigator: React.FC<BottomTabNavigatorProps> = ({
           tabBarLabelStyle: {
             fontSize: 10,
             fontWeight: '700',
-            marginTop: 0,
+            marginTop: 10,
             letterSpacing: 0.3,
           },
           tabBarItemStyle: {
