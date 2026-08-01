@@ -75,7 +75,11 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
             triggerHaptic('selection');
         } catch (e) {
             console.error('[SecuritySettings] Failed to save app lock preference:', e);
-            Alert.alert('Error', 'Failed to save setting');
+            if (Platform.OS === 'web') {
+                alert('Failed to save setting');
+            } else {
+                Alert.alert('Error', 'Failed to save setting');
+            }
         }
     };
 
@@ -105,7 +109,11 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
             setSessions(sessions);
         } catch (error) {
             console.error('[SecuritySettings] Failed to fetch sessions:', error);
-            Alert.alert('Error', 'Failed to load active sessions');
+            if (Platform.OS === 'web') {
+                alert('Failed to load active sessions');
+            } else {
+                Alert.alert('Error', 'Failed to load active sessions');
+            }
         } finally {
             if (showLoading) setLoading(false);
             setRefreshing(false);
@@ -154,50 +162,76 @@ export const SecuritySettingsScreen: React.FC<SecuritySettingsScreenProps> = ({
     }, [onNavigateToSettings, navigation, isAdmin]);
 
     const handleRevokeSession = async (sessionId: string) => {
-        Alert.alert(
-            'Revoke Session',
-            'Are you sure you want to log out of this device?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Log Out',
-                    style: 'destructive',
-                    onPress: async () => {
-                        setRevokingId(sessionId);
-                        try {
-                            await SettingsService.revokeSession(sessionId);
-                            setSessions(prev => prev.filter(s => s.id !== sessionId));
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to revoke session');
-                        } finally {
-                            setRevokingId(null);
-                        }
+        const performRevoke = async () => {
+            setRevokingId(sessionId);
+            try {
+                await SettingsService.revokeSession(sessionId);
+                setSessions(prev => prev.filter(s => s.id !== sessionId));
+            } catch (error) {
+                if (Platform.OS === 'web') {
+                    alert('Failed to revoke session');
+                } else {
+                    Alert.alert('Error', 'Failed to revoke session');
+                }
+            } finally {
+                setRevokingId(null);
+            }
+        };
+
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm('Are you sure you want to log out of this device?');
+            if (confirmed) {
+                performRevoke();
+            }
+        } else {
+            Alert.alert(
+                'Revoke Session',
+                'Are you sure you want to log out of this device?',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Log Out',
+                        style: 'destructive',
+                        onPress: performRevoke,
                     },
-                },
-            ]
-        );
+                ]
+            );
+        }
     };
 
     const handleLogoutAll = () => {
-        Alert.alert(
-            'Logout from All Devices',
-            'This will log you out of all current sessions except this one. Continue?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Logout All',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await SettingsService.logoutAllDevices();
-                            onNavigateBack();
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to logout from all devices');
-                        }
+        const performLogoutAll = async () => {
+            try {
+                await SettingsService.logoutAllDevices();
+                onNavigateBack();
+            } catch (error) {
+                if (Platform.OS === 'web') {
+                    alert('Failed to logout from all devices');
+                } else {
+                    Alert.alert('Error', 'Failed to logout from all devices');
+                }
+            }
+        };
+
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm('This will log you out of all current sessions except this one. Continue?');
+            if (confirmed) {
+                performLogoutAll();
+            }
+        } else {
+            Alert.alert(
+                'Logout from All Devices',
+                'This will log you out of all current sessions except this one. Continue?',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Logout All',
+                        style: 'destructive',
+                        onPress: performLogoutAll,
                     },
-                },
-            ]
-        );
+                ]
+            );
+        }
     };
 
     const formatDate = (dateString: string) => {
