@@ -462,19 +462,23 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
                     onPress={() => handleMemberPress(item)}
                     activeOpacity={0.7}
                 >
-                    <LinearGradient
-                        colors={isAdmin 
-                            ? [theme.primary.main, theme.primary.dark] 
-                            : isTargetMod
-                                ? [theme.warning.main, theme.warning.dark || theme.warning.main]
-                                : [theme.background.tertiary, theme.background.tertiary]
-                        }
-                        style={styles.memberAvatar}
-                    >
-                        <Text style={[styles.memberAvatarText, { color: (isAdmin || isTargetMod) ? '#FFFFFF' : theme.text.secondary }]}>
-                            {item.name.charAt(0).toUpperCase()}
-                        </Text>
-                    </LinearGradient>
+                    {item.avatar ? (
+                        <Image source={{ uri: item.avatar }} style={styles.memberAvatar} />
+                    ) : (
+                        <LinearGradient
+                            colors={isAdmin 
+                                ? [theme.primary.main, theme.primary.dark] 
+                                : isTargetMod
+                                    ? [theme.warning.main, theme.warning.dark || theme.warning.main]
+                                    : [theme.background.tertiary, theme.background.tertiary]
+                            }
+                            style={styles.memberAvatar}
+                        >
+                            <Text style={[styles.memberAvatarText, { color: (isAdmin || isTargetMod) ? '#FFFFFF' : theme.text.secondary }]}>
+                                {item.name.charAt(0).toUpperCase()}
+                            </Text>
+                        </LinearGradient>
+                    )}
 
                     <View style={styles.memberDetails}>
                         <View style={styles.memberNameRow}>
@@ -998,11 +1002,15 @@ export const ChatSettingsScreen: React.FC<ChatSettingsScreenProps> = ({
                                             borderColor: theme.primary.main + '30',
                                         }]}
                                     >
-                                        <View style={[styles.chipAvatar, { backgroundColor: theme.primary.main }]}>
-                                            <Text style={styles.chipAvatarText}>
-                                                {member.name.charAt(0).toUpperCase()}
-                                            </Text>
-                                        </View>
+                                        {member.avatar ? (
+                                            <Image source={{ uri: member.avatar }} style={styles.chipAvatar} />
+                                        ) : (
+                                            <View style={[styles.chipAvatar, { backgroundColor: theme.primary.main }]}>
+                                                <Text style={styles.chipAvatarText}>
+                                                    {member.name.charAt(0).toUpperCase()}
+                                                </Text>
+                                            </View>
+                                        )}
                                         <Text
                                             style={[styles.chipName, { color: theme.text.primary }]}
                                             numberOfLines={1}
