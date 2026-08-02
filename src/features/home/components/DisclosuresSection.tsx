@@ -107,7 +107,7 @@ const DisclosuresSection: React.FC<{ exchange?: 'ADX' | 'DFM' }> = ({ exchange }
             {disclosures.map((item) => {
                 const isADX = item.exchange === 'ADX';
                 const title = language === 'ar' ? (item.titleAr || item.title) : (item.titleEn || item.title);
-                const companyName = language === 'ar' ? (item.companyNameAr || item.companyName) : (item.companyNameEn || item.companyName);
+                const companyName = language === 'ar' ? (item.issuer_ar || item.companyNameAr || item.companyName) : (item.companyNameEn || item.companyName);
 
                 return (
                     <TouchableOpacity
