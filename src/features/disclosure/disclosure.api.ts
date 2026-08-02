@@ -13,6 +13,7 @@ export interface Disclosure {
     companyName?: string;
     companyNameAr?: string;
     companyNameEn?: string;
+    issuer_ar?: string;
     note?: string;
     noteAr?: string;
     noteEn?: string;

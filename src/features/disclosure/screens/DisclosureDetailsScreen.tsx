@@ -218,7 +218,7 @@ export const DisclosureDetailsScreen: React.FC = () => {
                         <View style={[styles.companyRow, { backgroundColor: theme.background.primary, alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>
                             <Ionicons name="business" size={20} color={theme.primary.main} />
                             <Text style={[styles.companyName, { color: theme.text.secondary }]}>
-                                {language === 'ar' ? (disclosure.companyNameAr || disclosure.companyName) : (disclosure.companyNameEn || disclosure.companyName)}
+                                {language === 'ar' ? (disclosure.issuer_ar || disclosure.companyNameAr || disclosure.companyName) : (disclosure.companyNameEn || disclosure.companyName)}
                             </Text>
                         </View>
                     </View>

@@ -96,7 +96,7 @@ const DisclosureCard: React.FC<DisclosureCardProps> = ({ item, index, language, 
                     <View style={styles.cardTopRow}>
                         <View style={[styles.symbolBadge, { backgroundColor: isADX ? '#EAB30815' : '#3B82F615', borderLeftWidth: 3, borderLeftColor: isADX ? '#EAB308' : '#3B82F6' }]}>
                             <Text style={[styles.symbolText, { color: isADX ? '#EAB308' : '#3B82F6' }]} numberOfLines={1}>
-                                {language === 'ar' ? (item.companyNameAr || item.companyName || 'ADX') : (item.companyNameEn || item.companyName || 'ADX')}
+                                {language === 'ar' ? (item.issuer_ar || item.companyNameAr || item.companyName || 'ADX') : (item.companyNameEn || item.companyName || 'ADX')}
                             </Text>
                         </View>
                         <View style={styles.cardMeta}>
