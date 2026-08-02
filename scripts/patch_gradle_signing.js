@@ -64,16 +64,16 @@ content = content.replace(/signingConfigs\s*\{[\s\S]*?\n    \}/, releaseSigningB
 fs.writeFileSync(gradlePath, content, 'utf8');
 console.log('Successfully patched android/app/build.gradle for release signing!');
 
-// Disable New Architecture for Android specifically
+// Ensure New Architecture is kept enabled for Android specifically to avoid mismatches with the JS bundle
 const propertiesPath = path.join(__dirname, '../android/gradle.properties');
 if (fs.existsSync(propertiesPath)) {
   let propertiesContent = fs.readFileSync(propertiesPath, 'utf8');
-  if (propertiesContent.includes('newArchEnabled=true')) {
-    propertiesContent = propertiesContent.replace(/newArchEnabled=true/g, 'newArchEnabled=false');
+  if (propertiesContent.includes('newArchEnabled=false')) {
+    propertiesContent = propertiesContent.replace(/newArchEnabled=false/g, 'newArchEnabled=true');
     fs.writeFileSync(propertiesPath, propertiesContent, 'utf8');
-    console.log('Successfully disabled newArchEnabled in android/gradle.properties!');
+    console.log('Successfully enforced newArchEnabled=true in android/gradle.properties!');
   } else {
-    console.log('newArchEnabled is already false or not set to true in gradle.properties.');
+    console.log('newArchEnabled is already true in gradle.properties.');
   }
 } else {
   console.warn('WARNING: android/gradle.properties file not found.');
