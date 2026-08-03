@@ -18,6 +18,7 @@ import {
   Modal,
   useWindowDimensions,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -339,9 +340,16 @@ export const AdminUsersScreen: React.FC = () => {
       activeOpacity={0.7}
     >
       <View style={localStyles.userHeader}>
-        <View style={localStyles.userAvatar}>
-          <Ionicons name="person" size={24} color={theme.text.tertiary} />
-        </View>
+        {item.avatar ? (
+          <Image
+            source={{ uri: item.avatar }}
+            style={localStyles.userAvatarImage}
+          />
+        ) : (
+          <View style={localStyles.userAvatar}>
+            <Ionicons name="person" size={24} color={theme.text.tertiary} />
+          </View>
+        )}
         <View style={localStyles.userInfo}>
           <Text style={localStyles.userName}>{item.name}</Text>
           <Text style={localStyles.userEmail}>{item.email}</Text>
@@ -961,6 +969,12 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     backgroundColor: theme.background.tertiary,
     justifyContent: 'center',
     alignItems: 'center',
+    [isRTL ? 'marginLeft' : 'marginRight']: 12,
+  },
+  userAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     [isRTL ? 'marginLeft' : 'marginRight']: 12,
   },
   userInfo: {

@@ -179,6 +179,9 @@ export const SUBSCRIPTION_FILTER_OPTIONS = [
   { label: 'Active', value: 'active', labelKey: 'admin.activeSubscriptions' },
   { label: 'Pending', value: 'pending', labelKey: 'admin.pendingSubscriptions' },
   { label: 'Expired', value: 'expired', labelKey: 'admin.expiredSubscriptions' },
+  { label: 'Stripe', value: 'stripe', labelKey: 'admin.stripeSubscriptions' },
+  { label: 'Apple IAP', value: 'apple', labelKey: 'admin.appleSubscriptions' },
+  { label: 'Manual', value: 'manual', labelKey: 'admin.manualSubscriptions' },
 ];
 
 export const INSIGHT_TYPE_FILTER_OPTIONS = [

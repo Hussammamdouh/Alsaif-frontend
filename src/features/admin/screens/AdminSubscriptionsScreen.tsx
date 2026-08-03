@@ -16,7 +16,8 @@ import {
   Modal,
   StyleSheet,
   RefreshControl,
-  useWindowDimensions
+  useWindowDimensions,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -93,7 +94,11 @@ export const AdminSubscriptionsScreen: React.FC = () => {
 
   const handleFilterChange = (value: string) => {
     setSelectedFilter(value);
-    setFilters({ ...filters, status: value as any });
+    if (['stripe', 'apple', 'manual'].includes(value)) {
+      setFilters({ ...filters, gateway: value as any, status: undefined });
+    } else {
+      setFilters({ ...filters, status: value === '' ? undefined : value as any, gateway: undefined });
+    }
   };
 
   const openGrantModal = () => {
@@ -216,11 +221,18 @@ export const AdminSubscriptionsScreen: React.FC = () => {
         activeOpacity={0.7}
       >
         <View style={localStyles.userHeader}>
-          <View style={localStyles.userAvatar}>
-            <Text style={localStyles.avatarText}>
-              {(item.user?.name || 'Unknown User').substring(0, 2).toUpperCase()}
-            </Text>
-          </View>
+          {item.user?.avatar ? (
+            <Image
+              source={{ uri: item.user.avatar }}
+              style={localStyles.userAvatarImage}
+            />
+          ) : (
+            <View style={localStyles.userAvatar}>
+              <Text style={localStyles.avatarText}>
+                {(item.user?.name || 'Unknown User').substring(0, 2).toUpperCase()}
+              </Text>
+            </View>
+          )}
           <View style={localStyles.userInfo}>
             <Text style={localStyles.userName}>{item.user?.name || 'Unknown User'}</Text>
             <Text style={localStyles.userEmail}>{item.user?.email || 'N/A'}</Text>
@@ -240,6 +252,62 @@ export const AdminSubscriptionsScreen: React.FC = () => {
             <View style={[localStyles.badge, { backgroundColor: statusColor + '20' }]}>
               <Text style={[localStyles.badgeText, { color: statusColor }]}>
                 {t(`status.${item.status}`).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          {item.paymentGateway && (
+            <View
+              style={[
+                localStyles.badge,
+                {
+                  backgroundColor:
+                    (item.paymentGateway === 'stripe'
+                      ? '#635BFF'
+                      : item.paymentGateway === 'apple'
+                      ? '#000000'
+                      : theme.primary.main) + '20',
+                },
+              ]}
+            >
+              <Ionicons
+                name={
+                  item.paymentGateway === 'stripe'
+                    ? 'card'
+                    : item.paymentGateway === 'apple'
+                    ? 'logo-apple'
+                    : 'construct'
+                }
+                size={12}
+                color={
+                  item.paymentGateway === 'stripe'
+                    ? '#635BFF'
+                    : item.paymentGateway === 'apple'
+                    ? theme.dark
+                      ? '#FFFFFF'
+                      : '#000000'
+                    : theme.primary.main
+                }
+              />
+              <Text
+                style={[
+                  localStyles.badgeText,
+                  {
+                    color:
+                      item.paymentGateway === 'stripe'
+                        ? '#635BFF'
+                        : item.paymentGateway === 'apple'
+                        ? theme.dark
+                          ? '#FFFFFF'
+                          : '#000000'
+                        : theme.primary.main,
+                  },
+                ]}
+              >
+                {item.paymentGateway === 'stripe'
+                  ? 'STRIPE'
+                  : item.paymentGateway === 'apple'
+                  ? 'APPLE IAP'
+                  : 'MANUAL'}
               </Text>
             </View>
           )}
@@ -684,6 +752,12 @@ const createLocalStyles = (theme: any, isRTL: boolean) => StyleSheet.create({
     backgroundColor: theme.primary.main,
     justifyContent: 'center',
     alignItems: 'center',
+    [isRTL ? 'marginLeft' : 'marginRight']: 12,
+  },
+  userAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     [isRTL ? 'marginLeft' : 'marginRight']: 12,
   },
   avatarText: {

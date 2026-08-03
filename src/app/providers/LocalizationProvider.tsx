@@ -1038,6 +1038,9 @@ const translations = {
     'admin.activeSubscriptions': 'Active',
     'admin.expiredSubscriptions': 'Expired',
     'admin.pendingSubscriptions': 'Pending',
+    'admin.stripeSubscriptions': 'Stripe',
+    'admin.appleSubscriptions': 'Apple IAP',
+    'admin.manualSubscriptions': 'Manual',
 
     // Broadcast Notifications
     'admin.sendNotification': 'Send Notification',
@@ -2406,6 +2409,9 @@ const translations = {
     'admin.activeSubscriptions': 'نشطة',
     'admin.expiredSubscriptions': 'منتهية',
     'admin.pendingSubscriptions': 'قيد الانتظار',
+    'admin.stripeSubscriptions': 'سترايب',
+    'admin.appleSubscriptions': 'آبل IAP',
+    'admin.manualSubscriptions': 'يدوي',
 
     // Broadcast Notifications
     'admin.sendNotification': 'إرسال إشعار',

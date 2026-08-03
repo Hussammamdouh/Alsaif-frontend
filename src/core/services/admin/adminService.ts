@@ -340,6 +340,7 @@ export const getSubscriptions = async (
   if (filters?.status) params.append('status', filters.status);
   if (filters?.tier) params.append('tier', filters.tier);
   if (filters?.search) params.append('search', filters.search);
+  if (filters?.gateway) params.append('gateway', filters.gateway);
 
   const response = await apiClient.get<ApiResponse<{ subscriptions: AdminSubscription[]; pagination: any }>>(
     `/api/subscriptions?${params.toString()}`

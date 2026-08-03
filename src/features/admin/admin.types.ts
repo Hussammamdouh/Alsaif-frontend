@@ -145,12 +145,14 @@ export interface AdminSubscription {
   revenue?: number;
   stripeSubscriptionId?: string;
   stripeProductId?: string;
+  paymentGateway?: 'stripe' | 'apple' | 'manual';
 }
 
 export interface SubscriptionFilters {
   status?: SubscriptionStatus;
   tier?: SubscriptionTier;
   search?: string;
+  gateway?: 'stripe' | 'apple' | 'manual' | '';
 }
 
 // Notification Broadcast Types
