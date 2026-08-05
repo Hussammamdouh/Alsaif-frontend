@@ -52,12 +52,17 @@ export const PdfViewerScreen: React.FC = () => {
         url.includes('0.0.0.0')
     );
 
-    // Detect if the URL is from Abu Dhabi Securities Exchange (ADX)
-    const isAdxUrl = typeof url === 'string' && url.includes('adx.ae');
+    // Detect if the URL needs to be routed through our backend PDF proxy
+    // This includes ADX, DFM, or feeds.dfm.ae to bypass CORS, frame-ancestors, and User-Agent blocks
+    const shouldProxy = typeof url === 'string' && (
+        url.includes('adx.ae') ||
+        url.includes('dfm.ae') ||
+        url.includes('feeds.dfm.ae')
+    );
 
-    // For ADX URLs, route through our backend PDF proxy to bypass WAF, User-Agent, and frame embedding blocks
+    // For protected URLs, route through our backend PDF proxy to bypass WAF, User-Agent, and frame embedding blocks
     const apiBaseUrl = getApiBaseUrl();
-    const proxyUrl = isAdxUrl
+    const proxyUrl = shouldProxy
         ? `${apiBaseUrl}/api/disclosures/pdf-proxy?url=${encodeURIComponent(url)}`
         : url;
 
@@ -67,13 +72,13 @@ export const PdfViewerScreen: React.FC = () => {
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     // Initial viewer mode: 
-    // - Use 'direct' for local addresses, same-origin, or ADX URLs on desktop (safe and bypasses Google issues)
-    // - Use 'google' for truly remote URLs or ADX URLs on mobile browsers
+    // - Use 'direct' for local addresses, same-origin, or proxied URLs on desktop (safe and bypasses Google issues)
+    // - Use 'google' for truly remote URLs or proxied/ADX/DFM URLs on mobile browsers
     const initialIsRemote = typeof url === 'string' &&
         url.startsWith('http') &&
         !isSameOrigin &&
         !isLocalAddress &&
-        (!isAdxUrl || isMobileBrowser);
+        (!shouldProxy || isMobileBrowser);
 
     const [viewerMode, setViewerMode] = useState<'google' | 'direct'>(initialIsRemote ? 'google' : 'direct');
 

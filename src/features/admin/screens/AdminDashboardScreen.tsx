@@ -93,7 +93,7 @@ export const AdminDashboardScreen: React.FC = () => {
   };
 
   const formatCurrency = (amount: number): string => {
-    return `$${formatNumber(amount)}`;
+    return `AED ${formatNumber(amount)}`;
   };
 
   const renderStatCard = (

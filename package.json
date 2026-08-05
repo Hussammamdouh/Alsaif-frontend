@@ -64,7 +64,7 @@
     "react-onesignal": "^3.4.6",
     "react-pdf": "^10.3.0",
     "socket.io-client": "^4.8.3",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
     "@expo/prebuild-config": "^57.0.5",
@@ -72,5 +72,22 @@
     "react-refresh": "^0.18.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "overrides": {
+    "@xmldom/xmldom": "^0.9.10",
+    "brace-expansion": "^2.1.4",
+    "fast-uri": "^4.1.2",
+    "js-yaml": "^5.2.3",
+    "postcss": "^8.5.25",
+    "protobufjs": "^7.6.5",
+    "shell-quote": "^1.9.0",
+    "socket.io-parser": "^4.2.7",
+    "tar": "^7.5.22",
+    "undici": "^6.28.0",
+    "uuid": "^11.1.1"
+  },
+  "private": true,
+  "allowScripts": {
+    "@firebase/util@1.14.0": true,
+    "protobufjs@7.6.5": true
+  }
 }
